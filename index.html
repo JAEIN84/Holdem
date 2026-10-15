@@ -183,7 +183,7 @@ li:first-child .rank-no { color: var(--gold); }
 
 /* ===== 넓은 화면: 폴더블(펼침)·태블릿 ===== */
 .rank-grid, .trend-grid, .month-grid { display: block; }
-@media (min-width: 720px) {
+@media (min-width: 720px), (orientation: landscape) and (max-height: 500px) and (min-width: 600px) {
   .app { max-width: 980px; padding: 0 28px; }
   .large-title { font-size: 34px; }
   .rank-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-areas: "leader rank" "stats rank"; gap: 0 22px; align-items: start; }
@@ -216,6 +216,27 @@ li:first-child .rank-no { color: var(--gold); }
   .tiles { grid-template-columns: 1fr 1fr; }
   #games-list { grid-template-columns: repeat(3, 1fr); }
   .toast { bottom: 32px; left: calc(50% + 48px); }
+}
+
+/* ===== 공통: 글자 자동 확대 방지, 가로 모드 노치 영역 피하기 ===== */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+.app { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+/* ===== 휴대폰 가로 모드: 하단 탭바 → 왼쪽 세로 메뉴로, 세로 공간 확보 ===== */
+@media (orientation: landscape) and (max-height: 500px) {
+  body { padding-bottom: 16px; padding-left: calc(76px + env(safe-area-inset-left, 0px)); }
+  .app { padding-left: 20px; padding-right: max(20px, env(safe-area-inset-right, 0px)); }
+  .tabbar { top: 0; right: auto; width: calc(76px + env(safe-area-inset-left, 0px)); grid-template-columns: 1fr; grid-auto-rows: 62px; align-content: center;
+    padding: 8px 6px 8px calc(6px + env(safe-area-inset-left, 0px)); border-top: 0; border-right: 1px solid var(--line); }
+  .tabbar button { border-radius: 12px; }
+  .tabbar button[aria-current="page"] { background: var(--surface); }
+  .large-title { font-size: 26px; margin-top: 8px; }
+  .caption { margin-bottom: 12px; }
+  .leader { padding: 16px 18px 14px; }
+  .leader-value { font-size: 42px; }
+  .rank-grid .leader { margin-top: 30px; }
+  .readout { min-height: 64px; }
+  .ro-value { font-size: 28px; }
+  .toast { bottom: 20px; left: calc(50% + 38px); }
 }
 </style>
 </head>
@@ -400,7 +421,8 @@ function niceStep(range, count) {
 function renderTrend(M) {
   renderTrendPlayers(M);
   const svg = $('#trend');
-  const W = svg.parentElement.clientWidth || 360, H = W >= 900 ? 360 : W >= 600 ? 300 : 230;
+  const W = svg.parentElement.clientWidth || 360;
+  const H = Math.round(Math.min(W >= 900 ? 360 : W >= 600 ? 300 : 230, Math.max(190, innerHeight - 200)));
   const m = { l: 12, r: 46, t: 10, b: 24 };
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('height', H);
   const { cum, sessions, names, color } = M, n = sessions.length;
