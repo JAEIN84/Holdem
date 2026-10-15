@@ -259,10 +259,11 @@ function diffText(l) {
   if (l.act === 'reset') return l.after?.result === 'approve' ? '승인' : '거절';
   if (l.act === 'password') return '본인이 직접 변경';
   if (l.act === 'user-delete') return '계정과 연락처 삭제';
+  if (l.act === 'post-delete') return `${esc(l.targetName)}님의 글 "${esc(l.after?.title)}"`;
   return '';
 }
 const ACT = { add: '경기 등록', edit: '경기 수정', delete: '경기 삭제', player: '플레이어 추가', rename: '플레이어 이름 변경', user: '회원 관리', restore: '데이터 복원',
-  reset: '비밀번호 재설정 처리', password: '비밀번호 변경', 'user-delete': '회원 삭제' };
+  reset: '비밀번호 재설정 처리', password: '비밀번호 변경', 'user-delete': '회원 삭제', 'post-delete': '게시글 삭제' };
 async function loadLog() {
   let log; try { log = await api('GET', '/api/log'); } catch (e) { toast(e.message); return; }
   $('#log-count').textContent = `${log.length}건`;
