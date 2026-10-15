@@ -2,6 +2,16 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
+<meta name="description" content="Standings, stack trends, monthly report and game log of our Hold’em league.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Hold’em League">
+<meta property="og:title" content="Hold’em League">
+<meta property="og:description" content="Standings, stack trends, monthly report and game log of our Hold’em league.">
+<meta property="og:url" content="https://jaein84.github.io/Holdem/">
+<meta property="og:image" content="https://jaein84.github.io/Holdem/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -58,7 +68,7 @@ button { cursor: pointer; }
 .toast.on { opacity: 1; transform: translateX(-50%); }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 body { padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
-.topline { display: flex; justify-content: space-between; align-items: center; padding-top: 10px; color: var(--sub); font-size: 13px; font-weight: 600; }
+.topline { display: flex; justify-content: flex-end; align-items: center; padding-top: 10px; color: var(--sub); font-size: 13px; font-weight: 600; }
 .top-actions { display: flex; align-items: center; gap: 12px; }
 .top-link { color: var(--brand); text-decoration: none; font-weight: 700; font-size: 14px; }
 :root[data-theme="dark"] .top-link { color: var(--gold); }
@@ -177,7 +187,7 @@ li:first-child .rank-no { color: var(--gold); }
 
   <!-- 순위 -->
   <section class="view" id="v-rank">
-    <div class="topline"><span id="season"></span><span class="top-actions"><a class="top-link" id="rec-link" href="record.html">Record ›</a><button type="button" class="icon-btn" id="reload" aria-label="새로고침">
+    <div class="topline"><span class="top-actions"><a class="top-link" id="rec-link" href="record.html">Record ›</a><button type="button" class="icon-btn" id="reload" aria-label="새로고침">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg></button></span></div>
     <h1 class="large-title" id="title">Hold’em League</h1>
     <p class="caption" id="caption"></p>
@@ -307,7 +317,6 @@ function renderRank(M) {
   const { ranked, sessions, N, best, worst, seats, places } = M;
   document.title = CONFIG.TITLE;
   $('#title').textContent = CONFIG.TITLE;
-  $('#season').textContent = `${ymd(sessions[0].date)} 시즌 시작`;
   $('#caption').textContent = `${N}경기 진행, 최근 경기 ${ymd(sessions[N - 1].date)} ${sessions[N - 1].place}`;
   const L = ranked[0], S = ranked[1];
   $('#leader').innerHTML = `
