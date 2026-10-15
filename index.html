@@ -5,11 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="홀덤 리그">
+<meta name="apple-mobile-web-app-title" content="Hold’em">
 <meta name="theme-color" content="#F2F4F1" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0A0D0B" media="(prefers-color-scheme: dark)">
 <title>Hold’em League</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♠</text></svg>">
+<link rel="icon" type="image/png" href="apple-touch-icon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
 :root {
@@ -152,6 +153,8 @@ li:first-child .rank-no { color: var(--gold); }
 .game-date { font-size: 17px; font-weight: 800; }
 .game-dow { color: var(--sub); font-size: 13px; font-weight: 600; }
 .tag { margin-left: auto; font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: color-mix(in srgb, var(--pc) 18%, transparent); color: color-mix(in srgb, var(--pc) 75%, var(--ink)); }
+.edit-link { margin-left: auto; font-size: 12px; font-weight: 700; color: var(--sub); text-decoration: none; padding: 3px 9px; border-radius: 999px; background: var(--surface-2); }
+.game-head .tag + .edit-link { margin-left: 6px; }
 .game-res { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; }
 .gr { display: flex; justify-content: space-between; align-items: center; font-size: 14.5px; }
 .gr .nm { display: flex; align-items: center; gap: 6px; font-weight: 600; }
@@ -480,7 +483,8 @@ function renderGames(M) {
     const total = sum(res.map(r => r[1]));
     html += `<article class="game">
       <div class="game-head"><span class="game-date">${s.date.slice(5).replace('-', '.')}</span><span class="game-dow">${DOW[D(s.date).getDay()]}요일, ${res.length}명</span>
-        ${s.place ? `<span class="tag" style="--pc:${CONFIG.PLACE_COLORS[s.place] || '#8A9A92'}">${esc(s.place)}</span>` : ''}</div>
+        ${s.place ? `<span class="tag" style="--pc:${CONFIG.PLACE_COLORS[s.place] || '#8A9A92'}">${esc(s.place)}</span>` : ''}
+        <a class="edit-link" href="${CONFIG.RECORD_URL}?edit=${encodeURIComponent(s.id)}" aria-label="${s.date} 경기 수정">수정</a></div>
       <div class="game-res">${res.map(([p, v]) => `<div class="gr"><span class="nm">${chip(M.color[p])}${esc(p)}</span><span class="v ${tone(v)}">${signed(v)}</span></div>`).join('')}</div>
       ${total !== 0 ? `<div class="game-warn">합계가 ${signed(total)}입니다. 기록을 확인해 주세요.</div>` : ''}
     </article>`;
