@@ -12,6 +12,8 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Tri-City">
 <meta name="theme-color" content="#F2F4F1" media="(prefers-color-scheme: light)">
@@ -263,12 +265,7 @@ $('#p-login').onsubmit = async e => {
     const r = await api('POST', '/api/login', { id, password });
     Auth.set(r.token, r.user);
     Auth.saveId($('#l-save').checked ? id : '');
-    // 밝은 로그인 화면에서 검은 로딩 화면으로 갑자기 바뀌지 않도록 먼저 어둡게 전환
-    const veil = document.createElement('div');
-    veil.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:calc(-1 * (env(safe-area-inset-bottom, 0px) + 80px));z-index:999;background:#0A0D0B;opacity:0;transition:opacity .25s ease';
-    document.body.appendChild(veil);
-    requestAnimationFrame(() => { veil.style.opacity = '1'; });
-    setTimeout(() => location.replace(nextPage()), 260);
+    location.replace(nextPage());
   } catch (err) {
     msg.className = 'msg bad'; msg.textContent = err.message;
     btn.disabled = false; btn.textContent = '로그인';
