@@ -208,7 +208,7 @@ li:first-child .rank-no { color: var(--gold); }
 .tabbar button { border: 0; background: none; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 0; font-size: 11px; font-weight: 600; color: var(--faint); }
 .tabbar svg { width: 25px; height: 25px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .tabbar button[aria-current="page"] { color: var(--ink); }
-.view { animation: fade .2s ease both; }
+.view.switching { animation: fade .2s ease both; }
 @keyframes fade { from { opacity: 0; } }
 
 /* ===== 넓은 화면: 폴더블(펼침)·태블릿 ===== */
@@ -319,7 +319,6 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 
 /* ===== 시작 로딩 화면 ===== */
 html.booting { background: #0A0D0B; }
-html.booting .view, html.booting .view *, html.revealing .view, html.revealing .view * { animation: none !important; transition: none !important; }
 .splash { will-change: opacity; transform: translateZ(0); -webkit-transform: translateZ(0); }
 .splash { position: fixed; top: 0; left: 0; right: 0; height: 100vh; height: 100lvh; z-index: 100; display: grid; place-items: center;
   background: radial-gradient(110% 70% at 50% 30%, #1A211D 0%, #0E1311 55%, #0A0D0B 100%); color: #EEF2EF;
@@ -870,9 +869,14 @@ let view = 'rank';
 const renderView = v => ({ rank: renderRank, trend: renderTrend, month: renderMonth, games: renderGames })[v]();
 function go(v) {
   view = v;
-  document.querySelectorAll('.view').forEach(el => { el.hidden = el.id !== 'v-' + v; });
+  const booting = document.documentElement.classList.contains('booting');
+  document.querySelectorAll('.view').forEach(el => {
+    el.hidden = el.id !== 'v-' + v;
+    el.classList.remove('switching');
+    if (!el.hidden && !booting) { void el.offsetWidth; el.classList.add('switching'); }
+  });
   document.querySelectorAll('.tabbar button').forEach(b => { if (b.dataset.v === v) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
-  if (!document.documentElement.classList.contains('booting')) window.scrollTo(0, 0);
+  if (!booting) window.scrollTo(0, 0);
   if (MA) renderView(v);
   try { history.replaceState(null, '', '#' + v); } catch (e) {}
 }
