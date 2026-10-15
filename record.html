@@ -12,6 +12,7 @@
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -25,7 +26,7 @@
 <style>
 :root {
   --bg: #F2F4F1; --surface: #FFFFFF; --surface-2: #F7F8F6; --ink: #111A15; --sub: #66736C; --faint: #9AA59F; --line: #E3E8E4;
-  --brand: #0F5A3F; --brand-2: #0A3F2C; --gold: #B8892B; --pos: #2563EB; --neg: #DC3B30; --zero: #9AA59F;
+  --brand: #0F5A3F; --brand-2: #0A3F2C; --gold: #B8892B; --pos: #DC3B30; --neg: #2563EB; --warn: #D93A2F; --zero: #9AA59F;
   --bar-bg: rgba(255,255,255,.86);
   --font: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", system-ui, sans-serif;
   color-scheme: light;
@@ -33,14 +34,14 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #0A0D0B; --surface: #141916; --surface-2: #1A201C; --ink: #EEF2EF; --sub: #93A099; --faint: #66736C; --line: #242B27;
-    --brand: #145F44; --brand-2: #0B3A29; --gold: #DDB65C; --pos: #6EA1FF; --neg: #FF6F64; --zero: #6E7A74;
+    --brand: #145F44; --brand-2: #0B3A29; --gold: #DDB65C; --pos: #FF6F64; --neg: #6EA1FF; --warn: #FF7468; --zero: #6E7A74;
     --bar-bg: rgba(20,25,22,.86);
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #0A0D0B; --surface: #141916; --surface-2: #1A201C; --ink: #EEF2EF; --sub: #93A099; --faint: #66736C; --line: #242B27;
-  --brand: #145F44; --brand-2: #0B3A29; --gold: #DDB65C; --pos: #6EA1FF; --neg: #FF6F64; --zero: #6E7A74;
+  --brand: #145F44; --brand-2: #0B3A29; --gold: #DDB65C; --pos: #FF6F64; --neg: #6EA1FF; --warn: #FF7468; --zero: #6E7A74;
   --bar-bg: rgba(20,25,22,.86);
   color-scheme: dark;
 }
@@ -74,7 +75,7 @@ body { padding-bottom: calc(150px + env(safe-area-inset-bottom, 0px)); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .topline a { color: var(--gold); } }
 .banner { background: color-mix(in srgb, var(--gold) 16%, var(--surface)); color: var(--ink); border-radius: 12px; padding: 10px 14px; font-size: 13.5px; margin: 10px 0 0; }
 .title-row { display: flex; align-items: baseline; justify-content: space-between; }
-.link-btn { border: 0; background: none; color: var(--neg); font-weight: 700; font-size: 15px; padding: 6px 0; }
+.link-btn { border: 0; background: none; color: var(--warn); font-weight: 700; font-size: 15px; padding: 6px 0; }
 .card { background: var(--surface); border-radius: 16px; padding: 4px 16px; margin-bottom: 14px; }
 .field { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 52px; }
 .field + .field { border-top: 1px solid var(--line); }
@@ -111,12 +112,12 @@ input[type="date"] { min-height: 38px; }
 .sum-line .msg.ok { color: var(--brand); }
 :root[data-theme="dark"] .sum-line .msg.ok { color: #4CC38A; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .sum-line .msg.ok { color: #4CC38A; } }
-.sum-line .msg.bad { color: var(--neg); }
+.sum-line .msg.bad { color: var(--warn); }
 .sum-line .tot { font-weight: 800; font-size: 18px; }
 .auto { border: 0; background: var(--surface-2); color: var(--ink); border-radius: 999px; height: 30px; padding: 0 12px; font-size: 13px; font-weight: 700; }
 .save { width: 100%; height: 52px; border: 0; border-radius: 14px; font-size: 17px; font-weight: 800; background: var(--brand); color: #fff; }
 .save:disabled { background: var(--line); color: var(--faint); }
-.save.warn { background: var(--neg); }
+.save.warn { background: var(--warn); }
 
 /* 최근 기록 */
 .rec { background: var(--surface); border-radius: 16px; padding: 12px 16px; margin-bottom: 10px; }
@@ -125,10 +126,11 @@ input[type="date"] { min-height: 38px; }
 .rec-place { color: var(--sub); font-size: 13px; font-weight: 600; }
 .rec-act { margin-left: auto; display: flex; gap: 6px; }
 .rec-act button { border: 0; background: var(--surface-2); border-radius: 8px; height: 30px; padding: 0 10px; font-size: 13px; font-weight: 700; color: var(--ink); }
-.rec-act button.del { color: var(--neg); }
+.rec-act button.del { color: var(--warn); }
 .rec-res { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 6px; font-size: 14px; }
 .rec-res span b { font-weight: 800; }
 .rec.editing { outline: 2px solid var(--gold); }
+.rec-by { margin-top: 6px; font-size: 12px; color: var(--faint); font-weight: 600; }
 .sec select { font-size: 13px; font-weight: 600; padding: 4px 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); }
 .more { width: 100%; margin-top: 2px; }
 .foot { display: flex; justify-content: center; gap: 10px; margin: 24px 0 8px; }
@@ -139,7 +141,7 @@ input[type="date"] { min-height: 38px; }
 .sheet-in { background: var(--surface); border-radius: 22px 22px 0 0; padding: 22px 20px calc(22px + env(safe-area-inset-bottom, 0px)); max-width: 480px; width: 100%; margin: 0 auto; }
 .sheet h2 { margin: 0 0 4px; font-size: 21px; font-weight: 800; }
 .sheet p { margin: 0 0 16px; color: var(--sub); font-size: 14px; }
-.sheet .err { color: var(--neg); font-weight: 600; min-height: 20px; margin: 8px 0 0; }
+.sheet .err { color: var(--warn); font-weight: 600; min-height: 20px; margin: 8px 0 0; }
 .pin-in { width: 100%; height: 54px; border: 0; border-radius: 14px; background: var(--surface-2); font-size: 22px; font-weight: 800; letter-spacing: .18em; text-align: center; }
 .sheet .save { margin-top: 12px; }
 
@@ -183,7 +185,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 </head>
 <body>
 <div class="app">
-  <div class="topline"><span>기록 관리</span><a id="dash-link" href="index.html">Dashboard ›</a></div>
+  <div class="topline"><span id="me-line">기록 관리</span><a id="dash-link" href="index.html">Dashboard ›</a></div>
   <div id="banner"></div>
   <div class="title-row"><h1 class="large-title" id="form-title">New Game</h1><button type="button" class="link-btn" id="cancel-edit" hidden>수정 취소</button></div>
 
@@ -207,7 +209,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   <div class="sec"><span>지난 기록</span><select id="rec-month" aria-label="월 선택"></select></div>
   <div id="recent"></div>
   <button type="button" class="btn ghost more" id="rec-more" hidden>더 보기</button>
-  <div class="foot"><button type="button" class="btn ghost" id="backup">백업 파일 받기</button><button type="button" class="btn ghost" id="logout">비밀번호 다시 입력</button></div>
+  <div class="foot"><button type="button" class="btn ghost" id="backup">백업 파일 받기</button><button type="button" class="btn ghost" id="logout">로그아웃</button></div>
   </div></div>
 </div>
 
@@ -216,28 +218,16 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   <button type="button" class="save" id="save" disabled>경기 저장</button>
 </div></div>
 
-<div class="sheet" id="pin-sheet" hidden><div class="sheet-in" role="dialog" aria-modal="true" aria-labelledby="pin-title">
-  <h2 id="pin-title">비밀번호 입력</h2>
-  <p>기록을 등록하거나 고치려면 비밀번호가 필요합니다. 이 기기에 저장되어 다음부터는 묻지 않습니다.</p>
-  <input class="pin-in" id="pin" type="password" autocomplete="current-password" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="비밀번호">
-  <p class="err" id="pin-err"></p>
-  <button type="button" class="save" id="pin-ok">확인</button>
-</div></div>
 <div class="toast" id="toast"></div>
 
+<script src="auth.js"></script>
 <script>
-/* ============================================================
-   설정: API_BASE 는 대시보드(index.html)와 같은 Worker 주소
-   비워 두면 이 기기 안에만 저장되는 예시 모드로 동작합니다.
-   ============================================================ */
 const CONFIG = {
-  API_BASE: 'https://holdem-api.gyum0614.workers.dev',
   DASHBOARD_URL: 'index.html',
   PLAYER_COLORS: ['#E0A100', '#0F9B8E', '#7B4FC9', '#E0662A', '#4F7A99', '#C2417F', '#3E9A45', '#8C6D3F'],
   DEFAULT_PLACES: ['천안', '인천', '수원']
 };
-const SEED = {"players":["김준희","김자겸","박현석","임성완","박종효"],"sessions":[{"id":"s001","date":"2025-10-19","place":"인천","res":{"김준희":-15,"김자겸":121,"박현석":-63,"임성완":-43}},{"id":"s002","date":"2025-11-09","place":"천안","res":{"김준희":-140,"김자겸":130,"박현석":-94,"박종효":104}},{"id":"s003","date":"2025-11-15","place":"천안","res":{"김준희":-15,"김자겸":-93,"박현석":80,"박종효":28}},{"id":"s004","date":"2025-11-23","place":"천안","res":{"김준희":39,"김자겸":70,"박현석":-90,"박종효":-19}},{"id":"s005","date":"2025-11-29","place":"천안","res":{"김준희":0,"김자겸":-49,"박현석":49}},{"id":"s006","date":"2025-12-06","place":"천안","res":{"김준희":-61,"김자겸":92,"박현석":-31}},{"id":"s007","date":"2025-12-12","place":"천안","res":{"김준희":-19,"김자겸":67,"임성완":-40,"박종효":-8}},{"id":"s008","date":"2025-12-16","place":"인천","res":{"김준희":50,"김자겸":90,"임성완":-140}},{"id":"s009","date":"2026-01-02","place":"인천","res":{"김준희":-100,"김자겸":50,"임성완":50}},{"id":"s010","date":"2026-01-04","place":"천안","res":{"김준희":88,"김자겸":-110,"박현석":22}},{"id":"s011","date":"2026-01-10","place":"수원","res":{"김준희":-8,"김자겸":48,"박현석":-40}},{"id":"s012","date":"2026-01-17","place":"인천","res":{"김준희":80,"김자겸":-152,"임성완":72}},{"id":"s013","date":"2026-01-24","place":"천안","res":{"김준희":-25,"김자겸":43,"박현석":-26,"박종효":8}},{"id":"s014","date":"2026-01-31","place":"인천","res":{"김준희":162,"김자겸":-74,"임성완":-88}},{"id":"s015","date":"2026-02-07","place":"천안","res":{"김준희":83,"김자겸":-20,"박현석":-169,"임성완":60,"박종효":46}},{"id":"s016","date":"2026-02-14","place":"인천","res":{"김준희":10,"김자겸":120,"임성완":-130}},{"id":"s017","date":"2026-02-17","place":"인천","res":{"김준희":50,"김자겸":-90,"임성완":40}},{"id":"s018","date":"2026-02-28","place":"인천","res":{"김준희":-68,"김자겸":23,"임성완":45}},{"id":"s019","date":"2026-03-07","place":"천안","res":{"김준희":8,"김자겸":-53,"박현석":45}},{"id":"s020","date":"2026-03-20","place":"인천","res":{"김준희":-180,"김자겸":22,"임성완":158}},{"id":"s021","date":"2026-03-28","place":"천안","res":{"김준희":38,"김자겸":-60,"박현석":31,"박종효":-9}},{"id":"s022","date":"2026-04-18","place":"인천","res":{"김준희":78,"김자겸":-150,"임성완":72}},{"id":"s023","date":"2026-05-30","place":"천안","res":{"김준희":-10,"김자겸":130,"박현석":-120,"박종효":0}},{"id":"s024","date":"2026-06-27","place":"천안","res":{"김준희":-110,"김자겸":20,"박현석":150,"박종효":-60}},{"id":"s025","date":"2026-07-04","place":"인천","res":{"김준희":-11,"김자겸":41,"임성완":-30}},{"id":"s026","date":"2026-07-25","place":"수원","res":{"김준희":-70,"김자겸":120,"박현석":40,"임성완":-90}},{"id":"s027","date":"2026-08-04","place":"인천","res":{"김준희":80,"김자겸":58,"임성완":-138}},{"id":"s028","date":"2026-08-08","place":"천안","res":{"김준희":108,"김자겸":-90,"박현석":24,"박종효":-42}},{"id":"s029","date":"2026-08-22","place":"수원","res":{"김준희":-199,"김자겸":-35,"박현석":129,"임성완":215,"박종효":-110}},{"id":"s030","date":"2026-10-04","place":"인천","res":{"김준희":0,"김자겸":190,"임성완":-190}},{"id":"s031","date":"2026-10-08","place":"수원","res":{"김준희":334,"김자겸":-250,"박현석":-84}},{"id":"s032","date":"2026-10-10","place":"천안","res":{"김준희":110,"박현석":20,"박종효":-130}},{"id":"s033","date":"2026-10-12","place":"천안","res":{"김준희":140,"김자겸":-330,"박현석":190}}],"updatedAt":"2026-10-12T00:00:00.000Z"};
-const DEMO_KEY = 'holdem_demo_doc', PIN_KEY = 'holdem_pin';
+const ME = Auth.require(['editor', 'admin']);
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -249,49 +239,10 @@ const DOW = ['일', '월', '화', '수', '목', '금', '토'];
 const toast = msg => { const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('on'), 2000); };
 const colorOf = name => CONFIG.PLAYER_COLORS[Math.max(0, doc.players.indexOf(name)) % CONFIG.PLAYER_COLORS.length];
 
-let doc = null, pin = '', editId = null;
-try { pin = localStorage.getItem(PIN_KEY) || ''; } catch (e) {}
+let doc = null, editId = null;
 const form = { date: today(), place: '', custom: false, picked: [], vals: {} };
 
-/* ===== API ===== */
-async function api(method, path, body) {
-  if (!CONFIG.API_BASE) return demoApi(method, path, body);
-  const r = await fetch(CONFIG.API_BASE + path, {
-    method, headers: { 'Content-Type': 'application/json', 'X-Pin': pin }, body: body ? JSON.stringify(body) : undefined, cache: 'no-store'
-  });
-  const j = await r.json().catch(() => ({}));
-  if (r.status === 401 || r.status === 429) {
-    setPin(''); openPin(j.error || '비밀번호가 맞지 않습니다.');
-    throw new Error(j.error || '비밀번호가 필요합니다.');
-  }
-  if (!r.ok) throw new Error(j.error || `요청 실패 (${r.status})`);
-  return j;
-}
-function demoApi(method, path, body) {
-  let d; try { d = JSON.parse(localStorage.getItem(DEMO_KEY)); } catch (e) {}
-  d = d || JSON.parse(JSON.stringify(SEED));
-  const put = () => { d.sessions.sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id)); d.updatedAt = new Date().toISOString(); localStorage.setItem(DEMO_KEY, JSON.stringify(d)); return d; };
-  const m = path.match(/^\/api\/sessions\/(.+)$/);
-  if (method === 'GET') return d;
-  if (path === '/api/auth') return { ok: true };
-  if (method === 'POST' && path === '/api/sessions') { d.sessions.push({ id: 's' + Date.now().toString(36), ...body }); return put(); }
-  if (m && method === 'PUT') { const i = d.sessions.findIndex(s => s.id === m[1]); d.sessions[i] = { id: m[1], ...body }; return put(); }
-  if (m && method === 'DELETE') { d.sessions = d.sessions.filter(s => s.id !== m[1]); return put(); }
-  if (path === '/api/players') { if (d.players.includes(body.name)) throw new Error('이미 있는 이름입니다.'); d.players.push(body.name); return put(); }
-  throw new Error('지원하지 않는 요청입니다.');
-}
-
-/* ===== 비밀번호 ===== */
-function setPin(v) { pin = v; try { v ? localStorage.setItem(PIN_KEY, v) : localStorage.removeItem(PIN_KEY); } catch (e) {} }
-function openPin(err) { $('#pin-sheet').hidden = false; $('#pin-err').textContent = err || ''; $('#pin').value = ''; setTimeout(() => $('#pin').focus(), 50); }
-$('#pin-ok').onclick = async () => {
-  const v = $('#pin').value.trim(); if (!v) { $('#pin-err').textContent = '비밀번호를 입력하세요.'; return; }
-  setPin(v);
-  try { await api('POST', '/api/auth'); $('#pin-sheet').hidden = true; toast('확인되었습니다'); }
-  catch (e) { $('#pin-err').textContent = e.message; }
-};
-$('#pin').addEventListener('keydown', e => { if (e.key === 'Enter') $('#pin-ok').click(); });
-$('#logout').onclick = () => { setPin(''); openPin(); };
+$('#logout').onclick = () => { if (confirm('로그아웃할까요?')) Auth.logout(); };
 
 /* ===== 폼 렌더 ===== */
 function places() {
@@ -393,20 +344,24 @@ $('#save').onclick = async () => {
   const { total } = totals();
   if (total !== 0 && !confirm(`합계가 ${signed(total)}입니다. 그래도 저장할까요?`)) return;
   if (!form.date) { toast('날짜를 선택하세요'); return; }
+  if (!form.place) { toast('장소를 선택하거나 입력하세요'); return; }
+  const dup = doc.sessions.find(x => x.id !== editId && x.date === form.date && x.place === form.place);
+  if (dup && !confirm(`${form.date.replace(/-/g, '.')} ${form.place} 경기가 이미 등록되어 있습니다. 같은 날 다른 판이면 계속 저장하세요.`)) return;
   const res = Object.fromEntries(form.picked.map(p => [p, form.vals[p].sign * Number(form.vals[p].amt)]));
   const body = { date: form.date, place: form.place, res };
   const btn = $('#save'); btn.disabled = true; btn.textContent = '저장 중…';
   try {
     doc = editId ? await api('PUT', '/api/sessions/' + editId, body) : await api('POST', '/api/sessions', body);
     toast(editId ? '수정했습니다' : '저장했습니다');
-    const back = fromDash && editId;
-    resetForm();
+    const back = fromDash && editId, wasEdit = !!editId;
+    resetForm(!wasEdit);
     if (back) { fromDash = false; setTimeout(() => { location.href = CONFIG.DASHBOARD_URL + '#games'; }, 700); }
   } catch (e) { toast(e.message); renderTop(); updateSum(); }
 };
-function resetForm() {
+function resetForm(keepPlayers) {
   editId = null;
-  form.picked = []; form.vals = {};
+  if (keepPlayers) form.picked.forEach(p => { form.vals[p] = { sign: 1, amt: '' }; });
+  else { form.picked = []; form.vals = {}; }
   renderTop(); renderResults(); renderRecent();
 }
 $('#cancel-edit').onclick = () => {
@@ -436,7 +391,8 @@ function renderRecent() {
     return `<div class="rec${s.id === editId ? ' editing' : ''}" data-id="${s.id}">
       <div class="rec-head"><span class="rec-date">${String(y).slice(2)}.${String(m).padStart(2, '0')}.${String(d).padStart(2, '0')} (${dow})</span><span class="rec-place">${esc(s.place)}</span>
         <span class="rec-act"><button type="button" data-a="edit">수정</button><button type="button" class="del" data-a="del">삭제</button></span></div>
-      <div class="rec-res">${res.map(([p, v]) => `<span>${esc(p)} <b class="${tone(v)}">${signed(v)}</b></span>`).join('')}</div></div>`;
+      <div class="rec-res">${res.map(([p, v]) => `<span>${esc(p)} <b class="${tone(v)}">${signed(v)}</b></span>`).join('')}</div>
+      ${s.updated ? `<div class="rec-by">${s.created && s.created.at !== s.updated.at ? '수정' : '등록'} ${esc(s.updated.byName)}, ${s.updated.at.slice(5, 10).replace('-', '.')} ${new Date(s.updated.at).toTimeString().slice(0, 5)}</div>` : ''}</div>`;
   }).join('');
 }
 $('#rec-month').onchange = e => { recMonth = e.target.value; recLimit = PAGE; renderRecent(); };
@@ -475,7 +431,12 @@ $('#backup').onclick = () => {
 /* ===== 시작 ===== */
 (async function init() {
   $('#dash-link').href = CONFIG.DASHBOARD_URL;
-  if (!CONFIG.API_BASE) $('#banner').innerHTML = `<p class="banner">예시 모드입니다. 기록은 이 기기에만 저장됩니다. 친구들과 함께 쓰려면 API_BASE를 설정하세요.</p>`;
+  if (!ME) return;
+  if (ME.denied) {
+    document.querySelector('.rec-grid').innerHTML = `<p class="hint">${esc(ME.name)}님은 조회 권한만 있습니다. 기록 권한이 필요하면 관리자에게 요청하세요.</p>`;
+    document.querySelector('.savebar').hidden = true; $('#form-title').textContent = 'New Game'; return;
+  }
+  $('#me-line').textContent = `${ME.name}님`;
   try { doc = await api('GET', '/api/data'); }
   catch (e) { $('#results').innerHTML = `<p class="hint">기록을 불러오지 못했습니다. ${esc(e.message)}</p>`; return; }
   const pl = places(); form.place = pl[0] || '';
@@ -485,9 +446,6 @@ $('#backup').onclick = () => {
     if (startEdit(want)) { fromDash = true; $('#cancel-edit').textContent = '취소하고 돌아가기'; }
     try { history.replaceState(null, '', location.pathname); } catch (e) {}
   }
-  if (CONFIG.API_BASE && !pin) openPin();
-  // 저장된 비밀번호가 바뀌었는지 접속할 때 바로 확인 (틀리면 입력창이 뜸)
-  else if (CONFIG.API_BASE && pin) api('POST', '/api/auth').catch(() => {});
 })();
 </script>
 </body>

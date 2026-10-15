@@ -12,6 +12,7 @@
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -25,7 +26,7 @@
 <style>
 :root {
   --bg: #F2F4F1; --surface: #FFFFFF; --surface-2: #F7F8F6; --ink: #111A15; --sub: #66736C; --faint: #9AA59F; --line: #E3E8E4;
-  --brand: #0F5A3F; --brand-2: #0A3F2C; --gold: #B8892B; --pos: #2563EB; --neg: #DC3B30; --zero: #9AA59F;
+  --brand: #0F5A3F; --brand-2: #0A3F2C; --gold: #B8892B; --pos: #DC3B30; --neg: #2563EB; --warn: #D93A2F; --zero: #9AA59F;
   --bar-bg: rgba(255,255,255,.86);
   --font: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", system-ui, sans-serif;
   color-scheme: light;
@@ -33,14 +34,14 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #0A0D0B; --surface: #141916; --surface-2: #1A201C; --ink: #EEF2EF; --sub: #93A099; --faint: #66736C; --line: #242B27;
-    --brand: #145F44; --brand-2: #0B3A29; --gold: #DDB65C; --pos: #6EA1FF; --neg: #FF6F64; --zero: #6E7A74;
+    --brand: #145F44; --brand-2: #0B3A29; --gold: #DDB65C; --pos: #FF6F64; --neg: #6EA1FF; --warn: #FF7468; --zero: #6E7A74;
     --bar-bg: rgba(20,25,22,.86);
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #0A0D0B; --surface: #141916; --surface-2: #1A201C; --ink: #EEF2EF; --sub: #93A099; --faint: #66736C; --line: #242B27;
-  --brand: #145F44; --brand-2: #0B3A29; --gold: #DDB65C; --pos: #6EA1FF; --neg: #FF6F64; --zero: #6E7A74;
+  --brand: #145F44; --brand-2: #0B3A29; --gold: #DDB65C; --pos: #FF6F64; --neg: #6EA1FF; --warn: #FF7468; --zero: #6E7A74;
   --bar-bg: rgba(20,25,22,.86);
   color-scheme: dark;
 }
@@ -68,8 +69,11 @@ button { cursor: pointer; }
 .toast.on { opacity: 1; transform: translateX(-50%); }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 body { padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
-.topline { display: flex; justify-content: flex-end; align-items: center; padding-top: 10px; color: var(--sub); font-size: 13px; font-weight: 600; }
+.topline { display: flex; justify-content: space-between; align-items: center; padding-top: 10px; color: var(--sub); font-size: 13px; font-weight: 600; }
 .top-actions { display: flex; align-items: center; gap: 12px; }
+.pend { display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: var(--warn); color: #fff; font-size: 11px; }
+.me { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: var(--sub); }
+.me-out { border: 0; background: var(--surface); color: var(--sub); font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; }
 .top-link { color: var(--brand); text-decoration: none; font-weight: 700; font-size: 14px; }
 :root[data-theme="dark"] .top-link { color: var(--gold); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .top-link { color: var(--gold); } }
@@ -98,6 +102,7 @@ body { padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
 li:first-child .rank-no { color: var(--gold); }
 .rank-name { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 16px; min-width: 0; }
 .rank-meta { grid-column: 2; font-size: 12.5px; color: var(--sub); }
+.rank-meta b { font-weight: 700; }
 .rank-val { grid-row: 1 / span 2; grid-column: 3; text-align: right; font-size: 20px; font-weight: 800; letter-spacing: -.02em; }
 .rank-bar { grid-column: 2 / 4; position: relative; height: 4px; border-radius: 2px; background: var(--surface-2); margin-top: 4px; }
 .rank-bar::before { content: ""; position: absolute; left: 50%; top: -3px; bottom: -3px; width: 1px; background: var(--line); }
@@ -172,7 +177,7 @@ li:first-child .rank-no { color: var(--gold); }
 .gr { display: flex; justify-content: space-between; align-items: center; font-size: 14.5px; }
 .gr .nm { display: flex; align-items: center; gap: 6px; font-weight: 600; }
 .gr .v { font-weight: 800; }
-.game-warn { margin-top: 8px; font-size: 12.5px; color: var(--neg); font-weight: 600; }
+.game-warn { margin-top: 8px; font-size: 12.5px; color: var(--warn); font-weight: 600; }
 .empty { text-align: center; color: var(--sub); padding: 40px 0; }
 
 /* 탭바 */
@@ -248,7 +253,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 
   <!-- 순위 -->
   <section class="view" id="v-rank">
-    <div class="topline"><span class="top-actions"><a class="top-link" id="rec-link" href="record.html">Record ›</a><button type="button" class="icon-btn" id="reload" aria-label="새로고침">
+    <div class="topline"><span class="me"><span id="me-name"></span><button type="button" class="me-out" id="logout">로그아웃</button></span><span class="top-actions"><a class="top-link" id="admin-link" href="admin.html" hidden>Admin ›</a><a class="top-link" id="rec-link" href="record.html" hidden>Record ›</a><button type="button" class="icon-btn" id="reload" aria-label="새로고침">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg></button></span></div>
     <h1 class="large-title" id="title">Hold’em League</h1>
     <p class="caption" id="caption"></p>
@@ -304,21 +309,17 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 </nav>
 <div class="toast" id="toast"></div>
 
+<script src="auth.js"></script>
 <script>
-/* ============================================================
-   설정: API_BASE 에 배포한 Worker 주소를 넣으세요 (끝에 / 없이)
-   예) 'https://holdem-api.내계정.workers.dev'
-   비워 두면 기기에 저장된 예시 데이터로 동작합니다.
-   ============================================================ */
 const CONFIG = {
-  API_BASE: 'https://holdem-api.gyum0614.workers.dev',
   TITLE: 'Hold’em League',
   RECORD_URL: 'record.html',
   PLAYER_COLORS: ['#E0A100', '#0F9B8E', '#7B4FC9', '#E0662A', '#4F7A99', '#C2417F', '#3E9A45', '#8C6D3F'],
   PLACE_COLORS: { '인천': '#3B82F6', '천안': '#10B981', '수원': '#F59E0B' }
 };
-const SEED = {"players":["김준희","김자겸","박현석","임성완","박종효"],"sessions":[{"id":"s001","date":"2025-10-19","place":"인천","res":{"김준희":-15,"김자겸":121,"박현석":-63,"임성완":-43}},{"id":"s002","date":"2025-11-09","place":"천안","res":{"김준희":-140,"김자겸":130,"박현석":-94,"박종효":104}},{"id":"s003","date":"2025-11-15","place":"천안","res":{"김준희":-15,"김자겸":-93,"박현석":80,"박종효":28}},{"id":"s004","date":"2025-11-23","place":"천안","res":{"김준희":39,"김자겸":70,"박현석":-90,"박종효":-19}},{"id":"s005","date":"2025-11-29","place":"천안","res":{"김준희":0,"김자겸":-49,"박현석":49}},{"id":"s006","date":"2025-12-06","place":"천안","res":{"김준희":-61,"김자겸":92,"박현석":-31}},{"id":"s007","date":"2025-12-12","place":"천안","res":{"김준희":-19,"김자겸":67,"임성완":-40,"박종효":-8}},{"id":"s008","date":"2025-12-16","place":"인천","res":{"김준희":50,"김자겸":90,"임성완":-140}},{"id":"s009","date":"2026-01-02","place":"인천","res":{"김준희":-100,"김자겸":50,"임성완":50}},{"id":"s010","date":"2026-01-04","place":"천안","res":{"김준희":88,"김자겸":-110,"박현석":22}},{"id":"s011","date":"2026-01-10","place":"수원","res":{"김준희":-8,"김자겸":48,"박현석":-40}},{"id":"s012","date":"2026-01-17","place":"인천","res":{"김준희":80,"김자겸":-152,"임성완":72}},{"id":"s013","date":"2026-01-24","place":"천안","res":{"김준희":-25,"김자겸":43,"박현석":-26,"박종효":8}},{"id":"s014","date":"2026-01-31","place":"인천","res":{"김준희":162,"김자겸":-74,"임성완":-88}},{"id":"s015","date":"2026-02-07","place":"천안","res":{"김준희":83,"김자겸":-20,"박현석":-169,"임성완":60,"박종효":46}},{"id":"s016","date":"2026-02-14","place":"인천","res":{"김준희":10,"김자겸":120,"임성완":-130}},{"id":"s017","date":"2026-02-17","place":"인천","res":{"김준희":50,"김자겸":-90,"임성완":40}},{"id":"s018","date":"2026-02-28","place":"인천","res":{"김준희":-68,"김자겸":23,"임성완":45}},{"id":"s019","date":"2026-03-07","place":"천안","res":{"김준희":8,"김자겸":-53,"박현석":45}},{"id":"s020","date":"2026-03-20","place":"인천","res":{"김준희":-180,"김자겸":22,"임성완":158}},{"id":"s021","date":"2026-03-28","place":"천안","res":{"김준희":38,"김자겸":-60,"박현석":31,"박종효":-9}},{"id":"s022","date":"2026-04-18","place":"인천","res":{"김준희":78,"김자겸":-150,"임성완":72}},{"id":"s023","date":"2026-05-30","place":"천안","res":{"김준희":-10,"김자겸":130,"박현석":-120,"박종효":0}},{"id":"s024","date":"2026-06-27","place":"천안","res":{"김준희":-110,"김자겸":20,"박현석":150,"박종효":-60}},{"id":"s025","date":"2026-07-04","place":"인천","res":{"김준희":-11,"김자겸":41,"임성완":-30}},{"id":"s026","date":"2026-07-25","place":"수원","res":{"김준희":-70,"김자겸":120,"박현석":40,"임성완":-90}},{"id":"s027","date":"2026-08-04","place":"인천","res":{"김준희":80,"김자겸":58,"임성완":-138}},{"id":"s028","date":"2026-08-08","place":"천안","res":{"김준희":108,"김자겸":-90,"박현석":24,"박종효":-42}},{"id":"s029","date":"2026-08-22","place":"수원","res":{"김준희":-199,"김자겸":-35,"박현석":129,"임성완":215,"박종효":-110}},{"id":"s030","date":"2026-10-04","place":"인천","res":{"김준희":0,"김자겸":190,"임성완":-190}},{"id":"s031","date":"2026-10-08","place":"수원","res":{"김준희":334,"김자겸":-250,"박현석":-84}},{"id":"s032","date":"2026-10-10","place":"천안","res":{"김준희":110,"박현석":20,"박종효":-130}},{"id":"s033","date":"2026-10-12","place":"천안","res":{"김준희":140,"김자겸":-330,"박현석":190}}],"updatedAt":"2026-10-12T00:00:00.000Z"};
-const DEMO_KEY = 'holdem_demo_doc', CACHE_KEY = 'holdem_cache_doc';
+const CACHE_KEY = 'holdem_cache_doc';
+const ME = Auth.require();
+const CAN_EDIT = !!ME && ['editor', 'admin'].includes(ME.role);
 
 /* ===== 유틸 ===== */
 const $ = s => document.querySelector(s);
@@ -394,7 +395,7 @@ function renderRank(M) {
       <span class="rank-no">${k + 1}</span>
       <span class="rank-name">${chip(s.color)}${esc(s.name)}</span>
       <span class="rank-val ${tone(s.total)}">${signed(s.total)}</span>
-      <span class="rank-meta">${s.n}경기 참가, 승률 ${pct(s.win)}</span>
+      <span class="rank-meta">${s.n}경기, 승률 ${pct(s.win)}, 경기당 <b class="${tone(s.per)}">${signed(Math.round(s.per * 10) / 10)}</b></span>
       <span class="rank-bar" aria-hidden="true">${s.total ? `<span class="${s.total > 0 ? 'up' : 'down'}" style="width:${(Math.abs(s.total) / maxAbs * 50).toFixed(1)}%"></span>` : ''}</span>
     </button></li>`).join('');
   $('#rank-list').onclick = e => { const b = e.target.closest('.rank-row'); if (!b) return; focus = b.dataset.p; go('trend'); };
@@ -495,7 +496,7 @@ function renderTrend(M) {
     const v = Math.round(fit.slope * 10) / 10;
     const word = Math.abs(v) < 1 ? '보합 흐름' : v > 0 ? '상승 흐름' : '하락 흐름';
     note.hidden = false;
-    note.innerHTML = `<span class="key" style="--c:var(--ink)" aria-hidden="true"></span>추세선 경기당 <b class="${tone(v)}">${signed(v)}</b><span>${word}</span>`;
+    note.innerHTML = `<span class="key" style="--c:var(--ink)" aria-hidden="true"></span>추세선 기울기, 리그 1경기당 <b class="${tone(v)}">${signed(v)}</b><span>${word}</span>`;
   } else note.hidden = true;
 
   // 하단 상세
@@ -580,7 +581,7 @@ function renderGames(M) {
     html += `<article class="game">
       <div class="game-head"><span class="game-date">${s.date.slice(5).replace('-', '.')}</span><span class="game-dow">${DOW[D(s.date).getDay()]}요일, ${res.length}명</span>
         ${s.place ? `<span class="tag" style="--pc:${CONFIG.PLACE_COLORS[s.place] || '#8A9A92'}">${esc(s.place)}</span>` : ''}
-        <a class="edit-link" href="${CONFIG.RECORD_URL}?edit=${encodeURIComponent(s.id)}" aria-label="${s.date} 경기 수정">수정</a></div>
+        ${CAN_EDIT ? `<a class="edit-link" href="${CONFIG.RECORD_URL}?edit=${encodeURIComponent(s.id)}" aria-label="${s.date} 경기 수정">수정</a>` : ''}</div>
       <div class="game-res">${res.map(([p, v]) => `<div class="gr"><span class="nm">${chip(M.color[p])}${esc(p)}</span><span class="v ${tone(v)}">${signed(v)}</span></div>`).join('')}</div>
       ${total !== 0 ? `<div class="game-warn">합계가 ${signed(total)}입니다. 기록을 확인해 주세요.</div>` : ''}
     </article>`;
@@ -611,28 +612,31 @@ function show(doc, note) {
 async function load() {
   const btn = $('#reload'); btn.classList.add('spin');
   try {
-    if (!CONFIG.API_BASE) {
-      let doc = SEED; try { doc = JSON.parse(localStorage.getItem(DEMO_KEY)) || SEED; } catch (e) {}
-      show(doc, '예시 모드: 이 기기에 저장된 데이터를 표시합니다.');
-      return;
-    }
-    const r = await fetch(CONFIG.API_BASE + '/api/data', { cache: 'no-store' });
-    if (!r.ok) throw new Error('서버 응답 ' + r.status);
-    const doc = await r.json();
-    try { localStorage.setItem(CACHE_KEY, JSON.stringify(doc)); } catch (e) {}
+    const doc = await api('GET', '/api/data');
+    try { sessionStorage.setItem(CACHE_KEY, JSON.stringify(doc)); } catch (e) {}
     const t = new Date(doc.updatedAt);
     show(doc, `마지막 기록 ${t.getMonth() + 1}월 ${t.getDate()}일 ${t.getHours()}:${String(t.getMinutes()).padStart(2, '0')}`);
   } catch (err) {
-    let doc = null; try { doc = JSON.parse(localStorage.getItem(CACHE_KEY)); } catch (e) {}
+    let doc = null; try { doc = JSON.parse(sessionStorage.getItem(CACHE_KEY)); } catch (e) {}
     if (doc) show(doc, '연결할 수 없어 마지막으로 받은 기록을 표시합니다.');
-    toast('기록을 불러오지 못했습니다. 연결을 확인하세요.');
+    toast(err.message || '기록을 불러오지 못했습니다.');
   } finally { btn.classList.remove('spin'); }
 }
 $('#reload').addEventListener('click', load);
 $('#rec-link').href = CONFIG.RECORD_URL;
+if (ME) {
+  $('#me-name').textContent = ME.name;
+  $('#rec-link').hidden = !CAN_EDIT;
+  $('#admin-link').hidden = ME.role !== 'admin';
+  if (ME.role === 'admin') api('GET', '/api/users').then(list => {
+    const n = list.filter(u => u.status === 'pending').length;
+    if (n) $('#admin-link').innerHTML = `Admin <span class="pend">${n}</span> ›`;
+  }).catch(() => {});
+}
+$('#logout').addEventListener('click', () => { if (confirm('로그아웃할까요?')) Auth.logout(); });
 let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (model && view === 'trend') renderTrend(model); }, 150); });
 view = (location.hash.slice(1) in { rank: 1, trend: 1, month: 1, games: 1 }) ? location.hash.slice(1) : 'rank';
-load();
+if (ME) load();
 </script>
 </body>
 </html>

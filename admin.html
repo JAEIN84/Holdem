@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="Members only — Hold’em league standings and game log.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Hold’em League">
+<meta property="og:title" content="Hold’em League">
+<meta property="og:description" content="Members only — Hold’em league standings and game log.">
+<meta property="og:image" content="https://jaein84.github.io/Holdem/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Hold’em">
+<meta name="theme-color" content="#F2F4F1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0A0D0B" media="(prefers-color-scheme: dark)">
+<title>Admin — Hold’em League</title>
+<link rel="icon" type="image/png" href="apple-touch-icon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+:root {
+  --bg: #F2F4F1; --surface: #FFFFFF; --surface-2: #F7F8F6; --ink: #111A15; --sub: #66736C; --faint: #9AA59F; --line: #E3E8E4;
+  --brand: #0F5A3F; --brand-2: #0A3F2C; --gold: #B8892B; --pos: #DC3B30; --neg: #2563EB; --warn: #D93A2F; --zero: #9AA59F;
+  --bar-bg: rgba(255,255,255,.86);
+  --font: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", system-ui, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0A0D0B; --surface: #141916; --surface-2: #1A201C; --ink: #EEF2EF; --sub: #93A099; --faint: #66736C; --line: #242B27;
+    --brand: #145F44; --brand-2: #0B3A29; --gold: #DDB65C; --pos: #FF6F64; --neg: #6EA1FF; --warn: #FF7468; --zero: #6E7A74;
+    --bar-bg: rgba(20,25,22,.86);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0A0D0B; --surface: #141916; --surface-2: #1A201C; --ink: #EEF2EF; --sub: #93A099; --faint: #66736C; --line: #242B27;
+  --brand: #145F44; --brand-2: #0B3A29; --gold: #DDB65C; --pos: #FF6F64; --neg: #6EA1FF; --warn: #FF7468; --zero: #6E7A74;
+  --bar-bg: rgba(20,25,22,.86);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 16px; line-height: 1.45; -webkit-font-smoothing: antialiased; font-feature-settings: "tnum"; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; border-radius: 6px; }
+.pos { color: var(--pos); } .neg { color: var(--neg); } .zero { color: var(--zero); }
+.chip { width: 12px; height: 12px; border-radius: 50%; flex: none; display: inline-block; background: var(--c);
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,.92), inset 0 0 0 4px var(--c); }
+.app { max-width: 480px; margin: 0 auto; padding: 0 16px; }
+.large-title { font-size: 30px; font-weight: 800; letter-spacing: -.02em; margin: 14px 0 2px; }
+.caption { color: var(--sub); font-size: 14px; margin: 0 0 18px; }
+.group { background: var(--surface); border-radius: 16px; overflow: hidden; margin-bottom: 18px; }
+.group-title { font-size: 13px; color: var(--sub); font-weight: 600; margin: 22px 4px 8px; }
+.scroller { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 0 -16px 14px; padding: 2px 16px; }
+.scroller::-webkit-scrollbar { display: none; }
+.pill { flex: none; display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: 14px; font-weight: 600; color: var(--sub); }
+.pill[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--surface); }
+.toast { position: fixed; left: 50%; bottom: calc(96px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%) translateY(12px); background: var(--ink); color: var(--surface); padding: 10px 16px; border-radius: 12px; font-size: 14px; font-weight: 600; opacity: 0; pointer-events: none; transition: .2s; z-index: 50; white-space: nowrap; }
+.toast.on { opacity: 1; transform: translateX(-50%); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body { padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px)); }
+.app { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.topline { display: flex; justify-content: space-between; align-items: center; padding-top: 10px; font-size: 14px; font-weight: 600; color: var(--sub); }
+.topline a { color: var(--brand); text-decoration: none; font-weight: 700; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .topline a { color: var(--gold); } }
+:root[data-theme="dark"] .topline a { color: var(--gold); }
+.seg { display: grid; grid-template-columns: repeat(4, 1fr); background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px; padding: 4px; margin: 4px 0 16px; }
+.seg button { border: 0; background: none; height: 38px; border-radius: 9px; font-weight: 700; font-size: 14px; color: var(--sub); position: relative; }
+.seg button[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+.badge { display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: var(--warn); color: #fff; font-size: 11px; margin-left: 4px; vertical-align: 1px; }
+.sec { font-size: 13px; color: var(--sub); font-weight: 700; margin: 18px 4px 8px; display: flex; justify-content: space-between; align-items: baseline; }
+.card { background: var(--surface); border-radius: 16px; padding: 14px 16px; margin-bottom: 10px; }
+.u-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.u-name { font-weight: 800; font-size: 16px; }
+.u-id { color: var(--sub); font-size: 13px; font-weight: 600; }
+.pill-s { font-size: 11.5px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--surface-2); color: var(--sub); }
+.pill-s.admin { background: color-mix(in srgb, var(--gold) 22%, transparent); color: var(--ink); }
+.pill-s.off { background: color-mix(in srgb, var(--warn) 15%, transparent); color: var(--warn); }
+.u-meta { font-size: 13px; color: var(--sub); margin-top: 4px; display: flex; gap: 12px; flex-wrap: wrap; }
+.u-meta a { color: inherit; }
+.acts { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.b { border: 0; border-radius: 10px; height: 38px; padding: 0 14px; font-weight: 700; font-size: 14px; background: var(--surface-2); color: var(--ink); }
+.b.main { background: var(--brand); color: #fff; }
+.b.bad { color: var(--warn); }
+select.sel { height: 38px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); padding: 0 10px; font-size: 14px; font-weight: 600; }
+.empty { text-align: center; color: var(--sub); padding: 26px 0; font-size: 14px; }
+.log { padding: 12px 16px; }
+.log + .log { border-top: 1px solid var(--line); }
+.log-top { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; color: var(--sub); font-weight: 600; }
+.log-what { font-weight: 700; margin-top: 3px; }
+.log-diff { font-size: 13px; color: var(--sub); margin-top: 3px; line-height: 1.5; }
+.grp { background: var(--surface); border-radius: 16px; overflow: hidden; margin-bottom: 10px; }
+.row { display: flex; align-items: center; gap: 10px; padding: 12px 16px; }
+.row + .row { border-top: 1px solid var(--line); }
+.row .grow { flex: 1; font-weight: 700; }
+.in { height: 42px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); padding: 0 12px; font-size: 16px; font-weight: 600; min-width: 0; }
+.note { color: var(--sub); font-size: 13px; margin: 6px 4px 0; line-height: 1.5; }
+@media (min-width: 760px) {
+  .app { max-width: 860px; padding-left: 28px; padding-right: 28px; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; align-items: start; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topline"><span id="me-line">관리자</span><a href="index.html">Dashboard ›</a></div>
+  <h1 class="large-title">Admin</h1>
+  <p class="caption">회원 승인, 변경 이력, 복원을 관리합니다</p>
+  <div class="seg" role="tablist">
+    <button type="button" role="tab" data-t="users" aria-selected="true">회원<span class="badge" id="pend-badge" hidden></span></button>
+    <button type="button" role="tab" data-t="log" aria-selected="false">이력</button>
+    <button type="button" role="tab" data-t="players" aria-selected="false">플레이어</button>
+    <button type="button" role="tab" data-t="restore" aria-selected="false">복원</button>
+  </div>
+
+  <section id="t-users">
+    <div class="sec"><span>승인 대기</span><span id="pend-count"></span></div>
+    <div id="pending" class="two"></div>
+    <div class="sec"><span>회원 목록</span><span id="mem-count"></span></div>
+    <div id="members" class="two"></div>
+    <p class="note">조회: 대시보드만 볼 수 있음 · 기록: 경기 등록·수정·삭제 가능 · 관리자: 이 화면까지 사용 가능</p>
+  </section>
+
+  <section id="t-log" hidden>
+    <div class="sec"><span>최근 변경 이력</span><span id="log-count"></span></div>
+    <div class="grp" id="log"></div>
+  </section>
+
+  <section id="t-players" hidden>
+    <div class="sec"><span>플레이어 이름 수정</span></div>
+    <div class="grp">
+      <div class="row"><select class="sel" id="rn-from" aria-label="바꿀 플레이어"></select><input class="in" id="rn-to" placeholder="새 이름" maxlength="12" style="flex:1"><button class="b main" id="rn-btn" type="button">변경</button></div>
+    </div>
+    <p class="note">지난 경기 기록의 이름도 함께 바뀌고, 플레이어 색상은 그대로 유지됩니다.</p>
+  </section>
+
+  <section id="t-restore" hidden>
+    <div class="sec"><span>현재 데이터 백업</span></div>
+    <div class="grp"><div class="row"><span class="grow" id="cur-info"></span><button class="b" id="dl-btn" type="button">백업 파일 받기</button></div></div>
+    <div class="sec"><span>자동 스냅샷</span><span>하루 1회, 90일 보관</span></div>
+    <div class="grp" id="snaps"></div>
+    <p class="note">스냅샷은 그날 첫 변경 직전의 상태입니다. 복원하면 지금 데이터도 별도 스냅샷으로 남으므로 되돌릴 수 있습니다.</p>
+  </section>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="auth.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const signed = v => v > 0 ? '+' + v.toLocaleString('ko-KR') : v < 0 ? '−' + Math.abs(v).toLocaleString('ko-KR') : '0';
+const toast = m => { const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('on'), 2000); };
+const when = iso => { if (!iso) return '-'; const d = new Date(iso); return `${String(d.getFullYear()).slice(2)}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')} ${d.toTimeString().slice(0, 5)}`; };
+const ROLE = { viewer: '조회', editor: '기록', admin: '관리자' };
+const STATUS = { active: '사용 중', pending: '승인 대기', rejected: '거절됨', disabled: '사용 중지' };
+
+const ME = Auth.require(['admin']);
+let users = [], doc = null;
+
+/* 탭 */
+document.querySelector('.seg').onclick = e => {
+  const b = e.target.closest('button'); if (!b) return;
+  document.querySelectorAll('.seg button').forEach(x => x.setAttribute('aria-selected', x === b));
+  ['users', 'log', 'players', 'restore'].forEach(t => { $('#t-' + t).hidden = t !== b.dataset.t; });
+  ({ users: loadUsers, log: loadLog, players: loadPlayers, restore: loadRestore })[b.dataset.t]();
+};
+
+/* 회원 */
+async function loadUsers() {
+  try { users = await api('GET', '/api/users'); } catch (e) { toast(e.message); return; }
+  const pend = users.filter(u => u.status === 'pending'), rest = users.filter(u => u.status !== 'pending');
+  $('#pend-badge').hidden = !pend.length; $('#pend-badge').textContent = pend.length;
+  $('#pend-count').textContent = `${pend.length}명`; $('#mem-count').textContent = `${rest.length}명`;
+  $('#pending').innerHTML = pend.length ? pend.map(u => `<div class="card" data-id="${esc(u.id)}">
+      <div class="u-head"><span class="u-name">${esc(u.name)}</span><span class="u-id">${esc(u.id)}</span></div>
+      <div class="u-meta"><a href="tel:${esc(u.phone)}">${esc(u.phone)}</a><span>신청 ${when(u.createdAt)}</span></div>
+      <div class="acts"><button class="b main" data-a="approve" data-role="viewer">조회로 승인</button><button class="b" data-a="approve" data-role="editor">기록 권한으로 승인</button><button class="b bad" data-a="reject">거절</button></div>
+    </div>`).join('') : `<p class="empty">대기 중인 신청이 없습니다</p>`;
+  $('#members').innerHTML = rest.map(u => {
+    const self = u.id === ME.id;
+    return `<div class="card" data-id="${esc(u.id)}">
+      <div class="u-head"><span class="u-name">${esc(u.name)}</span><span class="u-id">${esc(u.id)}</span>
+        <span class="pill-s ${u.role === 'admin' ? 'admin' : ''}">${ROLE[u.role]}</span>${u.status !== 'active' ? `<span class="pill-s off">${STATUS[u.status]}</span>` : ''}${self ? '<span class="pill-s">나</span>' : ''}</div>
+      <div class="u-meta"><a href="tel:${esc(u.phone)}">${esc(u.phone)}</a><span>최근 로그인 ${when(u.lastLogin)}</span></div>
+      ${self ? '' : `<div class="acts"><select class="sel" data-a="role" aria-label="${esc(u.name)} 권한">${Object.entries(ROLE).map(([k, v]) => `<option value="${k}" ${k === u.role ? 'selected' : ''}>${v}</option>`).join('')}</select>
+        ${u.status === 'active' ? '<button class="b bad" data-a="disable">사용 중지</button>' : '<button class="b" data-a="enable">다시 사용</button>'}</div>`}
+    </div>`;
+  }).join('');
+}
+async function setUser(id, patch, okMsg) {
+  try { await api('PUT', '/api/users/' + encodeURIComponent(id), patch); toast(okMsg); loadUsers(); } catch (e) { toast(e.message); }
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('#pending [data-a], #members button[data-a]'); if (!b) return;
+  const card = b.closest('.card'), id = card.dataset.id, u = users.find(x => x.id === id), a = b.dataset.a;
+  if (a === 'approve') setUser(id, { status: 'active', role: b.dataset.role }, `${u.name}님을 승인했습니다`);
+  if (a === 'reject' && confirm(`${u.name}님의 가입 신청을 거절할까요?`)) setUser(id, { status: 'rejected' }, '거절했습니다');
+  if (a === 'disable' && confirm(`${u.name}님의 사용을 중지할까요? 바로 로그아웃됩니다.`)) setUser(id, { status: 'disabled' }, '사용을 중지했습니다');
+  if (a === 'enable') setUser(id, { status: 'active' }, '다시 사용할 수 있게 했습니다');
+});
+document.addEventListener('change', e => {
+  const s = e.target.closest('#members select[data-a="role"]'); if (!s) return;
+  const id = s.closest('.card').dataset.id, u = users.find(x => x.id === id);
+  if (s.value === 'admin' && !confirm(`${u.name}님에게 관리자 권한을 줄까요?`)) { s.value = u.role; return; }
+  setUser(id, { role: s.value }, `${u.name}님 권한을 '${ROLE[s.value]}'(으)로 바꿨습니다`);
+});
+
+/* 변경 이력 */
+function diffText(l) {
+  const fmtRes = r => Object.entries(r || {}).map(([p, v]) => `${esc(p)} ${signed(v)}`).join(', ');
+  if (l.act === 'edit') {
+    const b = l.before || {}, a = l.after || {}, out = [];
+    if (b.place !== a.place) out.push(`장소 ${esc(b.place)} → ${esc(a.place)}`);
+    const names = new Set([...Object.keys(b.res || {}), ...Object.keys(a.res || {})]);
+    names.forEach(p => { const x = b.res?.[p], y = a.res?.[p]; if (x !== y) out.push(`${esc(p)} ${x === undefined ? '불참' : signed(x)} → ${y === undefined ? '불참' : signed(y)}`); });
+    if (b.date && b.date !== l.date) out.push(`날짜 ${b.date} → ${l.date}`);
+    return out.join('<br>') || '변경 내용 없음';
+  }
+  if (l.act === 'add') return `${esc(l.after?.place)} · ${fmtRes(l.after?.res)}`;
+  if (l.act === 'delete') return `${esc(l.before?.place)} · ${fmtRes(l.before?.res)}`;
+  if (l.act === 'user') return `${STATUS[l.before?.status]}/${ROLE[l.before?.role]} → ${STATUS[l.after?.status]}/${ROLE[l.after?.role]}`;
+  if (l.act === 'rename') return `${esc(l.before?.name)} → ${esc(l.after?.name)}`;
+  if (l.act === 'restore') return `${esc(l.after?.snapshot)} 시점으로 복원 (${l.after?.games}경기)`;
+  if (l.act === 'player') return esc(l.after?.name);
+  return '';
+}
+const ACT = { add: '경기 등록', edit: '경기 수정', delete: '경기 삭제', player: '플레이어 추가', rename: '플레이어 이름 변경', user: '회원 관리', restore: '데이터 복원' };
+async function loadLog() {
+  let log; try { log = await api('GET', '/api/log'); } catch (e) { toast(e.message); return; }
+  $('#log-count').textContent = `${log.length}건`;
+  $('#log').innerHTML = log.length ? log.map(l => `<div class="log">
+      <div class="log-top"><span>${esc(l.name)} (${esc(l.by)})</span><span>${when(l.t)}</span></div>
+      <div class="log-what">${ACT[l.act] || l.act}${l.date ? ' · ' + l.date.slice(2).replace(/-/g, '.') : ''}${l.targetName ? ' · ' + esc(l.targetName) : ''}</div>
+      <div class="log-diff">${diffText(l)}</div></div>`).join('') : `<p class="empty">아직 기록된 변경이 없습니다</p>`;
+}
+
+/* 플레이어 */
+async function loadPlayers() {
+  try { doc = await api('GET', '/api/data'); } catch (e) { toast(e.message); return; }
+  $('#rn-from').innerHTML = doc.players.map(p => `<option>${esc(p)}</option>`).join('');
+}
+$('#rn-btn').onclick = async () => {
+  const from = $('#rn-from').value, to = $('#rn-to').value.trim();
+  if (!to) { toast('새 이름을 입력하세요'); return; }
+  if (!confirm(`'${from}'을(를) '${to}'(으)로 바꿀까요? 지난 기록에도 모두 반영됩니다.`)) return;
+  try { doc = await api('PUT', '/api/players/rename', { from, to }); $('#rn-to').value = ''; toast('이름을 바꿨습니다'); loadPlayers(); } catch (e) { toast(e.message); }
+};
+
+/* 백업·복원 */
+async function loadRestore() {
+  try { doc = await api('GET', '/api/data'); } catch (e) { toast(e.message); return; }
+  $('#cur-info').textContent = `현재 ${doc.sessions.length}경기, ${doc.players.length}명`;
+  let snaps = []; try { snaps = await api('GET', '/api/snapshots'); } catch (e) { toast(e.message); }
+  const label = k => k.startsWith('before-restore-') ? `복원 직전 (${when(new Date(Number(k.slice(15))).toISOString())})` : k.replace(/-/g, '.');
+  $('#snaps').innerHTML = snaps.length ? snaps.map(k => `<div class="row"><span class="grow">${esc(label(k))}</span><button class="b" data-snap="${esc(k)}">복원</button></div>`).join('')
+    : `<p class="empty">아직 스냅샷이 없습니다. 첫 변경이 생기면 자동으로 만들어집니다.</p>`;
+}
+$('#snaps').onclick = async e => {
+  const b = e.target.closest('[data-snap]'); if (!b) return;
+  const k = b.dataset.snap;
+  let snap; try { snap = await api('GET', '/api/snapshots/' + encodeURIComponent(k)); } catch (err) { toast(err.message); return; }
+  if (!confirm(`${k} 스냅샷(${snap.sessions.length}경기)으로 되돌릴까요?\n지금 데이터(${doc.sessions.length}경기)는 '복원 직전' 스냅샷으로 따로 보관됩니다.`)) return;
+  try { doc = await api('POST', `/api/snapshots/${encodeURIComponent(k)}/restore`); toast('복원했습니다'); loadRestore(); } catch (err) { toast(err.message); }
+};
+$('#dl-btn').onclick = () => {
+  const blob = new Blob([JSON.stringify(doc, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = `holdem-backup-${new Date().toISOString().slice(0, 10)}.json`; document.body.appendChild(a); a.click(); a.remove();
+};
+
+/* 시작 */
+if (ME) {
+  if (ME.denied) { document.querySelector('.app').innerHTML = `<p class="empty" style="padding-top:80px">관리자만 들어올 수 있는 화면입니다.<br><a href="index.html">대시보드로 돌아가기</a></p>`; }
+  else { $('#me-line').textContent = `${ME.name}님`; loadUsers(); }
+}
+</script>
+</body>
+</html>
