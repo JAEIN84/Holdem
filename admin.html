@@ -125,6 +125,8 @@ select.sel { height: 38px; border-radius: 10px; border: 1px solid var(--line); b
   <section id="t-users">
     <div class="sec"><span>승인 대기</span><span id="pend-count"></span></div>
     <div id="pending" class="two"></div>
+    <div class="sec"><span>비밀번호 재설정 요청</span><span id="reset-count"></span></div>
+    <div id="resets" class="two"></div>
     <div class="sec"><span>회원 목록</span><span id="mem-count"></span></div>
     <div id="members" class="two"></div>
     <p class="note">조회: 대시보드만 볼 수 있음 · 기록: 경기 등록·수정·삭제 가능 · 관리자: 이 화면까지 사용 가능</p>
@@ -178,7 +180,16 @@ document.querySelector('.seg').onclick = e => {
 async function loadUsers() {
   try { users = await api('GET', '/api/users'); } catch (e) { toast(e.message); return; }
   const pend = users.filter(u => u.status === 'pending'), rest = users.filter(u => u.status !== 'pending');
-  $('#pend-badge').hidden = !pend.length; $('#pend-badge').textContent = pend.length;
+  const resets = users.filter(u => u.resetRequestedAt);
+  const todo = pend.length + resets.length;
+  $('#pend-badge').hidden = !todo; $('#pend-badge').textContent = todo;
+  $('#reset-count').textContent = `${resets.length}건`;
+  $('#resets').innerHTML = resets.length ? resets.map(u => `<div class="card" data-id="${esc(u.id)}">
+      <div class="u-head"><span class="u-name">${esc(u.name)}</span><span class="u-id">${esc(u.id)}</span></div>
+      <div class="u-meta"><a href="tel:${esc(u.phone)}">${esc(u.phone)}</a><span>요청 ${when(u.resetRequestedAt)}</span></div>
+      <p class="note" style="margin:8px 0 0">본인이 요청한 것이 맞는지 연락처로 확인한 뒤 승인하세요. 승인하면 요청 때 정한 새 비밀번호로 바뀌고, 기존 로그인은 모두 해제됩니다.</p>
+      <div class="acts"><button class="b main" data-a="reset-ok">승인</button><button class="b bad" data-a="reset-no">거절</button></div>
+    </div>`).join('') : `<p class="empty">요청이 없습니다</p>`;
   $('#pend-count').textContent = `${pend.length}명`; $('#mem-count').textContent = `${rest.length}명`;
   $('#pending').innerHTML = pend.length ? pend.map(u => `<div class="card" data-id="${esc(u.id)}">
       <div class="u-head"><span class="u-name">${esc(u.name)}</span><span class="u-id">${esc(u.id)}</span></div>
@@ -192,7 +203,8 @@ async function loadUsers() {
         <span class="pill-s ${u.role === 'admin' ? 'admin' : ''}">${ROLE[u.role]}</span>${u.status !== 'active' ? `<span class="pill-s off">${STATUS[u.status]}</span>` : ''}${self ? '<span class="pill-s">나</span>' : ''}</div>
       <div class="u-meta"><a href="tel:${esc(u.phone)}">${esc(u.phone)}</a><span>최근 로그인 ${when(u.lastLogin)}</span></div>
       ${self ? '' : `<div class="acts"><select class="sel" data-a="role" aria-label="${esc(u.name)} 권한">${Object.entries(ROLE).map(([k, v]) => `<option value="${k}" ${k === u.role ? 'selected' : ''}>${v}</option>`).join('')}</select>
-        ${u.status === 'active' ? '<button class="b bad" data-a="disable">사용 중지</button>' : '<button class="b" data-a="enable">다시 사용</button>'}</div>`}
+        ${u.status === 'active' ? '<button class="b bad" data-a="disable">사용 중지</button>' : '<button class="b" data-a="enable">다시 사용</button>'}
+        <button class="b bad" data-a="delete">삭제</button></div>`}
     </div>`;
   }).join('');
 }
@@ -200,12 +212,17 @@ async function setUser(id, patch, okMsg) {
   try { await api('PUT', '/api/users/' + encodeURIComponent(id), patch); toast(okMsg); loadUsers(); } catch (e) { toast(e.message); }
 }
 document.addEventListener('click', e => {
-  const b = e.target.closest('#pending [data-a], #members button[data-a]'); if (!b) return;
+  const b = e.target.closest('#pending [data-a], #resets [data-a], #members button[data-a]'); if (!b) return;
   const card = b.closest('.card'), id = card.dataset.id, u = users.find(x => x.id === id), a = b.dataset.a;
   if (a === 'approve') setUser(id, { status: 'active', role: b.dataset.role }, `${u.name}님을 승인했습니다`);
   if (a === 'reject' && confirm(`${u.name}님의 가입 신청을 거절할까요?`)) setUser(id, { status: 'rejected' }, '거절했습니다');
   if (a === 'disable' && confirm(`${u.name}님의 사용을 중지할까요? 바로 로그아웃됩니다.`)) setUser(id, { status: 'disabled' }, '사용을 중지했습니다');
   if (a === 'enable') setUser(id, { status: 'active' }, '다시 사용할 수 있게 했습니다');
+  if (a === 'reset-ok' && confirm(`${u.name}님의 비밀번호 재설정을 승인할까요?`)) setUser(id, { reset: 'approve' }, '새 비밀번호로 바꿨습니다');
+  if (a === 'reset-no' && confirm(`${u.name}님의 재설정 요청을 거절할까요?`)) setUser(id, { reset: 'reject' }, '요청을 거절했습니다');
+  if (a === 'delete' && confirm(`${u.name}님의 계정과 개인정보(연락처 등)를 삭제할까요?\n되돌릴 수 없습니다. 경기 기록은 그대로 남습니다.`)) {
+    api('DELETE', '/api/users/' + encodeURIComponent(id)).then(() => { toast('계정을 삭제했습니다'); loadUsers(); }).catch(err => toast(err.message));
+  }
 });
 document.addEventListener('change', e => {
   const s = e.target.closest('#members select[data-a="role"]'); if (!s) return;
@@ -231,9 +248,13 @@ function diffText(l) {
   if (l.act === 'rename') return `${esc(l.before?.name)} → ${esc(l.after?.name)}`;
   if (l.act === 'restore') return `${esc(l.after?.snapshot)} 시점으로 복원 (${l.after?.games}경기)`;
   if (l.act === 'player') return esc(l.after?.name);
+  if (l.act === 'reset') return l.after?.result === 'approve' ? '승인' : '거절';
+  if (l.act === 'password') return '본인이 직접 변경';
+  if (l.act === 'user-delete') return '계정과 연락처 삭제';
   return '';
 }
-const ACT = { add: '경기 등록', edit: '경기 수정', delete: '경기 삭제', player: '플레이어 추가', rename: '플레이어 이름 변경', user: '회원 관리', restore: '데이터 복원' };
+const ACT = { add: '경기 등록', edit: '경기 수정', delete: '경기 삭제', player: '플레이어 추가', rename: '플레이어 이름 변경', user: '회원 관리', restore: '데이터 복원',
+  reset: '비밀번호 재설정 처리', password: '비밀번호 변경', 'user-delete': '회원 삭제' };
 async function loadLog() {
   let log; try { log = await api('GET', '/api/log'); } catch (e) { toast(e.message); return; }
   $('#log-count').textContent = `${log.length}건`;
