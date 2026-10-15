@@ -205,7 +205,7 @@ li:first-child .rank-no { color: var(--gold); }
 .empty { text-align: center; color: var(--sub); padding: 40px 0; }
 
 /* 탭바 */
-.tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; display: grid; grid-template-columns: repeat(4, 1fr);
+.tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; display: grid; grid-template-columns: repeat(5, 1fr);
   padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px)); background: var(--surface); border-top: 1px solid var(--line); }
 .tabbar button { border: 0; background: none; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 0; font-size: 11px; font-weight: 600; color: var(--faint); }
 .tabbar svg { width: 25px; height: 25px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
@@ -319,6 +319,36 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   .season-extra { grid-template-columns: 1fr 1fr; align-items: start; }
 }
 
+
+/* ===== 게시판 ===== */
+.tab-ic { position: relative; display: inline-flex; }
+.new-dot { position: absolute; top: -1px; right: -4px; width: 8px; height: 8px; border-radius: 50%; background: var(--warn); border: 2px solid var(--surface); }
+.write-btn { flex: none; margin-left: auto; height: 34px; padding: 0 14px; border: 0; border-radius: 999px; background: var(--ink); color: var(--surface); font-size: 13.5px; font-weight: 800; }
+.post { display: block; width: 100%; text-align: left; border: 0; background: var(--surface); border-radius: 16px; padding: 14px 16px; margin-bottom: 10px; color: var(--ink); }
+.post.notice { box-shadow: inset 3px 0 0 var(--gold); }
+.post-top { display: flex; align-items: center; gap: 8px; }
+.ptype { font-size: 11.5px; font-weight: 800; padding: 2px 8px; border-radius: 999px; background: var(--surface-2); color: var(--sub); flex: none; }
+.ptype.notice { background: color-mix(in srgb, var(--gold) 22%, transparent); color: var(--ink); }
+.post-title { font-weight: 800; font-size: 15.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.post-pre { font-size: 13.5px; color: var(--sub); margin-top: 5px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.45; }
+.post-info { font-size: 12px; color: var(--faint); margin-top: 6px; font-weight: 600; }
+.post-h { margin: 8px 0 4px; font-size: 20px; font-weight: 800; line-height: 1.35; word-break: break-word; }
+.post-meta { margin: 0 0 14px; color: var(--sub); font-size: 13px; font-weight: 600; }
+.post-body { white-space: pre-wrap; word-break: break-word; font-size: 15.5px; line-height: 1.65; padding: 14px 0; border-top: 1px solid var(--line); }
+.post-acts { display: flex; gap: 8px; margin-top: 8px; }
+.post-acts button { flex: 1; height: 44px; border: 0; border-radius: 12px; background: var(--surface-2); color: var(--ink); font-weight: 700; font-size: 15px; }
+.post-acts button.del { color: var(--warn); }
+.type-seg { display: grid; grid-template-columns: 1fr 1fr; background: var(--surface-2); border-radius: 12px; padding: 4px; }
+.type-seg button { border: 0; background: none; height: 38px; border-radius: 9px; font-weight: 700; font-size: 14.5px; color: var(--sub); }
+.type-seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+.type-seg button:disabled { opacity: .4; }
+.sf textarea { width: 100%; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2); padding: 12px; font-size: 16px; line-height: 1.5; resize: vertical; min-height: 160px; font-family: inherit; }
+.sf input[readonly] { color: var(--sub); }
+.sf em { font-style: normal; float: right; font-weight: 600; color: var(--faint); }
+@media (min-width: 720px), (orientation: landscape) and (max-height: 500px) and (min-width: 600px) {
+  #board-list { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; align-items: start; }
+  #board-list .empty { grid-column: 1 / -1; }
+}
 </style>
 </head>
 <body>
@@ -378,6 +408,14 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
     <div class="scroller" id="games-player" aria-label="플레이어 필터"></div>
     <div id="games-list"></div>
   </section>
+
+  <!-- 게시판 -->
+  <section class="view" id="v-board" hidden>
+    <div class="title-row"><h1 class="large-title">Board</h1><button type="button" class="write-btn" id="write-btn">✎ 글쓰기</button></div>
+    <p class="caption" id="board-caption"></p>
+    <div class="scroller" id="board-filter" aria-label="글 유형"></div>
+    <div id="board-list"></div>
+  </section>
 </div>
 
 <nav class="tabbar" aria-label="화면 전환">
@@ -385,8 +423,27 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   <button type="button" data-v="trend"><svg viewBox="0 0 24 24"><path d="M3 17l5-5 4 3 8-8"/><path d="M15 7h5v5"/></svg>추이</button>
   <button type="button" data-v="month"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>월별</button>
   <button type="button" data-v="games"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="11" height="15" rx="2"/><path d="M9 21h9a2 2 0 0 0 2-2V8"/></svg>기록</button>
+  <button type="button" data-v="board"><span class="tab-ic"><svg viewBox="0 0 24 24"><path d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H10l-4 3v-3H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"/><path d="M8 10h8M8 13h5"/></svg><i class="new-dot" id="board-dot" hidden></i></span>게시판</button>
 </nav>
 <div class="toast" id="toast"></div>
+<div class="sheet" id="post-sheet" hidden><div class="sheet-in" role="dialog" aria-modal="true" aria-labelledby="post-title">
+  <div class="sheet-head"><span class="ptype" id="post-type"></span><button type="button" class="sheet-x" data-close aria-label="닫기">✕</button></div>
+  <h2 class="post-h" id="post-title"></h2>
+  <p class="post-meta" id="post-meta"></p>
+  <div class="post-body" id="post-body"></div>
+  <div class="post-acts" id="post-acts"></div>
+</div></div>
+<div class="sheet" id="write-sheet" hidden><div class="sheet-in" role="dialog" aria-modal="true" aria-labelledby="write-title">
+  <div class="sheet-head"><h2 id="write-title">글쓰기</h2><button type="button" class="sheet-x" data-close aria-label="닫기">✕</button></div>
+  <form id="write-form" novalidate>
+    <div class="sf"><span>유형</span><div class="type-seg" id="w-type"></div></div>
+    <label class="sf"><span>작성자</span><input id="w-author" readonly tabindex="-1"></label>
+    <label class="sf"><span>제목</span><input id="w-title" maxlength="60" placeholder="제목을 입력하세요"></label>
+    <label class="sf"><span>내용 <em id="w-count">0/3000</em></span><textarea id="w-body" maxlength="3000" rows="8" placeholder="내용을 입력하세요"></textarea></label>
+    <p class="sheet-msg" id="w-msg"></p>
+    <button type="submit" class="sheet-btn" id="w-btn" disabled>등록</button>
+  </form>
+</div></div>
 <div class="sheet" id="me-sheet" hidden><div class="sheet-in" role="dialog" aria-modal="true" aria-labelledby="me-title">
   <div class="sheet-head"><h2 id="me-title">내 계정</h2><button type="button" class="sheet-x" id="me-close" aria-label="닫기">✕</button></div>
   <p class="sheet-sub" id="me-info"></p>
@@ -410,6 +467,7 @@ const CONFIG = {
 };
 const CACHE_KEY = 'holdem_cache_doc';
 function afterReveal() {
+  loadPosts();
   if (ME && ME.role === 'admin') api('GET', '/api/users').then(list => {
     const n = list.filter(u => u.status === 'pending' || u.resetRequestedAt).length;
     if (n) document.getElementById('admin-link').innerHTML = `Admin <span class="pend">${n}</span> ›`;
@@ -825,9 +883,96 @@ function renderGames() {
   });
   $('#games-list').innerHTML = html;
 }
+/* ===== 게시판 ===== */
+let POSTS = null, boardFilter = '';
+const BOARD_SEEN = 'holdem_board_seen';
+const TYPE_KO = { notice: '공지사항', free: '자유' };
+const when = iso => { const d = new Date(iso); return `${String(d.getFullYear()).slice(2)}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')} ${d.toTimeString().slice(0, 5)}`; };
+async function loadPosts() {
+  try { POSTS = await api('GET', '/api/posts'); } catch (e) { POSTS = POSTS || []; toast(e.message); }
+  markNew();
+}
+function markNew() {
+  const seen = localStorage.getItem(BOARD_SEEN) || '';
+  const latest = (POSTS || []).reduce((m, p) => p.at > m ? p.at : m, '');
+  $('#board-dot').hidden = !(latest && latest > seen && (POSTS || []).some(p => p.at > seen && p.by !== ME.id));
+}
+function renderBoard() {
+  if (!POSTS) { $('#board-list').innerHTML = '<p class="empty">불러오는 중…</p>'; loadPosts().then(renderBoard); return; }
+  try { localStorage.setItem(BOARD_SEEN, POSTS.reduce((m, p) => p.at > m ? p.at : m, localStorage.getItem(BOARD_SEEN) || '')); } catch (e) {}
+  $('#board-dot').hidden = true;
+  const nN = POSTS.filter(p => p.type === 'notice').length, nF = POSTS.length - nN;
+  $('#board-caption').textContent = `공지사항 ${nN}개, 자유 ${nF}개`;
+  $('#board-filter').innerHTML = [['', '전체'], ['notice', '공지사항'], ['free', '자유']].map(([v, t]) =>
+    `<button type="button" class="pill" data-v="${v}" aria-pressed="${boardFilter === v}">${t}</button>`).join('');
+  $('#board-filter').onclick = e => { const b = e.target.closest('.pill'); if (!b) return; boardFilter = b.dataset.v; renderBoard(); };
+  // 공지는 항상 위에, 그 다음 최신 글 순
+  const list = POSTS.filter(p => !boardFilter || p.type === boardFilter)
+    .sort((a, b) => (a.type === 'notice') !== (b.type === 'notice') ? (a.type === 'notice' ? -1 : 1) : b.at.localeCompare(a.at));
+  $('#board-list').innerHTML = list.length ? list.map(p => `<button type="button" class="post ${p.type}" data-id="${p.id}">
+      <div class="post-top"><span class="ptype ${p.type}">${p.type === 'notice' ? '📌 ' : ''}${TYPE_KO[p.type]}</span><span class="post-title">${esc(p.title)}</span></div>
+      <div class="post-pre">${esc(p.body)}</div>
+      <div class="post-info">${esc(p.byName)} · ${when(p.at)}${p.updatedAt ? ' (수정됨)' : ''}</div>
+    </button>`).join('') : `<p class="empty">아직 글이 없습니다. 첫 글을 남겨 보세요.</p>`;
+  $('#board-list').onclick = e => { const b = e.target.closest('.post'); if (b) openPost(b.dataset.id); };
+}
+function openPost(id) {
+  const p = POSTS.find(x => x.id === id); if (!p) return;
+  $('#post-type').className = 'ptype ' + p.type; $('#post-type').textContent = (p.type === 'notice' ? '📌 ' : '') + TYPE_KO[p.type];
+  $('#post-title').textContent = p.title;
+  $('#post-meta').textContent = `${p.byName} · ${when(p.at)}${p.updatedAt ? ` · 수정 ${when(p.updatedAt)}` : ''}`;
+  $('#post-body').textContent = p.body;
+  const can = p.by === ME.id || ME.role === 'admin';
+  $('#post-acts').innerHTML = can ? `<button type="button" data-a="edit">수정</button><button type="button" class="del" data-a="del">삭제</button>` : '';
+  $('#post-acts').onclick = async e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.a === 'edit') { $('#post-sheet').hidden = true; openWrite(p); }
+    if (b.dataset.a === 'del' && confirm('이 글을 삭제할까요?')) {
+      try { POSTS = await api('DELETE', '/api/posts/' + p.id); $('#post-sheet').hidden = true; toast('삭제했습니다'); renderBoard(); } catch (err) { toast(err.message); }
+    }
+  };
+  $('#post-sheet').hidden = false;
+}
+let editingPost = null, wType = 'free';
+function openWrite(p) {
+  editingPost = p || null;
+  const isAdmin = ME.role === 'admin';
+  wType = p ? p.type : 'free';
+  $('#write-title').textContent = p ? '글 수정' : '글쓰기';
+  $('#w-type').innerHTML = [['notice', '공지사항'], ['free', '자유']].map(([v, t]) =>
+    `<button type="button" data-v="${v}" aria-pressed="${wType === v}" ${v === 'notice' && !isAdmin ? 'disabled title="관리자만 작성할 수 있습니다"' : ''}>${t}</button>`).join('');
+  $('#w-author').value = p ? p.byName : ME.name;   // 작성자는 회원 이름으로 고정
+  $('#w-title').value = p ? p.title : ''; $('#w-body').value = p ? p.body : '';
+  $('#w-msg').textContent = isAdmin ? '' : '공지사항은 관리자만 작성할 수 있습니다';
+  $('#w-btn').textContent = p ? '수정 저장' : '등록';
+  validateWrite(); $('#write-sheet').hidden = false; setTimeout(() => $('#w-title').focus(), 60);
+}
+function validateWrite() {
+  $('#w-count').textContent = `${$('#w-body').value.length}/3000`;
+  $('#w-btn').disabled = !($('#w-title').value.trim() && $('#w-body').value.trim());
+}
+$('#w-type').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b || b.disabled) return;
+  wType = b.dataset.v; $('#w-type').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x.dataset.v === wType));
+});
+$('#write-form').addEventListener('input', validateWrite);
+$('#write-form').addEventListener('submit', async e => {
+  e.preventDefault(); const btn = $('#w-btn'); btn.disabled = true;
+  const body = { type: wType, title: $('#w-title').value.trim(), body: $('#w-body').value.trim() };
+  try {
+    POSTS = editingPost ? await api('PUT', '/api/posts/' + editingPost.id, body) : await api('POST', '/api/posts', body);
+    $('#write-sheet').hidden = true; toast(editingPost ? '수정했습니다' : '등록했습니다'); boardFilter = ''; renderBoard();
+  } catch (err) { $('#w-msg').className = 'sheet-msg bad'; $('#w-msg').textContent = err.message; validateWrite(); }
+});
+$('#write-btn').addEventListener('click', () => openWrite(null));
+document.addEventListener('click', e => {
+  if (e.target.closest('[data-close]')) e.target.closest('.sheet').hidden = true;
+  else if (e.target.classList && e.target.classList.contains('sheet') && e.target.id !== 'me-sheet') e.target.hidden = true;
+});
+
 /* ===== 화면 전환 ===== */
 let view = 'rank';
-const renderView = v => ({ rank: renderRank, trend: renderTrend, month: renderMonth, games: renderGames })[v]();
+const renderView = v => ({ rank: renderRank, trend: renderTrend, month: renderMonth, games: renderGames, board: renderBoard })[v]();
 function go(v) {
   view = v;
   const booting = document.documentElement.classList.contains('booting');
@@ -893,7 +1038,7 @@ $('#pw-form').addEventListener('submit', async e => {
   } catch (err) { msg.className = 'sheet-msg bad'; msg.textContent = err.message; btn.disabled = false; }
 });
 let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (MA && view === 'trend') renderTrend(); }, 150); });
-view = (location.hash.slice(1) in { rank: 1, trend: 1, month: 1, games: 1 }) ? location.hash.slice(1) : 'rank';
+view = (location.hash.slice(1) in { rank: 1, trend: 1, month: 1, games: 1, board: 1 }) ? location.hash.slice(1) : 'rank';
 if (ME) load();
 </script>
 </body>
