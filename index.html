@@ -262,6 +262,54 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   .ro-value { font-size: 28px; }
   .toast { bottom: 20px; left: calc(50% + 38px); }
 }
+
+/* ===== 시즌 ===== */
+.title-row { display: flex; align-items: center; justify-content: space-between; gap: 6px 10px; flex-wrap: wrap; margin-top: 14px; }
+.title-row .large-title { margin: 0; flex: 1 1 auto; }
+.season-sel { flex: none; margin-left: auto; height: 34px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+  font-size: 13.5px; font-weight: 800; padding: 0 30px 0 14px; -webkit-appearance: none; appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--sub) 50%), linear-gradient(135deg, var(--sub) 50%, transparent 50%);
+  background-position: calc(100% - 15px) 15px, calc(100% - 10px) 15px; background-size: 5px 5px; background-repeat: no-repeat; }
+.title-row + .caption { margin-top: 4px; }
+.rank-meta2 { grid-column: 2; font-size: 12px; color: var(--faint); margin-top: 1px; }
+.rank-meta2 b { font-weight: 700; }
+.rank-row.absent { opacity: .55; }
+.rank-row.absent .rank-val { color: var(--faint); font-size: 15px; }
+.season-extra { display: grid; gap: 0 22px; }
+.all-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.all-table th { font-size: 12px; color: var(--sub); font-weight: 600; text-align: right; padding: 10px 12px 6px; }
+.all-table th:first-child, .all-table td:first-child { text-align: left; }
+.all-table td { padding: 10px 12px; border-top: 1px solid var(--line); text-align: right; font-weight: 700; white-space: nowrap; }
+.all-table td.nm { display: flex; align-items: center; gap: 8px; }
+.all-table td.r { color: var(--faint); font-weight: 800; width: 34px; }
+.all-table td.sub { color: var(--sub); font-weight: 600; }
+.champ-list { list-style: none; padding: 0; margin-top: 0; }
+.champ { display: grid; grid-template-columns: 84px 1fr auto; align-items: center; gap: 10px; padding: 12px 16px; }
+.champ + .champ { border-top: 1px solid var(--line); }
+.champ .sn { font-weight: 800; font-size: 15px; }
+.champ .sr { display: block; font-size: 11.5px; color: var(--faint); font-weight: 600; }
+.champ .nm { display: flex; align-items: center; gap: 8px; font-weight: 700; }
+.champ .st { font-size: 12px; color: var(--sub); font-weight: 600; display: block; }
+.champ .v { font-weight: 800; text-align: right; }
+.champ.live .sn::after { content: "진행 중"; display: block; font-size: 11px; color: var(--gold); font-weight: 700; }
+.scope { display: inline-flex; float: right; margin: -4px 12px 0 0; background: var(--surface-2); border-radius: 10px; padding: 3px; }
+.scope button { border: 0; background: none; height: 28px; padding: 0 12px; border-radius: 8px; font-size: 12.5px; font-weight: 700; color: var(--sub); }
+.scope button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+.empty-card { background: var(--surface); border-radius: 16px; padding: 26px 16px; text-align: center; color: var(--sub); font-size: 14px; }
+.mvp-sec { padding: 10px 16px 6px; font-size: 12px; font-weight: 800; color: var(--sub); background: var(--surface-2); }
+.past { background: var(--surface); border-radius: 16px; margin-bottom: 10px; overflow: hidden; }
+.past summary { list-style: none; cursor: pointer; padding: 14px 16px; font-weight: 800; display: flex; justify-content: space-between; align-items: center; }
+.past summary::-webkit-details-marker { display: none; }
+.past summary::after { content: "▸"; color: var(--faint); transition: transform .15s; }
+.past[open] summary::after { transform: rotate(90deg); }
+.past summary .c { color: var(--sub); font-weight: 600; font-size: 13px; margin-left: auto; margin-right: 10px; }
+.past .past-in { padding: 0 10px 6px; background: var(--bg); }
+.past .past-in .game { margin-left: 0; margin-right: 0; }
+.tile-sub { font-size: 12.5px; color: var(--sub); }
+#season-sum:empty { display: none; }
+@media (min-width: 720px), (orientation: landscape) and (max-height: 500px) and (min-width: 600px) {
+  .season-extra { grid-template-columns: 1fr 1fr; align-items: start; }
+}
 </style>
 </head>
 <body>
@@ -271,23 +319,28 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   <section class="view" id="v-rank">
     <div class="topline"><span class="me"><button type="button" class="me-btn" id="me-btn" aria-haspopup="dialog"><span id="me-name"></span> ▾</button></span><span class="top-actions"><a class="top-link" id="admin-link" href="admin.html" hidden>Admin ›</a><a class="top-link" id="rec-link" href="record.html" hidden>Record ›</a><button type="button" class="icon-btn" id="reload" aria-label="새로고침">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg></button></span></div>
-    <h1 class="large-title" id="title">Tri-City Hold’em</h1>
+    <div class="title-row"><h1 class="large-title" id="title">Tri-City Hold’em</h1><select class="season-sel" aria-label="시즌 선택"></select></div>
     <p class="caption" id="caption"></p>
     <div class="rank-grid">
       <div class="leader" id="leader"></div>
       <div class="rank-block"><div class="group-title">순위</div><ol class="group rank-list" id="rank-list"></ol></div>
-      <div class="stats-block"><div class="group-title">시즌 기록</div><div class="stat-grid" id="stat-grid"></div></div>
+      <div class="stats-block"><div class="group-title" id="stats-title">시즌 기록</div><div class="stat-grid" id="stat-grid"></div></div>
+    </div>
+    <div class="season-extra">
+      <div id="all-block"></div>
+      <div id="champ-block"></div>
     </div>
     <p class="status" id="status"></p>
   </section>
 
   <!-- 추이 -->
   <section class="view" id="v-trend" hidden>
-    <h1 class="large-title">Stack Trend</h1>
+    <div class="title-row"><h1 class="large-title">Stack Trend</h1><select class="season-sel" aria-label="시즌 선택"></select></div>
     <p class="caption">그래프를 밀어서 시점별 기록을 확인하세요</p>
     <div class="scroller" id="trend-players" aria-label="플레이어 선택"></div>
     <div class="trend-grid">
       <div class="group chart-card">
+        <div class="scope" id="trend-scope" role="group" aria-label="그래프 범위"><button type="button" data-s="season">시즌</button><button type="button" data-s="all">전체</button></div>
         <div class="readout"><div class="ro-label" id="ro-label"></div><div class="ro-value" id="ro-value"></div><div class="ro-date" id="ro-date"></div></div>
         <svg id="trend" aria-label="누적 손익 그래프"></svg>
         <div class="trend-note" id="trend-note" hidden></div>
@@ -298,9 +351,10 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 
   <!-- 월별 -->
   <section class="view" id="v-month" hidden>
-    <h1 class="large-title">Monthly Report</h1>
+    <div class="title-row"><h1 class="large-title">Monthly Report</h1><select class="season-sel" aria-label="시즌 선택"></select></div>
     <p class="caption" id="month-caption"></p>
     <div class="scroller" id="month-tabs" aria-label="월 선택"></div>
+    <div class="group month-card" id="season-sum"></div>
     <div class="month-grid">
       <div class="group month-card" id="month-card"></div>
       <div class="mvp-block"><div class="group-title">월간 1위</div><ol class="group mvp-list" id="mvp-list"></ol></div>
@@ -309,7 +363,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 
   <!-- 기록 -->
   <section class="view" id="v-games" hidden>
-    <h1 class="large-title">Game Log</h1>
+    <div class="title-row"><h1 class="large-title">Game Log</h1><select class="season-sel" aria-label="시즌 선택"></select></div>
     <p class="caption" id="games-caption"></p>
     <div class="scroller" id="games-place" aria-label="장소 필터"></div>
     <div class="scroller" id="games-player" aria-label="플레이어 필터"></div>
@@ -367,6 +421,10 @@ const toast = msg => { const t = $('#toast'); t.textContent = msg; t.classList.a
 /* ===== 집계 ===== */
 function analyze(doc) {
   const sessions = doc.sessions.slice().sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id));
+  if (!sessions.length) {
+    const color = Object.fromEntries(doc.players.map((p, i) => [p, CONFIG.PLAYER_COLORS[i % CONFIG.PLAYER_COLORS.length]]));
+    return { sessions, names: [], P: 0, N: 0, color, cum: [], stats: [], ranked: [], months: new Map(), best: null, worst: null, seats: 0, places: {} };
+  }
   const names = doc.players.filter(p => sessions.some(s => p in s.res));
   const P = names.length, N = sessions.length;
   const color = Object.fromEntries(doc.players.map((p, i) => [p, CONFIG.PLAYER_COLORS[i % CONFIG.PLAYER_COLORS.length]]));
@@ -406,53 +464,139 @@ function analyze(doc) {
   return { sessions, names, P, N, color, cum, stats, ranked, months, best, worst, seats, places, updatedAt: doc.updatedAt };
 }
 
+/* ===== 시즌: 매년 10월 1일 ~ 다음 해 9월 30일, 2025.10 = 시즌 1 (날짜로 자동 계산) ===== */
+const SEASON = { BASE_YEAR: 2025, START_MONTH: 10 };
+const todayStr = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+const seasonNo = date => Math.max(1, +date.slice(0, 4) - SEASON.BASE_YEAR + (+date.slice(5, 7) >= SEASON.START_MONTH ? 1 : 0));
+function seasonInfo(n) {
+  const y0 = SEASON.BASE_YEAR + n - 1, mm = String(SEASON.START_MONTH).padStart(2, '0'), em = String(SEASON.START_MONTH - 1 || 12).padStart(2, '0');
+  const end = `${y0 + 1}-${em}-${new Date(y0 + 1, SEASON.START_MONTH - 1, 0).getDate()}`;
+  return { n, label: `S${n}`, start: `${y0}-${mm}-01`, end, range: `${String(y0).slice(2)}.${mm}–${String(y0 + 1).slice(2)}.${em}`, live: seasonNo(todayStr()) === n };
+}
+let DOC = null, MA = null, MS = null, SEASONS = [];
+let season = null;   // 숫자(시즌) 또는 'all'
+try { const v = sessionStorage.getItem('holdem_season'); if (v) season = v === 'all' ? 'all' : Number(v); } catch (e) {}
+const isAll = () => season === 'all';
+const seasonLabel = () => isAll() ? '전체 기록' : `${seasonInfo(season).label} (${seasonInfo(season).range})`;
+const subsetDoc = n => ({ ...DOC, sessions: DOC.sessions.filter(s => seasonNo(s.date) === n) });
+function buildModels() {
+  const cur = seasonNo(todayStr());
+  SEASONS = [...new Set([...DOC.sessions.map(s => seasonNo(s.date)), cur])].sort((a, b) => b - a);
+  if (season === null || (!isAll() && !SEASONS.includes(season))) season = cur;   // 기본값: 진행 중인 최신 시즌
+  MA = analyze(DOC);
+  MS = isAll() ? MA : analyze(subsetDoc(season));
+}
+function renderSeasonSelects() {
+  const opts = SEASONS.map(n => { const i = seasonInfo(n); return `<option value="${n}">${i.label} · ${i.live ? '진행 중' : i.range}</option>`; }).join('') + `<option value="all">전체 기록</option>`;
+  document.querySelectorAll('.season-sel').forEach(sel => { sel.innerHTML = opts; sel.value = String(season); });
+}
+document.addEventListener('change', e => {
+  if (!e.target.classList.contains('season-sel')) return;
+  season = e.target.value === 'all' ? 'all' : Number(e.target.value);
+  try { sessionStorage.setItem('holdem_season', String(season)); } catch (err) {}
+  month = null; scrub = null; buildModels(); renderSeasonSelects(); renderView(view);
+});
+const per1 = v => signed(Math.round(v * 10) / 10);
+const statOf = (M, name) => M.stats.find(t => t.name === name);
+
 /* ===== 순위 ===== */
-function renderRank(M) {
-  const { ranked, sessions, N, best, worst, seats, places } = M;
+function renderRank() {
+  const M = MS, info = isAll() ? null : seasonInfo(season);
   document.title = CONFIG.TITLE;
   $('#title').textContent = CONFIG.TITLE;
-  $('#caption').textContent = `${N}경기 진행, 최근 경기 ${ymd(sessions[N - 1].date)} ${sessions[N - 1].place}`;
-  const L = ranked[0], S = ranked[1];
-  $('#leader').innerHTML = `
-    <div class="leader-label"><span class="crown" aria-hidden="true">♛</span>현재 선두</div>
-    <div class="leader-name">${chip(L.color)}${esc(L.name)}</div>
-    <div class="leader-value">${signed(L.total)}</div>
-    <div class="leader-sub">${S ? `2위 ${esc(S.name)}와 ${(L.total - S.total).toLocaleString('ko-KR')} 차이` : ''}</div>`;
-  const maxAbs = Math.max(1, ...ranked.map(s => Math.abs(s.total)));
-  $('#rank-list').innerHTML = ranked.map((s, k) => `<li><button type="button" class="rank-row" data-p="${esc(s.name)}">
-      <span class="rank-no">${k + 1}</span>
-      <span class="rank-name">${chip(s.color)}${esc(s.name)}</span>
-      <span class="rank-val ${tone(s.total)}">${signed(s.total)}</span>
-      <span class="rank-meta">${s.n}경기, 승률 ${pct(s.win)}, 경기당 <b class="${tone(s.per)}">${signed(Math.round(s.per * 10) / 10)}</b></span>
-      <span class="rank-bar" aria-hidden="true">${s.total ? `<span class="${s.total > 0 ? 'up' : 'down'}" style="width:${(Math.abs(s.total) / maxAbs * 50).toFixed(1)}%"></span>` : ''}</span>
-    </button></li>`).join('');
-  $('#rank-list').onclick = e => { const b = e.target.closest('.rank-row'); if (!b) return; focus = b.dataset.p; go('trend'); };
+  $('#caption').textContent = M.N
+    ? `${seasonLabel()} ${M.N}경기, 최근 경기 ${ymd(M.sessions[M.N - 1].date)} ${M.sessions[M.N - 1].place}`
+    : `${seasonLabel()} 아직 경기가 없습니다`;
+  $('#stats-title').textContent = isAll() ? '전체 기록' : `${info.label} 시즌 기록`;
 
-  const pl = Object.entries(places).sort((a, b) => b[1] - a[1]);
-  $('#stat-grid').innerHTML = [
-    ['최고 단일 수익', `<span class="pos">${signed(best.v)}</span>`, `${esc(best.who)}, ${ymd(best.d)}`],
-    ['최대 단일 손실', `<span class="neg">${signed(worst.v)}</span>`, `${esc(worst.who)}, ${ymd(worst.d)}`],
-    ['평균 참가 인원', `${(seats / N).toFixed(1)}명`, `연인원 ${seats}명`],
-    ['자주 모인 곳', pl.length ? esc(pl[0][0]) : '-', pl.map(([k, v]) => `${esc(k)} ${v}`).join(', ')]
-  ].map(([k, v, d]) => `<div class="stat"><div class="stat-k">${k}</div><div class="stat-v">${v}</div><div class="stat-d">${d}</div></div>`).join('');
+  if (!M.N) {
+    $('#leader').innerHTML = `<div class="leader-label"><span class="crown" aria-hidden="true">♛</span>${info.label} 시즌</div>
+      <div class="leader-name">첫 경기를 기다리고 있습니다</div><div class="leader-sub">${info.start.replace(/-/g, '.')} ~ ${info.end.replace(/-/g, '.')}</div>`;
+    $('#rank-list').innerHTML = `<li><p class="empty">이번 시즌 기록이 아직 없습니다</p></li>`;
+    $('#stat-grid').innerHTML = '';
+  } else {
+    const L = M.ranked[0], S2 = M.ranked[1];
+    const days = info && info.live ? Math.ceil((D(info.end) - D(todayStr())) / 86400000) + 1 : null;
+    const head = isAll() ? '전체 선두' : info.live ? `${info.label} 현재 선두` : `${info.label} 우승`;
+    $('#leader').innerHTML = `
+      <div class="leader-label"><span class="crown" aria-hidden="true">♛</span>${head}</div>
+      <div class="leader-name">${chip(L.color)}${esc(L.name)}</div>
+      <div class="leader-value">${signed(L.total)}</div>
+      <div class="leader-sub">${S2 ? `2위 ${esc(S2.name)}와 ${(L.total - S2.total).toLocaleString('ko-KR')} 차이` : ''}${days !== null ? `${S2 ? ', ' : ''}시즌 종료까지 ${days}일` : ''}</div>`;
+    const maxAbs = Math.max(1, ...M.ranked.map(t => Math.abs(t.total)));
+    const rows = M.ranked.map((t, k) => {
+      const all = statOf(MA, t.name);
+      return `<li><button type="button" class="rank-row" data-p="${esc(t.name)}">
+        <span class="rank-no">${k + 1}</span>
+        <span class="rank-name">${chip(t.color)}${esc(t.name)}</span>
+        <span class="rank-val ${tone(t.total)}">${signed(t.total)}</span>
+        <span class="rank-meta">${t.n}경기, 승률 ${pct(t.win)}, 경기당 <b class="${tone(t.per)}">${per1(t.per)}</b></span>
+        ${isAll() ? '' : `<span class="rank-meta2">전체 누적 <b class="${tone(all.total)}">${signed(all.total)}</b>, 전체 경기당 <b class="${tone(all.per)}">${per1(all.per)}</b></span>`}
+        <span class="rank-bar" aria-hidden="true">${t.total ? `<span class="${t.total > 0 ? 'up' : 'down'}" style="width:${(Math.abs(t.total) / maxAbs * 50).toFixed(1)}%"></span>` : ''}</span>
+      </button></li>`;
+    });
+    // 이번 시즌에 참가하지 않은 멤버는 아래에 흐리게
+    MA.ranked.filter(t => !M.names.includes(t.name)).forEach(t => rows.push(`<li><button type="button" class="rank-row absent" data-p="${esc(t.name)}" data-all="1">
+        <span class="rank-no">–</span><span class="rank-name">${chip(t.color)}${esc(t.name)}</span><span class="rank-val">참가 없음</span>
+        <span class="rank-meta2">전체 누적 <b class="${tone(t.total)}">${signed(t.total)}</b>, 전체 경기당 <b class="${tone(t.per)}">${per1(t.per)}</b></span></button></li>`));
+    $('#rank-list').innerHTML = rows.join('');
+    const pl = Object.entries(M.places).sort((a, b) => b[1] - a[1]);
+    $('#stat-grid').innerHTML = [
+      ['최고 단일 수익', `<span class="pos">${signed(M.best.v)}</span>`, `${esc(M.best.who)}, ${ymd(M.best.d)}`],
+      ['최대 단일 손실', `<span class="neg">${signed(M.worst.v)}</span>`, `${esc(M.worst.who)}, ${ymd(M.worst.d)}`],
+      ['평균 참가 인원', `${(M.seats / M.N).toFixed(1)}명`, `연인원 ${M.seats}명`],
+      ['자주 모인 곳', pl.length ? esc(pl[0][0]) : '-', pl.map(([k, v]) => `${esc(k)} ${v}`).join(', ')]
+    ].map(([k, v, d]) => `<div class="stat"><div class="stat-k">${k}</div><div class="stat-v">${v}</div><div class="stat-d">${d}</div></div>`).join('');
+  }
+  $('#rank-list').onclick = e => {
+    const b = e.target.closest('.rank-row'); if (!b) return;
+    focus = b.dataset.p; trendScope = b.dataset.all ? 'all' : 'season'; go('trend');
+  };
+
+  // 전체 순위 (시즌을 볼 때만)
+  $('#all-block').innerHTML = isAll() ? '' : `<div class="group-title">전체 순위 (${MA.N}경기)</div>
+    <div class="group"><table class="all-table"><thead><tr><th>순위</th><th>누적</th><th>경기당</th><th>참가</th></tr></thead><tbody>
+    ${MA.ranked.map((t, k) => `<tr><td class="nm"><span class="r">${k + 1}</span>${chip(t.color)}${esc(t.name)}</td>
+      <td class="${tone(t.total)}">${signed(t.total)}</td><td class="${tone(t.per)}">${per1(t.per)}</td><td class="sub">${t.n}경기</td></tr>`).join('')}
+    </tbody></table></div>`;
+  // 시즌 챔피언
+  $('#champ-block').innerHTML = `<div class="group-title">시즌 챔피언</div><ol class="group champ-list">${SEASONS.map(n => {
+    const i = seasonInfo(n), Mx = n === season ? MS : analyze(subsetDoc(n)), w = Mx.ranked[0];
+    return `<li class="champ${i.live ? ' live' : ''}"><span class="sn">${i.label}<span class="sr">${i.range}</span></span>
+      ${w ? `<span class="nm">${chip(w.color)}<span>${esc(w.name)}<span class="st">${Mx.N}경기${i.live ? ', 현재 1위' : ''}</span></span></span><span class="v ${tone(w.total)}">${signed(w.total)}</span>`
+          : `<span class="nm"><span class="st">아직 경기가 없습니다</span></span><span></span>`}</li>`;
+  }).join('')}</ol>`;
 }
 
 /* ===== 추이 ===== */
-let focus = null, scrub = null;
+let focus = null, scrub = null, trendScope = 'season';
+const trendModel = () => (isAll() || trendScope === 'all') ? MA : MS;
 function renderTrendPlayers(M) {
-  const opts = [['', '전체'], ...M.ranked.map(s => [s.name, s.name])];
+  const opts = [['', '전체'], ...M.ranked.map(t => [t.name, t.name])];
   $('#trend-players').innerHTML = opts.map(([v, t]) =>
     `<button type="button" class="pill" data-p="${esc(v)}" aria-pressed="${(focus || '') === v}">${v ? chip(M.color[v]) : ''}${esc(t)}</button>`).join('');
-  $('#trend-players').onclick = e => { const b = e.target.closest('.pill'); if (!b) return; focus = b.dataset.p || null; scrub = null; renderTrend(M); };
+  $('#trend-players').onclick = e => { const b = e.target.closest('.pill'); if (!b) return; focus = b.dataset.p || null; scrub = null; renderTrend(); };
 }
-
+$('#trend-scope').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  trendScope = b.dataset.s; scrub = null; renderTrend();
+});
 function niceStep(range, count) {
   const raw = range / count, mag = Math.pow(10, Math.floor(Math.log10(raw))), r = raw / mag;
   return (r < 1.5 ? 1 : r < 3 ? 2 : r < 7 ? 5 : 10) * mag;
 }
 
-function renderTrend(M) {
+function renderTrend() {
+  const M = trendModel();
+  $('#trend-scope').hidden = isAll();
+  $('#trend-scope').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.s === (isAll() ? 'all' : trendScope)));
+  if (focus && !M.names.includes(focus)) focus = null;
   renderTrendPlayers(M);
+  if (!M.N) {
+    $('#trend').innerHTML = ''; $('#trend').setAttribute('height', 0); $('#trend-note').hidden = true;
+    $('#ro-label').textContent = seasonLabel(); $('#ro-value').textContent = '아직 경기가 없습니다'; $('#ro-date').textContent = '전체 버튼을 누르면 지난 기록을 볼 수 있습니다';
+    $('#trend-detail').innerHTML = ''; return;
+  }
   const svg = $('#trend');
   const W = svg.parentElement.clientWidth || 360;
   const H = Math.round(Math.min(W >= 900 ? 360 : W >= 600 ? 300 : 230, Math.max(190, innerHeight - 200)));
@@ -529,15 +673,7 @@ function renderTrend(M) {
 
   // 하단 상세
   if (focus) {
-    const st = M.stats.find(t => t.name === focus);
-    $('#trend-detail').innerHTML = `<div class="group-title">${esc(focus)} 기록</div><div class="tiles">
-      ${tile('최고 스택', `<span class="pos">${signed(st.peak)}</span>`, '시즌 중 가장 높았던 누적')}
-      ${tile('최저 스택', `<span class="neg">${signed(st.trough)}</span>`, '시즌 중 가장 낮았던 누적')}
-      ${tile('최다 연승', `${st.bestStreak}연승`, `승률 ${pct(st.win)}`)}
-      ${tile('최다 연패', `${st.worstStreak}연패`, `${st.n}경기 참가`)}
-      ${tile('최고 단일', `<span class="pos">${signed(st.max)}</span>`, `최저 ${signed(st.min)}`)}
-      ${tile('최근 5경기', `<span class="${tone(sum(st.last5))}">${signed(sum(st.last5))}</span>`, `<span class="form">${st.last5.map(v => `<i class="${v > 0 ? 'w' : v < 0 ? 'l' : ''}"></i>`).join('')}</span>`)}
-    </div>`;
+    $('#trend-detail').innerHTML = `<div class="group-title">${esc(focus)} 기록 (${trendModel() === MA ? '전체' : seasonInfo(season).label})</div>${personTiles(focus)}`;
   } else {
     const order = names.slice().sort((a, b) => cum[j][b] - cum[j][a]);
     $('#trend-detail').innerHTML = `<div class="group-title">이 시점 순위</div><ol class="group at-list">${order.map((p, k) =>
@@ -549,57 +685,89 @@ function renderTrend(M) {
     const r = svg.getBoundingClientRect();
     const vx = (e.clientX - r.left) / r.width * W;
     const k = Math.max(0, Math.min(n - 1, Math.round((vx - m.l) / ((W - m.l - m.r) / Math.max(1, n - 1)))));
-    if (k !== scrub) { scrub = k; renderTrend(M); if (navigator.vibrate) navigator.vibrate(4); }
+    if (k !== scrub) { scrub = k; renderTrend(); if (navigator.vibrate) navigator.vibrate(4); }
   };
   svg.onpointerdown = e => { svg.setPointerCapture(e.pointerId); pick(e); };
   svg.onpointermove = e => { if (e.buttons || e.pointerType === 'mouse') pick(e); };
-  svg.onpointerup = svg.onpointercancel = svg.onpointerleave = () => { if (scrub !== null) { scrub = null; renderTrend(M); } };
+  svg.onpointerup = svg.onpointercancel = svg.onpointerleave = () => { if (scrub !== null) { scrub = null; renderTrend(); } };
 }
 const tile = (k, v, d) => `<div class="stat"><div class="stat-k">${k}</div><div class="stat-v">${v}</div><div class="stat-d">${d}</div></div>`;
+// 개인 기록: 큰 값은 지금 보는 범위(시즌 또는 전체), 작은 줄은 비교 값
+function personTiles(name) {
+  const sS = statOf(MS, name), sA = statOf(MA, name);
+  const main = isAll() ? sA : (trendScope === 'all' ? sA : sS), cmp = isAll() ? null : (trendScope === 'all' ? sS : sA);
+  const cmpLabel = trendScope === 'all' ? seasonInfo(season).label : '전체';
+  const c = f => cmp ? `${cmpLabel} ${f(cmp)}` : '';
+  if (!main) return `<p class="empty">이 범위에는 참가 기록이 없습니다</p>`;
+  return `<div class="tiles">
+    ${tile('경기당 평균', `<span class="${tone(main.per)}">${per1(main.per)}</span>`, c(t => per1(t.per)) || `${main.n}경기 기준`)}
+    ${tile('누적 손익', `<span class="${tone(main.total)}">${signed(main.total)}</span>`, c(t => signed(t.total)) || `${main.n}경기 참가`)}
+    ${tile('최고 스택', `<span class="pos">${signed(main.peak)}</span>`, c(t => signed(t.peak)) || '가장 높았던 누적')}
+    ${tile('최저 스택', `<span class="neg">${signed(main.trough)}</span>`, c(t => signed(t.trough)) || '가장 낮았던 누적')}
+    ${tile('최다 연승', `${main.bestStreak}연승`, c(t => t.bestStreak + '연승') || `승률 ${pct(main.win)}`)}
+    ${tile('최다 연패', `${main.worstStreak}연패`, c(t => t.worstStreak + '연패') || `${main.n}경기 참가`)}
+    ${tile('최고 단일', `<span class="pos">${signed(main.max)}</span>`, `최저 ${signed(main.min)}`)}
+    ${tile('최근 5경기', `<span class="${tone(sum(main.last5))}">${signed(sum(main.last5))}</span>`, `<span class="form">${main.last5.map(v => `<i class="${v > 0 ? 'w' : v < 0 ? 'l' : ''}"></i>`).join('')}</span>`)}
+  </div>`;
+}
 
 /* ===== 월별 ===== */
 let month = null;
-function renderMonth(M) {
-  const keys = [...M.months.keys()].sort().reverse();
-  if (!month || !M.months.has(month)) month = keys[0];
-  $('#month-caption').textContent = `${keys.length}개월 동안의 월간 손익`;
-  $('#month-tabs').innerHTML = keys.map(k => `<button type="button" class="pill" data-m="${k}" aria-pressed="${k === month}">${k.slice(2).replace('-', '.')}</button>`).join('');
-  $('#month-tabs').onclick = e => { const b = e.target.closest('.pill'); if (!b) return; month = b.dataset.m; renderMonth(M); };
-  const mo = M.months.get(month);
-  const rows = M.names.map(p => ({ p, v: mo.sum[p] })).sort((a, b) => (b.v ?? -1e9) - (a.v ?? -1e9));
-  const maxAbs = Math.max(1, ...rows.filter(r => r.v !== undefined).map(r => Math.abs(r.v)));
-  const top = rows[0];
-  $('#month-card').innerHTML = `
-    <div class="mc-head"><span class="mc-title">${ymLabel(month)}</span><span class="mc-count">${mo.cnt}경기</span></div>
-    <p class="mc-mvp">이달의 1위 <b>${esc(top.p)} ${signed(top.v)}</b></p>
-    ${rows.map(({ p, v }) => `<div class="dv">
-      <span class="dv-name">${chip(M.color[p])}${esc(p)}</span>
-      <span class="dv-track" aria-hidden="true">${v === undefined ? '<span class="none"></span>' : v === 0 ? '' : `<span class="${v > 0 ? 'up' : 'down'}" style="width:${(Math.abs(v) / maxAbs * 50).toFixed(1)}%"></span>`}</span>
-      <span class="dv-val ${v === undefined ? 'absent' : tone(v)}">${v === undefined ? '불참' : signed(v)}</span></div>`).join('')}`;
-  const sel = $('#month-tabs [aria-pressed="true"]'); if (sel) sel.scrollIntoView({ inline: 'nearest', block: 'nearest' });
+function renderMonth() {
+  const M = MS;
+  // 시즌 합계 (시즌을 볼 때만)
+  if (!isAll() && M.N) {
+    const maxAbs = Math.max(1, ...M.ranked.map(t => Math.abs(t.total)));
+    $('#season-sum').innerHTML = `<div class="mc-head"><span class="mc-title">${seasonInfo(season).label} 시즌 합계</span><span class="mc-count">${M.months.size}개월, ${M.N}경기</span></div>
+      <p class="mc-mvp">${seasonInfo(season).range}</p>
+      ${M.ranked.map(t => `<div class="dv"><span class="dv-name">${chip(t.color)}${esc(t.name)}</span>
+        <span class="dv-track" aria-hidden="true">${t.total ? `<span class="${t.total > 0 ? 'up' : 'down'}" style="width:${(Math.abs(t.total) / maxAbs * 50).toFixed(1)}%"></span>` : ''}</span>
+        <span class="dv-val ${tone(t.total)}">${signed(t.total)}</span></div>`).join('')}`;
+  } else $('#season-sum').innerHTML = '';
 
-  $('#mvp-list').innerHTML = keys.map(k => {
-    const s = M.months.get(k).sum, w = Object.keys(s).sort((a, b) => s[b] - s[a])[0];
-    return `<li><button type="button" class="mvp-row" data-m="${k}" aria-current="${k === month}">
-      <span class="m">${k.slice(2).replace('-', '.')}</span><span class="nm">${chip(M.color[w])}${esc(w)}</span><span class="v pos">${signed(s[w])}</span></button></li>`;
-  }).join('');
-  $('#mvp-list').onclick = e => { const b = e.target.closest('.mvp-row'); if (!b) return; month = b.dataset.m; renderMonth(M); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+  const keys = [...M.months.keys()].sort().reverse();
+  $('#month-caption').textContent = M.N ? `${seasonLabel()} ${keys.length}개월의 월간 손익` : `${seasonLabel()} 아직 경기가 없습니다`;
+  if (!keys.length) { $('#month-tabs').innerHTML = ''; $('#month-card').innerHTML = `<p class="empty">이번 시즌 기록이 아직 없습니다</p>`; }
+  else {
+    if (!month || !M.months.has(month)) month = keys[0];
+    $('#month-tabs').innerHTML = keys.map(k => `<button type="button" class="pill" data-m="${k}" aria-pressed="${k === month}">${k.slice(2).replace('-', '.')}</button>`).join('');
+    $('#month-tabs').onclick = e => { const b = e.target.closest('.pill'); if (!b) return; month = b.dataset.m; renderMonth(); };
+    const mo = M.months.get(month);
+    const rows = M.names.map(p => ({ p, v: mo.sum[p] })).sort((a, b) => (b.v ?? -1e9) - (a.v ?? -1e9));
+    const maxAbs = Math.max(1, ...rows.filter(r => r.v !== undefined).map(r => Math.abs(r.v)));
+    const top = rows[0];
+    $('#month-card').innerHTML = `
+      <div class="mc-head"><span class="mc-title">${ymLabel(month)}</span><span class="mc-count">${mo.cnt}경기</span></div>
+      <p class="mc-mvp">이달의 1위 <b>${esc(top.p)} ${signed(top.v)}</b></p>
+      ${rows.map(({ p, v }) => `<div class="dv">
+        <span class="dv-name">${chip(M.color[p])}${esc(p)}</span>
+        <span class="dv-track" aria-hidden="true">${v === undefined ? '<span class="none"></span>' : v === 0 ? '' : `<span class="${v > 0 ? 'up' : 'down'}" style="width:${(Math.abs(v) / maxAbs * 50).toFixed(1)}%"></span>`}</span>
+        <span class="dv-val ${v === undefined ? 'absent' : tone(v)}">${v === undefined ? '불참' : signed(v)}</span></div>`).join('')}`;
+    const sel = $('#month-tabs [aria-pressed="true"]'); if (sel) sel.scrollIntoView({ inline: 'nearest', block: 'nearest' });
+  }
+
+  // 월간 1위: 전체 기간을 시즌별로 묶어서
+  const allKeys = [...MA.months.keys()].sort().reverse();
+  let html = '', prevS = null;
+  allKeys.forEach(k => {
+    const n = seasonNo(k + '-01');
+    if (n !== prevS) { const i = seasonInfo(n); html += `<li class="mvp-sec">${i.label} · ${i.range}${i.live ? ' (진행 중)' : ''}</li>`; prevS = n; }
+    const sm = MA.months.get(k).sum, w = Object.keys(sm).sort((a, b) => sm[b] - sm[a])[0];
+    html += `<li><button type="button" class="mvp-row" data-m="${k}" aria-current="${k === month && (isAll() || n === season)}">
+      <span class="m">${k.slice(2).replace('-', '.')}</span><span class="nm">${chip(MA.color[w])}${esc(w)}</span><span class="v ${tone(sm[w])}">${signed(sm[w])}</span></button></li>`;
+  });
+  $('#mvp-list').innerHTML = html;
+  $('#mvp-list').onclick = e => {
+    const b = e.target.closest('.mvp-row'); if (!b) return;
+    const n = seasonNo(b.dataset.m + '-01');
+    if (!isAll() && n !== season) { season = n; try { sessionStorage.setItem('holdem_season', String(n)); } catch (err) {} buildModels(); renderSeasonSelects(); }
+    month = b.dataset.m; renderMonth(); window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 }
 
 /* ===== 경기 기록 ===== */
 const gf = { place: '', player: '' };
-function renderGames(M) {
-  const places = Object.keys(M.places).sort((a, b) => M.places[b] - M.places[a]);
-  $('#games-place').innerHTML = [['', '전체 장소'], ...places.map(p => [p, p])].map(([v, t]) =>
-    `<button type="button" class="pill" data-v="${esc(v)}" aria-pressed="${gf.place === v}">${esc(t)}</button>`).join('');
-  $('#games-player').innerHTML = [['', '전체 플레이어'], ...M.ranked.map(s => [s.name, s.name])].map(([v, t]) =>
-    `<button type="button" class="pill" data-v="${esc(v)}" aria-pressed="${gf.player === v}">${v ? chip(M.color[v]) : ''}${esc(t)}</button>`).join('');
-  $('#games-place').onclick = e => { const b = e.target.closest('.pill'); if (!b) return; gf.place = b.dataset.v; renderGames(M); };
-  $('#games-player').onclick = e => { const b = e.target.closest('.pill'); if (!b) return; gf.player = b.dataset.v; renderGames(M); };
-
-  const list = M.sessions.slice().reverse().filter(s => (!gf.place || s.place === gf.place) && (!gf.player || gf.player in s.res));
-  $('#games-caption').textContent = `${list.length}경기`;
-  if (!list.length) { $('#games-list').innerHTML = `<p class="empty">조건에 맞는 경기가 없습니다. 필터를 바꿔 보세요.</p>`; return; }
+function gameCards(list) {
   let html = '', prev = '';
   list.forEach(s => {
     const k = ym(s.date);
@@ -610,21 +778,47 @@ function renderGames(M) {
       <div class="game-head"><span class="game-date">${s.date.slice(5).replace('-', '.')}</span><span class="game-dow">${DOW[D(s.date).getDay()]}요일, ${res.length}명</span>
         ${s.place ? `<span class="tag" style="--pc:${CONFIG.PLACE_COLORS[s.place] || '#8A9A92'}">${esc(s.place)}</span>` : ''}
         ${CAN_EDIT ? `<a class="edit-link" href="${CONFIG.RECORD_URL}?edit=${encodeURIComponent(s.id)}" aria-label="${s.date} 경기 수정">수정</a>` : ''}</div>
-      <div class="game-res">${res.map(([p, v]) => `<div class="gr"><span class="nm">${chip(M.color[p])}${esc(p)}</span><span class="v ${tone(v)}">${signed(v)}</span></div>`).join('')}</div>
+      <div class="game-res">${res.map(([p, v]) => `<div class="gr"><span class="nm">${chip(MA.color[p])}${esc(p)}</span><span class="v ${tone(v)}">${signed(v)}</span></div>`).join('')}</div>
       ${total !== 0 ? `<div class="game-warn">합계가 ${signed(total)}입니다. 기록을 확인해 주세요.</div>` : ''}
     </article>`;
   });
+  return html;
+}
+function renderGames() {
+  const places = Object.keys(MA.places).sort((a, b) => MA.places[b] - MA.places[a]);
+  $('#games-place').innerHTML = [['', '전체 장소'], ...places.map(p => [p, p])].map(([v, t]) =>
+    `<button type="button" class="pill" data-v="${esc(v)}" aria-pressed="${gf.place === v}">${esc(t)}</button>`).join('');
+  $('#games-player').innerHTML = [['', '전체 플레이어'], ...MA.ranked.map(t => [t.name, t.name])].map(([v, t]) =>
+    `<button type="button" class="pill" data-v="${esc(v)}" aria-pressed="${gf.player === v}">${v ? chip(MA.color[v]) : ''}${esc(t)}</button>`).join('');
+  $('#games-place').onclick = e => { const b = e.target.closest('.pill'); if (!b) return; gf.place = b.dataset.v; renderGames(); };
+  $('#games-player').onclick = e => { const b = e.target.closest('.pill'); if (!b) return; gf.player = b.dataset.v; renderGames(); };
+  const pass = s => (!gf.place || s.place === gf.place) && (!gf.player || gf.player in s.res);
+  const all = MA.sessions.slice().reverse().filter(pass);
+  if (isAll()) {
+    $('#games-caption').textContent = `전체 기록 ${all.length}경기`;
+    $('#games-list').innerHTML = all.length ? gameCards(all) : `<p class="empty">조건에 맞는 경기가 없습니다. 필터를 바꿔 보세요.</p>`;
+    return;
+  }
+  const cur = all.filter(s => seasonNo(s.date) === season);
+  $('#games-caption').textContent = `${seasonLabel()} ${cur.length}경기, 전체 ${all.length}경기`;
+  let html = cur.length ? gameCards(cur) : `<p class="empty">${seasonInfo(season).label} 시즌에 조건에 맞는 경기가 없습니다</p>`;
+  // 다른 시즌은 접어서 아래에
+  SEASONS.filter(n => n !== season).forEach(n => {
+    const list = all.filter(s => seasonNo(s.date) === n); if (!list.length) return;
+    const i = seasonInfo(n);
+    html += `<details class="past"><summary>${i.label} · ${i.range}<span class="c">${list.length}경기</span></summary><div class="past-in">${gameCards(list)}</div></details>`;
+  });
   $('#games-list').innerHTML = html;
 }
-
 /* ===== 화면 전환 ===== */
-let model = null, view = 'rank';
+let view = 'rank';
+const renderView = v => ({ rank: renderRank, trend: renderTrend, month: renderMonth, games: renderGames })[v]();
 function go(v) {
   view = v;
   document.querySelectorAll('.view').forEach(el => { el.hidden = el.id !== 'v-' + v; });
   document.querySelectorAll('.tabbar button').forEach(b => { if (b.dataset.v === v) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
   window.scrollTo(0, 0);
-  if (model) ({ rank: renderRank, trend: renderTrend, month: renderMonth, games: renderGames })[v](model);
+  if (MA) renderView(v);
   try { history.replaceState(null, '', '#' + v); } catch (e) {}
 }
 $('.tabbar').addEventListener('click', e => { const b = e.target.closest('button'); if (b) go(b.dataset.v); });
@@ -632,9 +826,9 @@ $('.tabbar').addEventListener('click', e => { const b = e.target.closest('button
 /* ===== 데이터 ===== */
 function show(doc, note) {
   if (!doc.sessions.length) { $('#v-rank').insertAdjacentHTML('beforeend', '<p class="empty">아직 기록된 경기가 없습니다. 기록 페이지에서 첫 경기를 등록하세요.</p>'); return; }
-  model = analyze(doc);
+  DOC = doc; buildModels(); renderSeasonSelects();
   go(view);
-  if (view !== 'rank') renderRank(model);
+  if (view !== 'rank') renderRank();
   $('#status').textContent = note;
 }
 async function load() {
@@ -681,7 +875,7 @@ $('#pw-form').addEventListener('submit', async e => {
     msg.className = 'sheet-msg ok'; msg.textContent = '비밀번호를 바꿨습니다. 다른 기기에서는 다시 로그인해야 합니다.'; $('#pw-form').reset();
   } catch (err) { msg.className = 'sheet-msg bad'; msg.textContent = err.message; btn.disabled = false; }
 });
-let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (model && view === 'trend') renderTrend(model); }, 150); });
+let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (MA && view === 'trend') renderTrend(); }, 150); });
 view = (location.hash.slice(1) in { rank: 1, trend: 1, month: 1, games: 1 }) ? location.hash.slice(1) : 'rank';
 if (ME) load();
 </script>
