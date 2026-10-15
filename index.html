@@ -273,7 +273,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 
 /* ===== 시즌 ===== */
 .title-row { display: flex; align-items: center; justify-content: space-between; gap: 6px 10px; flex-wrap: wrap; margin-top: 14px; }
-.title-row .large-title { margin: 0; flex: 1 1 auto; }
+.title-row .large-title { margin: 0; flex: 1 1 100%; }
 .season-sel { flex: none; margin-left: auto; height: 34px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink);
   font-size: 13.5px; font-weight: 800; padding: 0 30px 0 14px; -webkit-appearance: none; appearance: none;
   background-image: linear-gradient(45deg, transparent 50%, var(--sub) 50%), linear-gradient(135deg, var(--sub) 50%, transparent 50%);
@@ -323,7 +323,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 /* ===== 게시판 ===== */
 .tab-ic { position: relative; display: inline-flex; }
 .new-dot { position: absolute; top: -1px; right: -4px; width: 8px; height: 8px; border-radius: 50%; background: var(--warn); border: 2px solid var(--surface); }
-.write-btn { flex: none; margin-left: auto; height: 34px; padding: 0 14px; border: 0; border-radius: 999px; background: var(--ink); color: var(--surface); font-size: 13.5px; font-weight: 800; }
+.write-btn { flex: none; margin-left: auto; height: 34px; padding: 0 16px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--ink); font-size: 13.5px; font-weight: 800; }
 .post { display: block; width: 100%; text-align: left; border: 0; background: var(--surface); border-radius: 16px; padding: 14px 16px; margin-bottom: 10px; color: var(--ink); }
 .post.notice { box-shadow: inset 3px 0 0 var(--gold); }
 .post-top { display: flex; align-items: center; gap: 8px; }
