@@ -319,13 +319,14 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 }
 
 /* ===== 시작 로딩 화면 ===== */
-html.booting, html.booting body { background: #0A0D0B; }
-html.booting .view, html.booting .view * { animation: none !important; transition: none !important; }
+html.booting { background: #0A0D0B; }
+html.booting .view, html.booting .view *, html.revealing .view, html.revealing .view * { animation: none !important; transition: none !important; }
 .splash { will-change: opacity; }
 .splash { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center;
   background: radial-gradient(110% 70% at 50% 30%, #1A211D 0%, #0E1311 55%, #0A0D0B 100%); color: #EEF2EF;
   transition: opacity .35s ease, visibility .35s; }
-.splash.hide { opacity: 0; visibility: hidden; }
+.splash.hide { opacity: 0; visibility: hidden; transition: opacity .45s cubic-bezier(.4, 0, .2, 1), visibility 0s .45s; }
+.splash.hide .splash-in { transform: translateY(-4vh) scale(.96); transition: transform .45s cubic-bezier(.4, 0, .2, 1); }
 .splash-in { display: flex; flex-direction: column; align-items: center; gap: 14px; transform: translateY(-4vh); }
 .splash img { width: 96px; height: 96px; border-radius: 22px; box-shadow: 0 16px 40px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.06); animation: pop .6s cubic-bezier(.2,.9,.2,1.2) both; }
 .splash-name { font-size: 22px; font-weight: 800; letter-spacing: -.01em; animation: rise .6s .1s ease both; }
@@ -434,7 +435,7 @@ const CONFIG = {
 };
 const CACHE_KEY = 'holdem_cache_doc';
 const SPLASH_AT = Date.now();
-const SPLASH_MIN_MS = 1500;   // 로딩 화면 최소 표시 시간 (밀리초)
+const SPLASH_MIN_MS = 1000;   // 로딩 화면 최소 표시 시간 (밀리초)
 function hideSplash() {
   const el = document.getElementById('splash'); if (!el || el.classList.contains('hide')) return;
   const fontsReady = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
@@ -442,8 +443,11 @@ function hideSplash() {
   // 글꼴 교체로 글자가 흔들리는 과정을 로딩 화면 뒤에서 끝내고, 그린 다음 프레임에 걷어냄
   Promise.all([Promise.race([fontsReady, wait(2500)]), wait(Math.max(0, SPLASH_MIN_MS - (Date.now() - SPLASH_AT)))]).then(() => {
     requestAnimationFrame(() => requestAnimationFrame(() => {
+      // 배경색을 먼저 화면 색으로 맞춘 뒤 흐려지게 해서, 끝날 때 색이 한 번 더 바뀌며 깜박이는 현상 제거
+      const root = document.documentElement;
+      root.classList.replace('booting', 'revealing');
       el.classList.add('hide');
-      setTimeout(() => { el.remove(); document.documentElement.classList.remove('booting'); }, 400);
+      setTimeout(() => { el.remove(); root.classList.remove('revealing'); }, 500);
     }));
   });
 }
