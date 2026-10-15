@@ -89,6 +89,9 @@ body { min-height: 100vh; }
 .hint.bad { color: var(--warn); } .hint.ok { color: #1F9D62; }
 .check { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--sub); margin: 2px 2px 16px; cursor: pointer; }
 .check input { width: 20px; height: 20px; accent-color: #8E1A2B; }
+.checks { display: flex; gap: 18px; flex-wrap: wrap; margin: 2px 2px 16px; }
+.checks .check { margin: 0; }
+.saved-hint { margin: -8px 2px 14px; }
 .primary { width: 100%; height: 52px; border: 0; border-radius: 14px; background: linear-gradient(180deg, #8E1A2B, #6A0F1D); color: #fff; font-size: 17px; font-weight: 800; }
 .primary:disabled { background: var(--line); color: var(--faint); }
 .msg { min-height: 22px; font-size: 14px; font-weight: 600; margin: 12px 2px 0; text-align: center; }
@@ -162,7 +165,11 @@ body { min-height: 100vh; }
       <input id="l-id" name="username" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false" required></div>
     <div class="f"><label for="l-pw">비밀번호</label>
       <input id="l-pw" name="password" type="password" autocomplete="current-password" required></div>
-    <label class="check"><input type="checkbox" id="l-save"> 아이디 저장</label>
+    <div class="checks">
+      <label class="check"><input type="checkbox" id="l-save"> 아이디 저장</label>
+      <label class="check"><input type="checkbox" id="l-savepw"> 비밀번호 저장</label>
+    </div>
+    <p class="hint saved-hint" id="l-saved" hidden>저장된 비밀번호로 로그인합니다. 다른 비밀번호를 쓰려면 칸을 지우고 새로 입력하세요.</p>
     <button class="primary" id="l-btn" type="submit">로그인</button>
     <p class="msg" id="l-msg" role="status"></p>
     <button type="button" class="text-link" id="go-reset">비밀번호를 잊으셨나요?</button>
@@ -254,19 +261,51 @@ $('#t-login').onclick = () => tab('login');
 $('#t-join').onclick = () => tab('join');
 
 /* 로그인 */
-const saved = Auth.savedId();
-if (saved) { $('#l-id').value = saved; $('#l-save').checked = true; setTimeout(() => $('#l-pw').focus(), 50); }
+const SAVED_PW_MARK = '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022';   // 화면에 점으로만 표시 (실제 비밀번호 아님)
+let savedMode = false;
+function setSavedMode(on) {
+  savedMode = on;
+  $('#l-saved').hidden = !on;
+  if (on) { $('#l-pw').value = SAVED_PW_MARK; $('#l-savepw').checked = true; }
+}
+const saved = Auth.savedId(), dev = Auth.device();
+if (saved) { $('#l-id').value = saved; $('#l-save').checked = true; }
+if (dev.key && dev.id) { $('#l-id').value = dev.id; $('#l-save').checked = true; setSavedMode(true); }
+else if (saved) setTimeout(() => $('#l-pw').focus(), 50);
+// 비밀번호 칸이나 아이디를 바꾸면 저장된 비밀번호는 쓰지 않음
+$('#l-pw').addEventListener('input', () => { if (savedMode) { savedMode = false; $('#l-saved').hidden = true; if ($('#l-pw').value.includes('\u2022')) $('#l-pw').value = ''; } });
+$('#l-pw').addEventListener('focus', () => { if (savedMode) $('#l-pw').select(); });
+$('#l-id').addEventListener('input', () => { if (savedMode && $('#l-id').value.trim().toLowerCase() !== dev.id) { savedMode = false; $('#l-saved').hidden = true; $('#l-pw').value = ''; } });
+$('#l-save').addEventListener('change', e => {   // 아이디 저장을 끄면 비밀번호 저장도 함께 끔
+  if (!e.target.checked && $('#l-savepw').checked) { $('#l-savepw').checked = false; $('#l-savepw').dispatchEvent(new Event('change')); }
+});
+$('#l-savepw').addEventListener('change', e => {
+  if (e.target.checked) { $('#l-save').checked = true; return; }
+  const d = Auth.device();
+  if (d.key) { api('POST', '/api/device-forget', { deviceKey: d.key }).catch(() => {}); Auth.saveDevice('', ''); }
+  if (savedMode) { savedMode = false; $('#l-saved').hidden = true; $('#l-pw').value = ''; $('#l-pw').focus(); }
+});
+
 $('#p-login').onsubmit = async e => {
   e.preventDefault();
   const id = $('#l-id').value.trim().toLowerCase(), password = $('#l-pw').value, msg = $('#l-msg');
+  const remember = $('#l-savepw').checked;
   if (!id || !password) { msg.className = 'msg bad'; msg.textContent = '아이디와 비밀번호를 입력하세요.'; return; }
   const btn = $('#l-btn'); btn.disabled = true; btn.textContent = '확인 중…'; msg.textContent = '';
   try {
-    const r = await api('POST', '/api/login', { id, password });
+    let r;
+    if (savedMode && remember) r = await api('POST', '/api/login-device', { id, deviceKey: Auth.device().key });
+    else {
+      r = await api('POST', '/api/login', { id, password, remember });
+      const old = Auth.device().key;
+      if (old && !remember) api('POST', '/api/device-forget', { deviceKey: old }).catch(() => {});
+    }
     Auth.set(r.token, r.user);
     Auth.saveId($('#l-save').checked ? id : '');
+    Auth.saveDevice(remember ? r.deviceKey : '', id);
     location.replace(nextPage());
   } catch (err) {
+    if (savedMode) { Auth.saveDevice('', ''); setSavedMode(false); $('#l-pw').value = ''; $('#l-pw').focus(); }
     msg.className = 'msg bad'; msg.textContent = err.message;
     btn.disabled = false; btn.textContent = '로그인';
   }
