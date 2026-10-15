@@ -356,6 +356,24 @@ body { min-height: calc(100vh + env(safe-area-inset-top, 0px) + 1px); min-height
 
 /* 내용이 짧은 탭(게시판 등)도 항상 스크롤이 생길 만큼의 높이를 확보 → 다른 탭과 같은 방식으로 화면 높이가 계산됨 */
 .view { min-height: calc(100vh + 120px); }
+
+/* ===== 댓글 ===== */
+.cmts { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 14px; }
+.cmt-head { font-size: 13.5px; font-weight: 800; color: var(--sub); margin-bottom: 8px; }
+.cmt { padding: 10px 0; }
+.cmt + .cmt { border-top: 1px solid var(--line); }
+.cmt-top { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.cmt-top b { font-weight: 800; }
+.cmt-top .t { color: var(--faint); font-weight: 600; }
+.cmt-top .mine { font-size: 11px; font-weight: 700; color: var(--sub); background: var(--surface-2); padding: 1px 6px; border-radius: 999px; }
+.cmt-top button { margin-left: auto; border: 0; background: none; color: var(--warn); font-size: 12.5px; font-weight: 700; padding: 2px 4px; }
+.cmt-body { margin-top: 3px; font-size: 14.5px; line-height: 1.55; white-space: pre-wrap; word-break: break-word; }
+.cmt-empty { color: var(--faint); font-size: 13.5px; padding: 6px 0 10px; }
+.cmt-form { display: flex; gap: 8px; align-items: flex-end; margin-top: 10px; position: sticky; bottom: 0; background: var(--surface); padding: 8px 0 2px; }
+.cmt-form textarea { flex: 1; min-height: 42px; max-height: 140px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2); padding: 10px 12px; font-size: 16px; line-height: 1.4; resize: none; font-family: inherit; color: var(--ink); }
+.cmt-form button { flex: none; height: 42px; padding: 0 16px; border: 0; border-radius: 12px; background: var(--brand); color: #fff; font-weight: 800; font-size: 14.5px; }
+.cmt-form button:disabled { background: var(--line); color: var(--faint); }
+.post-cnt { margin-left: auto; flex: none; font-size: 12px; font-weight: 700; color: var(--sub); }
 </style>
 </head>
 <body>
@@ -439,6 +457,14 @@ body { min-height: calc(100vh + env(safe-area-inset-top, 0px) + 1px); min-height
   <p class="post-meta" id="post-meta"></p>
   <div class="post-body" id="post-body"></div>
   <div class="post-acts" id="post-acts"></div>
+  <div class="cmts">
+    <div class="cmt-head" id="cmt-head">댓글</div>
+    <div id="cmt-list"></div>
+    <form class="cmt-form" id="cmt-form" novalidate>
+      <textarea id="cmt-input" rows="1" maxlength="500" placeholder="댓글을 입력하세요" aria-label="댓글"></textarea>
+      <button type="submit" id="cmt-btn" disabled>등록</button>
+    </form>
+  </div>
 </div></div>
 <div class="sheet" id="write-sheet" hidden><div class="sheet-in" role="dialog" aria-modal="true" aria-labelledby="write-title">
   <div class="sheet-head"><h2 id="write-title">글쓰기</h2><button type="button" class="sheet-x" data-close aria-label="닫기">✕</button></div>
@@ -899,14 +925,15 @@ async function loadPosts() {
   try { POSTS = await api('GET', '/api/posts'); } catch (e) { POSTS = POSTS || []; toast(e.message); }
   markNew();
 }
+const activity = () => (POSTS || []).flatMap(p => [{ at: p.at, by: p.by }, ...(p.comments || []).map(c => ({ at: c.at, by: c.by }))]);
+const latestAt = () => activity().reduce((m, a) => a.at > m ? a.at : m, '');
 function markNew() {
   const seen = localStorage.getItem(BOARD_SEEN) || '';
-  const latest = (POSTS || []).reduce((m, p) => p.at > m ? p.at : m, '');
-  $('#board-dot').hidden = !(latest && latest > seen && (POSTS || []).some(p => p.at > seen && p.by !== ME.id));
+  $('#board-dot').hidden = !activity().some(a => a.at > seen && a.by !== ME.id);
 }
 function renderBoard() {
   if (!POSTS) { $('#board-list').innerHTML = '<p class="empty">불러오는 중…</p>'; loadPosts().then(renderBoard); return; }
-  try { localStorage.setItem(BOARD_SEEN, POSTS.reduce((m, p) => p.at > m ? p.at : m, localStorage.getItem(BOARD_SEEN) || '')); } catch (e) {}
+  try { const l = latestAt(), old = localStorage.getItem(BOARD_SEEN) || ''; localStorage.setItem(BOARD_SEEN, l > old ? l : old); } catch (e) {}
   $('#board-dot').hidden = true;
   const nN = POSTS.filter(p => p.type === 'notice').length, nF = POSTS.length - nN;
   $('#board-caption').textContent = `공지사항 ${nN}개, 자유 ${nF}개`;
@@ -917,7 +944,7 @@ function renderBoard() {
   const list = POSTS.filter(p => !boardFilter || p.type === boardFilter)
     .sort((a, b) => (a.type === 'notice') !== (b.type === 'notice') ? (a.type === 'notice' ? -1 : 1) : b.at.localeCompare(a.at));
   $('#board-list').innerHTML = list.length ? list.map(p => `<button type="button" class="post ${p.type}" data-id="${p.id}">
-      <div class="post-top"><span class="ptype ${p.type}">${p.type === 'notice' ? '📌 ' : ''}${TYPE_KO[p.type]}</span><span class="post-title">${esc(p.title)}</span></div>
+      <div class="post-top"><span class="ptype ${p.type}">${p.type === 'notice' ? '📌 ' : ''}${TYPE_KO[p.type]}</span><span class="post-title">${esc(p.title)}</span>${(p.comments || []).length ? `<span class="post-cnt">💬 ${p.comments.length}</span>` : ''}</div>
       <div class="post-pre">${esc(p.body)}</div>
       <div class="post-info">${esc(p.byName)} · ${when(p.at)}${p.updatedAt ? ' (수정됨)' : ''}</div>
     </button>`).join('') : `<p class="empty">아직 글이 없습니다. 첫 글을 남겨 보세요.</p>`;
@@ -938,8 +965,41 @@ function openPost(id) {
       try { POSTS = await api('DELETE', '/api/posts/' + p.id); $('#post-sheet').hidden = true; toast('삭제했습니다'); renderBoard(); } catch (err) { toast(err.message); }
     }
   };
+  renderComments(p.id);
   $('#post-sheet').hidden = false;
 }
+let openPostId = null;
+function renderComments(id) {
+  openPostId = id;
+  const p = POSTS.find(x => x.id === id); if (!p) return;
+  const list = p.comments || [];
+  $('#cmt-head').textContent = `댓글 ${list.length}`;
+  $('#cmt-list').innerHTML = list.length ? list.map(c => `<div class="cmt" data-cid="${c.id}">
+      <div class="cmt-top"><b>${esc(c.byName)}</b>${c.by === p.by ? '<span class="mine">작성자</span>' : ''}<span class="t">${when(c.at)}</span>
+        ${c.by === ME.id || ME.role === 'admin' ? '<button type="button" data-del>삭제</button>' : ''}</div>
+      <div class="cmt-body">${esc(c.body)}</div></div>`).join('') : '<p class="cmt-empty">첫 댓글을 남겨 보세요.</p>';
+}
+$('#cmt-input').addEventListener('input', e => {
+  e.target.style.height = 'auto'; e.target.style.height = Math.min(140, e.target.scrollHeight) + 'px';
+  $('#cmt-btn').disabled = !e.target.value.trim();
+});
+$('#cmt-form').addEventListener('submit', async e => {
+  e.preventDefault(); const text = $('#cmt-input').value.trim(); if (!text || !openPostId) return;
+  const btn = $('#cmt-btn'); btn.disabled = true;
+  try {
+    POSTS = await api('POST', `/api/posts/${openPostId}/comments`, { body: text });
+    $('#cmt-input').value = ''; $('#cmt-input').style.height = '';
+    renderComments(openPostId); renderBoard();
+    const last = $('#cmt-list .cmt:last-child'); if (last) last.scrollIntoView({ block: 'nearest' });
+  } catch (err) { toast(err.message); btn.disabled = false; }
+});
+$('#cmt-list').addEventListener('click', async e => {
+  const b = e.target.closest('[data-del]'); if (!b) return;
+  if (!confirm('이 댓글을 삭제할까요?')) return;
+  const cid = b.closest('.cmt').dataset.cid;
+  try { POSTS = await api('DELETE', `/api/posts/${openPostId}/comments/${cid}`); renderComments(openPostId); renderBoard(); toast('삭제했습니다'); }
+  catch (err) { toast(err.message); }
+});
 let editingPost = null, wType = 'free';
 function openWrite(p) {
   editingPost = p || null;
