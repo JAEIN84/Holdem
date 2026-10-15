@@ -2,6 +2,13 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
+<script>
+/* 로그인 전이면 화면을 그리기 전에 바로 로그인 페이지로 이동 (메인 화면이 잠깐 보이는 현상 방지) */
+(function () { try { if (!sessionStorage.getItem('holdem_token')) {
+  var here = location.pathname.split('/').pop() || 'index.html';
+  location.replace('login.html?next=' + encodeURIComponent(here + location.search + location.hash));
+} } catch (e) {} })();
+</script>
 <meta name="robots" content="noindex, nofollow">
 <meta name="description" content="Members only — Tri-City Hold’em standings and game log.">
 <meta property="og:type" content="website">
