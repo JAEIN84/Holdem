@@ -353,6 +353,9 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 /* iOS 홈 화면 앱: 내용이 짧은 화면에서는 기기가 화면 높이를 상태표시줄만큼 짧게 계산해
    하단 탭바가 위로 떠 보이는 문제 → 문서를 항상 화면보다 조금 길게 만들어 정상 높이로 계산되게 함 */
 body { min-height: calc(100vh + env(safe-area-inset-top, 0px) + 1px); min-height: calc(100lvh + env(safe-area-inset-top, 0px) + 1px); }
+
+/* 내용이 짧은 탭(게시판 등)도 항상 스크롤이 생길 만큼의 높이를 확보 → 다른 탭과 같은 방식으로 화면 높이가 계산됨 */
+.view { min-height: calc(100vh + 120px); }
 </style>
 </head>
 <body>
