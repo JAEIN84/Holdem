@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="홀덤 리그">
 <meta name="theme-color" content="#F2F4F1" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0A0D0B" media="(prefers-color-scheme: dark)">
-<title>홀덤 리그</title>
+<title>Hold’em League</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♠</text></svg>">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
@@ -172,7 +172,7 @@ li:first-child .rank-no { color: var(--gold); }
   <section class="view" id="v-rank">
     <div class="topline"><span id="season"></span><button type="button" class="icon-btn" id="reload" aria-label="새로고침">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg></button></div>
-    <h1 class="large-title" id="title">홀덤 리그</h1>
+    <h1 class="large-title" id="title">Hold’em League</h1>
     <p class="caption" id="caption"></p>
     <div class="leader" id="leader"></div>
     <div class="group-title">순위</div>
@@ -184,7 +184,7 @@ li:first-child .rank-no { color: var(--gold); }
 
   <!-- 추이 -->
   <section class="view" id="v-trend" hidden>
-    <h1 class="large-title">스택 변화</h1>
+    <h1 class="large-title">Stack Trend</h1>
     <p class="caption">그래프를 밀어서 시점별 기록을 확인하세요</p>
     <div class="scroller" id="trend-players" aria-label="플레이어 선택"></div>
     <div class="group chart-card">
@@ -196,7 +196,7 @@ li:first-child .rank-no { color: var(--gold); }
 
   <!-- 월별 -->
   <section class="view" id="v-month" hidden>
-    <h1 class="large-title">월별 결산</h1>
+    <h1 class="large-title">Monthly Report</h1>
     <p class="caption" id="month-caption"></p>
     <div class="scroller" id="month-tabs" aria-label="월 선택"></div>
     <div class="group month-card" id="month-card"></div>
@@ -206,7 +206,7 @@ li:first-child .rank-no { color: var(--gold); }
 
   <!-- 기록 -->
   <section class="view" id="v-games" hidden>
-    <h1 class="large-title">경기 기록</h1>
+    <h1 class="large-title">Game Log</h1>
     <p class="caption" id="games-caption"></p>
     <div class="scroller" id="games-place" aria-label="장소 필터"></div>
     <div class="scroller" id="games-player" aria-label="플레이어 필터"></div>
@@ -230,7 +230,7 @@ li:first-child .rank-no { color: var(--gold); }
    ============================================================ */
 const CONFIG = {
   API_BASE: 'https://holdem-api.gyum0614.workers.dev',
-  TITLE: '홀덤 리그',
+  TITLE: 'Hold’em League',
   PLAYER_COLORS: ['#E0A100', '#0F9B8E', '#7B4FC9', '#E0662A', '#4F7A99', '#C2417F', '#3E9A45', '#8C6D3F'],
   PLACE_COLORS: { '인천': '#3B82F6', '천안': '#10B981', '수원': '#F59E0B' }
 };
