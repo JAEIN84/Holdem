@@ -204,7 +204,7 @@ li:first-child .rank-no { color: var(--gold); }
 
 /* 탭바 */
 .tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; display: grid; grid-template-columns: repeat(4, 1fr);
-  padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px)); background: var(--bar-bg); backdrop-filter: saturate(1.6) blur(18px); -webkit-backdrop-filter: saturate(1.6) blur(18px); border-top: 1px solid var(--line); }
+  padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px)); background: var(--surface); transform: translateZ(0); border-top: 1px solid var(--line); }
 .tabbar button { border: 0; background: none; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 0; font-size: 11px; font-weight: 600; color: var(--faint); }
 .tabbar svg { width: 25px; height: 25px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .tabbar button[aria-current="page"] { color: var(--ink); }
@@ -319,7 +319,6 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 
 /* ===== 시작 로딩 화면 ===== */
 html.booting { background: #0A0D0B; }
-html.booting .tabbar, html.revealing .tabbar { -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--surface); }
 html.booting .view, html.booting .view *, html.revealing .view, html.revealing .view * { animation: none !important; transition: none !important; }
 .splash { will-change: opacity; transform: translateZ(0); -webkit-transform: translateZ(0); }
 .splash { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center;
