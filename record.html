@@ -260,7 +260,10 @@ async function api(method, path, body) {
     method, headers: { 'Content-Type': 'application/json', 'X-Pin': pin }, body: body ? JSON.stringify(body) : undefined, cache: 'no-store'
   });
   const j = await r.json().catch(() => ({}));
-  if (r.status === 401) { setPin(''); openPin(j.error || '비밀번호가 맞지 않습니다.'); throw new Error(j.error || '비밀번호가 필요합니다.'); }
+  if (r.status === 401 || r.status === 429) {
+    setPin(''); openPin(j.error || '비밀번호가 맞지 않습니다.');
+    throw new Error(j.error || '비밀번호가 필요합니다.');
+  }
   if (!r.ok) throw new Error(j.error || `요청 실패 (${r.status})`);
   return j;
 }
