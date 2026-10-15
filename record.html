@@ -118,6 +118,8 @@ input[type="date"] { min-height: 38px; }
 .rec-res { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 6px; font-size: 14px; }
 .rec-res span b { font-weight: 800; }
 .rec.editing { outline: 2px solid var(--gold); }
+.sec select { font-size: 13px; font-weight: 600; padding: 4px 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); }
+.more { width: 100%; margin-top: 2px; }
 .foot { display: flex; justify-content: center; gap: 10px; margin: 24px 0 8px; }
 
 /* 비밀번호 시트 */
@@ -152,8 +154,9 @@ input[type="date"] { min-height: 38px; }
   <div class="sec"><span>결과</span><span id="res-count"></span></div>
   <div class="card" id="results"></div>
 
-  <div class="sec"><span>최근 기록</span></div>
+  <div class="sec"><span>지난 기록</span><select id="rec-month" aria-label="월 선택"></select></div>
   <div id="recent"></div>
+  <button type="button" class="btn ghost more" id="rec-more" hidden>더 보기</button>
   <div class="foot"><button type="button" class="btn ghost" id="backup">백업 파일 받기</button><button type="button" class="btn ghost" id="logout">비밀번호 다시 입력</button></div>
 </div>
 
@@ -177,7 +180,7 @@ input[type="date"] { min-height: 38px; }
    비워 두면 이 기기 안에만 저장되는 예시 모드로 동작합니다.
    ============================================================ */
 const CONFIG = {
-  API_BASE: 'https://holdem-api.gyum0614.workers.dev',
+  API_BASE: '',
   DASHBOARD_URL: 'index.html',
   PLAYER_COLORS: ['#E0A100', '#0F9B8E', '#7B4FC9', '#E0662A', '#4F7A99', '#C2417F', '#3E9A45', '#8C6D3F'],
   DEFAULT_PLACES: ['천안', '인천', '수원']
@@ -351,9 +354,21 @@ function resetForm() {
 }
 $('#cancel-edit').onclick = () => { form.date = today(); resetForm(); };
 
-/* ===== 최근 기록 ===== */
+/* ===== 지난 기록 (월 선택 + 더 보기) ===== */
+const PAGE = 15;
+let recLimit = PAGE, recMonth = '';
 function renderRecent() {
-  const list = doc.sessions.slice().sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id)).slice(0, 12);
+  const all = doc.sessions.slice().sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
+  const months = [...new Set(all.map(s => s.date.slice(0, 7)))];
+  if (recMonth && !months.includes(recMonth)) recMonth = '';
+  $('#rec-month').innerHTML = `<option value="">전체 ${all.length}경기</option>` +
+    months.map(m => `<option value="${m}">${m.slice(0, 4)}년 ${Number(m.slice(5))}월</option>`).join('');
+  $('#rec-month').value = recMonth;
+  const filtered = recMonth ? all.filter(s => s.date.startsWith(recMonth)) : all;
+  const list = recMonth ? filtered : filtered.slice(0, recLimit);
+  const more = $('#rec-more');
+  more.hidden = !!recMonth || filtered.length <= recLimit;
+  more.textContent = `더 보기 (${filtered.length - list.length}경기 남음)`;
   if (!list.length) { $('#recent').innerHTML = `<p class="hint">아직 기록이 없습니다. 위에서 첫 경기를 등록하세요.</p>`; return; }
   $('#recent').innerHTML = list.map(s => {
     const [y, m, d] = s.date.split('-').map(Number), dow = DOW[new Date(y, m - 1, d).getDay()];
@@ -364,6 +379,8 @@ function renderRecent() {
       <div class="rec-res">${res.map(([p, v]) => `<span>${esc(p)} <b class="${tone(v)}">${signed(v)}</b></span>`).join('')}</div></div>`;
   }).join('');
 }
+$('#rec-month').onchange = e => { recMonth = e.target.value; recLimit = PAGE; renderRecent(); };
+$('#rec-more').onclick = () => { recLimit += PAGE; renderRecent(); };
 $('#recent').addEventListener('click', async e => {
   const b = e.target.closest('button[data-a]'); if (!b) return;
   const id = b.closest('.rec').dataset.id, s = doc.sessions.find(x => x.id === id);
