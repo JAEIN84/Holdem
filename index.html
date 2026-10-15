@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>
 /* 로그인 전이면 화면을 그리기 전에 바로 로그인 페이지로 이동 (메인 화면이 잠깐 보이는 현상 방지) */
-(function () { try { if (!sessionStorage.getItem('holdem_token')) {
+(function () { document.documentElement.classList.add('booting'); try { if (!sessionStorage.getItem('holdem_token')) {
   var here = location.pathname.split('/').pop() || 'index.html';
   location.replace('login.html?next=' + encodeURIComponent(here + location.search + location.hash));
 } } catch (e) {} })();
@@ -319,6 +319,9 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 }
 
 /* ===== 시작 로딩 화면 ===== */
+html.booting, html.booting body { background: #0A0D0B; }
+html.booting .view, html.booting .view * { animation: none !important; transition: none !important; }
+.splash { will-change: opacity; }
 .splash { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center;
   background: radial-gradient(110% 70% at 50% 30%, #1A211D 0%, #0E1311 55%, #0A0D0B 100%); color: #EEF2EF;
   transition: opacity .35s ease, visibility .35s; }
@@ -327,7 +330,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 .splash img { width: 96px; height: 96px; border-radius: 22px; box-shadow: 0 16px 40px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.06); animation: pop .6s cubic-bezier(.2,.9,.2,1.2) both; }
 .splash-name { font-size: 22px; font-weight: 800; letter-spacing: -.01em; animation: rise .6s .1s ease both; }
 .splash-dots { display: flex; gap: 7px; margin-top: 6px; }
-.splash-dots i { width: 7px; height: 7px; border-radius: 50%; background: rgba(238,242,239,.8); animation: blink 1s infinite ease-in-out; }
+.splash-dots i { width: 7px; height: 7px; border-radius: 50%; background: rgba(238,242,239,.8); animation: blink 1s infinite ease-in-out; will-change: transform, opacity; }
 .splash-dots i:nth-child(2) { animation-delay: .15s; } .splash-dots i:nth-child(3) { animation-delay: .3s; }
 @keyframes pop { from { transform: scale(.82); opacity: 0; } }
 @keyframes rise { from { transform: translateY(8px); opacity: 0; } }
@@ -434,7 +437,15 @@ const SPLASH_AT = Date.now();
 const SPLASH_MIN_MS = 1500;   // 로딩 화면 최소 표시 시간 (밀리초)
 function hideSplash() {
   const el = document.getElementById('splash'); if (!el || el.classList.contains('hide')) return;
-  setTimeout(() => { el.classList.add('hide'); setTimeout(() => el.remove(), 400); }, Math.max(0, SPLASH_MIN_MS - (Date.now() - SPLASH_AT)));
+  const fontsReady = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  // 글꼴 교체로 글자가 흔들리는 과정을 로딩 화면 뒤에서 끝내고, 그린 다음 프레임에 걷어냄
+  Promise.all([Promise.race([fontsReady, wait(2500)]), wait(Math.max(0, SPLASH_MIN_MS - (Date.now() - SPLASH_AT)))]).then(() => {
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      el.classList.add('hide');
+      setTimeout(() => { el.remove(); document.documentElement.classList.remove('booting'); }, 400);
+    }));
+  });
 }
 const ME = Auth.require();
 const CAN_EDIT = !!ME && ['editor', 'admin'].includes(ME.role);
