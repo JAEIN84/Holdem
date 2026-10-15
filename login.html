@@ -74,7 +74,7 @@ body { min-height: 100vh; }
   box-shadow: 0 14px 34px rgba(80, 8, 20, .28); background: #5A0C18; }
 .brand p { margin: 14px 0 0; color: var(--sub); font-size: 14px; font-weight: 600; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-@media (orientation: landscape) and (max-height: 500px) { .brand { padding-top: 14px; } .brand .hero { max-width: 300px; } }
+
 .tabs { display: grid; grid-template-columns: 1fr 1fr; background: var(--surface-2); border-radius: 12px; padding: 4px; margin-bottom: 16px; border: 1px solid var(--line); }
 .tabs button { border: 0; background: none; height: 40px; border-radius: 9px; font-weight: 700; font-size: 15px; color: var(--sub); }
 .tabs button[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
@@ -97,6 +97,36 @@ body { min-height: 100vh; }
 .done h2 { margin: 8px 0 6px; font-size: 20px; font-weight: 800; }
 .done p { margin: 0 0 18px; color: var(--sub); font-size: 14.5px; }
 .foot { text-align: center; color: var(--faint); font-size: 12.5px; margin-top: 22px; }
+
+/* ===== 넓은 화면: 태블릿·PC·폴더블 → 배너 왼쪽, 입력 오른쪽 ===== */
+@media (min-width: 760px) {
+  body { display: flex; align-items: center; justify-content: center; padding: 32px 0; }
+  .wrap { max-width: 960px; width: 100%; display: grid; grid-template-columns: 1.1fr 1fr; gap: 48px; align-items: center; padding-bottom: 0; }
+  .brand { padding: 0; align-items: flex-start; text-align: left; }
+  .brand .hero { border-radius: 24px; }
+  .brand p { font-size: 15px; margin-top: 18px; padding-left: 4px; }
+  .side { max-width: 420px; width: 100%; justify-self: end; }
+  .foot { margin-top: 16px; }
+}
+@media (min-width: 1200px) { .wrap { max-width: 1040px; gap: 64px; } }
+/* ===== 휴대폰 가로 모드: 한 화면에 입력칸이 모두 보이도록 2열 + 간격 축소 ===== */
+@media (orientation: landscape) and (max-height: 500px) {
+  body { display: block; padding: 0; min-height: 0; }
+  .wrap { max-width: 860px; display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr); gap: 24px; align-items: start; padding-top: 14px; padding-bottom: 20px; }
+  .brand { padding: 6px 0 0; align-items: flex-start; text-align: left; position: sticky; top: 14px; }
+  .brand .hero { max-width: none; border-radius: 18px; }
+  .brand p { margin-top: 10px; font-size: 13px; }
+  .side { justify-self: stretch; max-width: none; }
+  .tabs { margin-bottom: 10px; }
+  .tabs button { height: 34px; }
+  .panel { padding: 14px 14px 12px; }
+  .f { margin-bottom: 10px; }
+  .f input { height: 42px; }
+  .check { margin-bottom: 10px; }
+  .primary { height: 46px; }
+  .msg { min-height: 0; margin-top: 8px; }
+  .foot { display: none; }
+}
 </style>
 </head>
 <body>
@@ -107,6 +137,7 @@ body { min-height: 100vh; }
     <p>승인된 멤버만 이용할 수 있습니다</p>
   </div>
 
+  <div class="side">
   <div class="tabs" role="tablist">
     <button type="button" role="tab" id="t-login" aria-selected="true" aria-controls="p-login">로그인</button>
     <button type="button" role="tab" id="t-join" aria-selected="false" aria-controls="p-join">가입 신청</button>
@@ -151,6 +182,7 @@ body { min-height: 100vh; }
   </div>
 
   <p class="foot">로그인은 앱을 닫기 전까지 유지됩니다</p>
+  </div>
 </main>
 
 <script src="auth.js"></script>
