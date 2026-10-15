@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="홀덤 기록">
+<meta name="theme-color" content="#F2F4F1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0A0D0B" media="(prefers-color-scheme: dark)">
+<title>경기 기록 — 홀덤 리그</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♣</text></svg>">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+:root {
+  --bg: #F2F4F1; --surface: #FFFFFF; --surface-2: #F7F8F6; --ink: #111A15; --sub: #66736C; --faint: #9AA59F; --line: #E3E8E4;
+  --brand: #0F5A3F; --brand-2: #0A3F2C; --gold: #B8892B; --pos: #2563EB; --neg: #DC3B30; --zero: #9AA59F;
+  --bar-bg: rgba(255,255,255,.86);
+  --font: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", system-ui, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0A0D0B; --surface: #141916; --surface-2: #1A201C; --ink: #EEF2EF; --sub: #93A099; --faint: #66736C; --line: #242B27;
+    --brand: #145F44; --brand-2: #0B3A29; --gold: #DDB65C; --pos: #6EA1FF; --neg: #FF6F64; --zero: #6E7A74;
+    --bar-bg: rgba(20,25,22,.86);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0A0D0B; --surface: #141916; --surface-2: #1A201C; --ink: #EEF2EF; --sub: #93A099; --faint: #66736C; --line: #242B27;
+  --brand: #145F44; --brand-2: #0B3A29; --gold: #DDB65C; --pos: #6EA1FF; --neg: #FF6F64; --zero: #6E7A74;
+  --bar-bg: rgba(20,25,22,.86);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+[hidden] { display: none !important; }
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 16px; line-height: 1.45; -webkit-font-smoothing: antialiased; font-feature-settings: "tnum"; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; border-radius: 6px; }
+.pos { color: var(--pos); } .neg { color: var(--neg); } .zero { color: var(--zero); }
+.chip { width: 12px; height: 12px; border-radius: 50%; flex: none; display: inline-block; background: var(--c);
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,.92), inset 0 0 0 4px var(--c); }
+.app { max-width: 480px; margin: 0 auto; padding: 0 16px; }
+.large-title { font-size: 30px; font-weight: 800; letter-spacing: -.02em; margin: 14px 0 2px; }
+.caption { color: var(--sub); font-size: 14px; margin: 0 0 18px; }
+.group { background: var(--surface); border-radius: 16px; overflow: hidden; margin-bottom: 18px; }
+.group-title { font-size: 13px; color: var(--sub); font-weight: 600; margin: 22px 4px 8px; }
+.scroller { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 0 -16px 14px; padding: 2px 16px; }
+.scroller::-webkit-scrollbar { display: none; }
+.pill { flex: none; display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: 14px; font-weight: 600; color: var(--sub); }
+.pill[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--surface); }
+.toast { position: fixed; left: 50%; bottom: calc(96px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%) translateY(12px); background: var(--ink); color: var(--surface); padding: 10px 16px; border-radius: 12px; font-size: 14px; font-weight: 600; opacity: 0; pointer-events: none; transition: .2s; z-index: 50; white-space: nowrap; }
+.toast.on { opacity: 1; transform: translateX(-50%); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+body { padding-bottom: calc(150px + env(safe-area-inset-bottom, 0px)); }
+.topline { display: flex; justify-content: space-between; align-items: center; padding-top: 10px; font-size: 14px; font-weight: 600; color: var(--sub); }
+.topline a { color: var(--brand); text-decoration: none; font-weight: 700; }
+:root[data-theme="dark"] .topline a { color: var(--gold); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .topline a { color: var(--gold); } }
+.banner { background: color-mix(in srgb, var(--gold) 16%, var(--surface)); color: var(--ink); border-radius: 12px; padding: 10px 14px; font-size: 13.5px; margin: 10px 0 0; }
+.title-row { display: flex; align-items: baseline; justify-content: space-between; }
+.link-btn { border: 0; background: none; color: var(--neg); font-weight: 700; font-size: 15px; padding: 6px 0; }
+.card { background: var(--surface); border-radius: 16px; padding: 4px 16px; margin-bottom: 14px; }
+.field { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 52px; }
+.field + .field { border-top: 1px solid var(--line); }
+.field label, .field .lbl { font-weight: 600; }
+input[type="date"], .text-in { border: 0; background: var(--surface-2); border-radius: 10px; padding: 8px 12px; font-size: 16px; font-weight: 600; min-width: 0; }
+input[type="date"] { min-height: 38px; }
+.wrap-pills { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 0 14px; }
+.sec { font-size: 13px; color: var(--sub); font-weight: 600; margin: 20px 4px 8px; display: flex; justify-content: space-between; align-items: baseline; }
+.sec button { border: 0; background: none; color: var(--sub); font-size: 13px; font-weight: 700; padding: 0; text-decoration: underline; text-underline-offset: 3px; }
+.add-row { display: flex; gap: 8px; padding: 0 0 14px; }
+.add-row .text-in { flex: 1; }
+.btn { border: 0; border-radius: 12px; height: 44px; padding: 0 16px; font-weight: 700; font-size: 15px; background: var(--ink); color: var(--surface); }
+.btn.ghost { background: var(--surface-2); color: var(--ink); }
+
+/* 결과 입력 */
+.res-row { display: grid; grid-template-columns: 1fr auto 112px; align-items: center; gap: 10px; min-height: 60px; }
+.res-row + .res-row { border-top: 1px solid var(--line); }
+.res-name { display: flex; align-items: center; gap: 8px; font-weight: 700; min-width: 0; }
+.sign { display: inline-flex; background: var(--surface-2); border-radius: 10px; padding: 3px; }
+.sign button { border: 0; background: none; width: 44px; height: 34px; border-radius: 8px; font-weight: 800; font-size: 14px; color: var(--faint); }
+.sign button[aria-pressed="true"].p { background: var(--pos); color: #fff; }
+.sign button[aria-pressed="true"].m { background: var(--neg); color: #fff; }
+.amt { width: 100%; height: 42px; border: 0; border-radius: 10px; background: var(--surface-2); text-align: right; padding: 0 12px; font-size: 19px; font-weight: 800; }
+.amt.p { color: var(--pos); } .amt.m { color: var(--neg); }
+.amt::placeholder { color: var(--faint); font-weight: 500; font-size: 15px; }
+.hint { color: var(--sub); font-size: 14px; padding: 16px 0; text-align: center; }
+
+/* 하단 저장 바 */
+.savebar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; padding: 10px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+  background: var(--bar-bg); backdrop-filter: saturate(1.6) blur(18px); -webkit-backdrop-filter: saturate(1.6) blur(18px); border-top: 1px solid var(--line); }
+.savebar-in { max-width: 448px; margin: 0 auto; }
+.sum-line { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 14px; margin-bottom: 8px; min-height: 30px; }
+.sum-line .msg { color: var(--sub); font-weight: 600; }
+.sum-line .msg.ok { color: var(--brand); }
+:root[data-theme="dark"] .sum-line .msg.ok { color: #4CC38A; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .sum-line .msg.ok { color: #4CC38A; } }
+.sum-line .msg.bad { color: var(--neg); }
+.sum-line .tot { font-weight: 800; font-size: 18px; }
+.auto { border: 0; background: var(--surface-2); color: var(--ink); border-radius: 999px; height: 30px; padding: 0 12px; font-size: 13px; font-weight: 700; }
+.save { width: 100%; height: 52px; border: 0; border-radius: 14px; font-size: 17px; font-weight: 800; background: var(--brand); color: #fff; }
+.save:disabled { background: var(--line); color: var(--faint); }
+.save.warn { background: var(--neg); }
+
+/* 최근 기록 */
+.rec { background: var(--surface); border-radius: 16px; padding: 12px 16px; margin-bottom: 10px; }
+.rec-head { display: flex; align-items: center; gap: 8px; }
+.rec-date { font-weight: 800; }
+.rec-place { color: var(--sub); font-size: 13px; font-weight: 600; }
+.rec-act { margin-left: auto; display: flex; gap: 6px; }
+.rec-act button { border: 0; background: var(--surface-2); border-radius: 8px; height: 30px; padding: 0 10px; font-size: 13px; font-weight: 700; color: var(--ink); }
+.rec-act button.del { color: var(--neg); }
+.rec-res { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 6px; font-size: 14px; }
+.rec-res span b { font-weight: 800; }
+.rec.editing { outline: 2px solid var(--gold); }
+.foot { display: flex; justify-content: center; gap: 10px; margin: 24px 0 8px; }
+
+/* 비밀번호 시트 */
+.sheet { position: fixed; inset: 0; z-index: 40; display: grid; align-items: end; background: rgba(0,0,0,.45); }
+.sheet[hidden] { display: none; }
+.sheet-in { background: var(--surface); border-radius: 22px 22px 0 0; padding: 22px 20px calc(22px + env(safe-area-inset-bottom, 0px)); max-width: 480px; width: 100%; margin: 0 auto; }
+.sheet h2 { margin: 0 0 4px; font-size: 21px; font-weight: 800; }
+.sheet p { margin: 0 0 16px; color: var(--sub); font-size: 14px; }
+.sheet .err { color: var(--neg); font-weight: 600; min-height: 20px; margin: 8px 0 0; }
+.pin-in { width: 100%; height: 54px; border: 0; border-radius: 14px; background: var(--surface-2); font-size: 24px; font-weight: 800; letter-spacing: .3em; text-align: center; }
+.sheet .save { margin-top: 12px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topline"><span>기록 관리</span><a id="dash-link" href="index.html">대시보드 보기</a></div>
+  <div id="banner"></div>
+  <div class="title-row"><h1 class="large-title" id="form-title">경기 등록</h1><button type="button" class="link-btn" id="cancel-edit" hidden>수정 취소</button></div>
+
+  <div class="card">
+    <div class="field"><label for="date">날짜</label><input type="date" id="date"></div>
+    <div class="field"><span class="lbl">장소</span><input class="text-in" id="place-custom" placeholder="장소 이름" maxlength="20" hidden></div>
+    <div class="wrap-pills" id="places" style="padding-top:0"></div>
+  </div>
+
+  <div class="sec"><span>참가자</span><button type="button" id="toggle-add">플레이어 추가</button></div>
+  <div class="card">
+    <div class="wrap-pills" id="players"></div>
+    <div class="add-row" id="add-row" hidden><input class="text-in" id="new-name" placeholder="새 플레이어 이름" maxlength="12"><button type="button" class="btn" id="add-player">추가</button></div>
+  </div>
+
+  <div class="sec"><span>결과</span><span id="res-count"></span></div>
+  <div class="card" id="results"></div>
+
+  <div class="sec"><span>최근 기록</span></div>
+  <div id="recent"></div>
+  <div class="foot"><button type="button" class="btn ghost" id="backup">백업 파일 받기</button><button type="button" class="btn ghost" id="logout">비밀번호 다시 입력</button></div>
+</div>
+
+<div class="savebar"><div class="savebar-in">
+  <div class="sum-line"><span class="msg" id="sum-msg"></span><span id="sum-right"></span></div>
+  <button type="button" class="save" id="save" disabled>경기 저장</button>
+</div></div>
+
+<div class="sheet" id="pin-sheet" hidden><div class="sheet-in" role="dialog" aria-modal="true" aria-labelledby="pin-title">
+  <h2 id="pin-title">비밀번호 입력</h2>
+  <p>기록을 등록하거나 고치려면 비밀번호가 필요합니다. 이 기기에 저장되어 다음부터는 묻지 않습니다.</p>
+  <input class="pin-in" id="pin" type="password" inputmode="numeric" autocomplete="current-password" aria-label="비밀번호">
+  <p class="err" id="pin-err"></p>
+  <button type="button" class="save" id="pin-ok">확인</button>
+</div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   설정: API_BASE 는 대시보드(index.html)와 같은 Worker 주소
+   비워 두면 이 기기 안에만 저장되는 예시 모드로 동작합니다.
+   ============================================================ */
+const CONFIG = {
+  API_BASE: '',
+  DASHBOARD_URL: 'index.html',
+  PLAYER_COLORS: ['#E0A100', '#0F9B8E', '#7B4FC9', '#E0662A', '#4F7A99', '#C2417F', '#3E9A45', '#8C6D3F'],
+  DEFAULT_PLACES: ['천안', '인천', '수원']
+};
+const SEED = {"players":["김준희","김자겸","박현석","임성완","박종효"],"sessions":[{"id":"s001","date":"2025-10-19","place":"인천","res":{"김준희":-15,"김자겸":121,"박현석":-63,"임성완":-43}},{"id":"s002","date":"2025-11-09","place":"천안","res":{"김준희":-140,"김자겸":130,"박현석":-94,"박종효":104}},{"id":"s003","date":"2025-11-15","place":"천안","res":{"김준희":-15,"김자겸":-93,"박현석":80,"박종효":28}},{"id":"s004","date":"2025-11-23","place":"천안","res":{"김준희":39,"김자겸":70,"박현석":-90,"박종효":-19}},{"id":"s005","date":"2025-11-29","place":"천안","res":{"김준희":0,"김자겸":-49,"박현석":49}},{"id":"s006","date":"2025-12-06","place":"천안","res":{"김준희":-61,"김자겸":92,"박현석":-31}},{"id":"s007","date":"2025-12-12","place":"천안","res":{"김준희":-19,"김자겸":67,"임성완":-40,"박종효":-8}},{"id":"s008","date":"2025-12-16","place":"인천","res":{"김준희":50,"김자겸":90,"임성완":-140}},{"id":"s009","date":"2026-01-02","place":"인천","res":{"김준희":-100,"김자겸":50,"임성완":50}},{"id":"s010","date":"2026-01-04","place":"천안","res":{"김준희":88,"김자겸":-110,"박현석":22}},{"id":"s011","date":"2026-01-10","place":"수원","res":{"김준희":-8,"김자겸":48,"박현석":-40}},{"id":"s012","date":"2026-01-17","place":"인천","res":{"김준희":80,"김자겸":-152,"임성완":72}},{"id":"s013","date":"2026-01-24","place":"천안","res":{"김준희":-25,"김자겸":43,"박현석":-26,"박종효":8}},{"id":"s014","date":"2026-01-31","place":"인천","res":{"김준희":162,"김자겸":-74,"임성완":-88}},{"id":"s015","date":"2026-02-07","place":"천안","res":{"김준희":83,"김자겸":-20,"박현석":-169,"임성완":60,"박종효":46}},{"id":"s016","date":"2026-02-14","place":"인천","res":{"김준희":10,"김자겸":120,"임성완":-130}},{"id":"s017","date":"2026-02-17","place":"인천","res":{"김준희":50,"김자겸":-90,"임성완":40}},{"id":"s018","date":"2026-02-28","place":"인천","res":{"김준희":-68,"김자겸":23,"임성완":45}},{"id":"s019","date":"2026-03-07","place":"천안","res":{"김준희":8,"김자겸":-53,"박현석":45}},{"id":"s020","date":"2026-03-20","place":"인천","res":{"김준희":-180,"김자겸":22,"임성완":158}},{"id":"s021","date":"2026-03-28","place":"천안","res":{"김준희":38,"김자겸":-60,"박현석":31,"박종효":-9}},{"id":"s022","date":"2026-04-18","place":"인천","res":{"김준희":78,"김자겸":-150,"임성완":72}},{"id":"s023","date":"2026-05-30","place":"천안","res":{"김준희":-10,"김자겸":130,"박현석":-120,"박종효":0}},{"id":"s024","date":"2026-06-27","place":"천안","res":{"김준희":-110,"김자겸":20,"박현석":150,"박종효":-60}},{"id":"s025","date":"2026-07-04","place":"인천","res":{"김준희":-11,"김자겸":41,"임성완":-30}},{"id":"s026","date":"2026-07-25","place":"수원","res":{"김준희":-70,"김자겸":120,"박현석":40,"임성완":-90}},{"id":"s027","date":"2026-08-04","place":"인천","res":{"김준희":80,"김자겸":58,"임성완":-138}},{"id":"s028","date":"2026-08-08","place":"천안","res":{"김준희":108,"김자겸":-90,"박현석":24,"박종효":-42}},{"id":"s029","date":"2026-08-22","place":"수원","res":{"김준희":-199,"김자겸":-35,"박현석":129,"임성완":215,"박종효":-110}},{"id":"s030","date":"2026-10-04","place":"인천","res":{"김준희":0,"김자겸":190,"임성완":-190}},{"id":"s031","date":"2026-10-08","place":"수원","res":{"김준희":334,"김자겸":-250,"박현석":-84}},{"id":"s032","date":"2026-10-10","place":"천안","res":{"김준희":110,"박현석":20,"박종효":-130}},{"id":"s033","date":"2026-10-12","place":"천안","res":{"김준희":140,"김자겸":-330,"박현석":190}}],"updatedAt":"2026-10-12T00:00:00.000Z"};
+const DEMO_KEY = 'holdem_demo_doc', PIN_KEY = 'holdem_pin';
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const signed = v => v > 0 ? '+' + v.toLocaleString('ko-KR') : v < 0 ? '−' + Math.abs(v).toLocaleString('ko-KR') : '0';
+const tone = v => v > 0 ? 'pos' : v < 0 ? 'neg' : 'zero';
+const chip = c => `<span class="chip" style="--c:${c}" aria-hidden="true"></span>`;
+const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+const DOW = ['일', '월', '화', '수', '목', '금', '토'];
+const toast = msg => { const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('on'), 2000); };
+const colorOf = name => CONFIG.PLAYER_COLORS[Math.max(0, doc.players.indexOf(name)) % CONFIG.PLAYER_COLORS.length];
+
+let doc = null, pin = '', editId = null;
+try { pin = localStorage.getItem(PIN_KEY) || ''; } catch (e) {}
+const form = { date: today(), place: '', custom: false, picked: [], vals: {} };
+
+/* ===== API ===== */
+async function api(method, path, body) {
+  if (!CONFIG.API_BASE) return demoApi(method, path, body);
+  const r = await fetch(CONFIG.API_BASE + path, {
+    method, headers: { 'Content-Type': 'application/json', 'X-Pin': pin }, body: body ? JSON.stringify(body) : undefined, cache: 'no-store'
+  });
+  const j = await r.json().catch(() => ({}));
+  if (r.status === 401) { setPin(''); openPin(j.error || '비밀번호가 맞지 않습니다.'); throw new Error(j.error || '비밀번호가 필요합니다.'); }
+  if (!r.ok) throw new Error(j.error || `요청 실패 (${r.status})`);
+  return j;
+}
+function demoApi(method, path, body) {
+  let d; try { d = JSON.parse(localStorage.getItem(DEMO_KEY)); } catch (e) {}
+  d = d || JSON.parse(JSON.stringify(SEED));
+  const put = () => { d.sessions.sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id)); d.updatedAt = new Date().toISOString(); localStorage.setItem(DEMO_KEY, JSON.stringify(d)); return d; };
+  const m = path.match(/^\/api\/sessions\/(.+)$/);
+  if (method === 'GET') return d;
+  if (path === '/api/auth') return { ok: true };
+  if (method === 'POST' && path === '/api/sessions') { d.sessions.push({ id: 's' + Date.now().toString(36), ...body }); return put(); }
+  if (m && method === 'PUT') { const i = d.sessions.findIndex(s => s.id === m[1]); d.sessions[i] = { id: m[1], ...body }; return put(); }
+  if (m && method === 'DELETE') { d.sessions = d.sessions.filter(s => s.id !== m[1]); return put(); }
+  if (path === '/api/players') { if (d.players.includes(body.name)) throw new Error('이미 있는 이름입니다.'); d.players.push(body.name); return put(); }
+  throw new Error('지원하지 않는 요청입니다.');
+}
+
+/* ===== 비밀번호 ===== */
+function setPin(v) { pin = v; try { v ? localStorage.setItem(PIN_KEY, v) : localStorage.removeItem(PIN_KEY); } catch (e) {} }
+function openPin(err) { $('#pin-sheet').hidden = false; $('#pin-err').textContent = err || ''; $('#pin').value = ''; setTimeout(() => $('#pin').focus(), 50); }
+$('#pin-ok').onclick = async () => {
+  const v = $('#pin').value.trim(); if (!v) { $('#pin-err').textContent = '비밀번호를 입력하세요.'; return; }
+  setPin(v);
+  try { await api('POST', '/api/auth'); $('#pin-sheet').hidden = true; toast('확인되었습니다'); }
+  catch (e) { $('#pin-err').textContent = e.message; }
+};
+$('#pin').addEventListener('keydown', e => { if (e.key === 'Enter') $('#pin-ok').click(); });
+$('#logout').onclick = () => { setPin(''); openPin(); };
+
+/* ===== 폼 렌더 ===== */
+function places() {
+  const cnt = {}; doc.sessions.forEach(s => { if (s.place) cnt[s.place] = (cnt[s.place] || 0) + 1; });
+  const list = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a]);
+  CONFIG.DEFAULT_PLACES.forEach(p => { if (!list.includes(p)) list.push(p); });
+  return list;
+}
+function renderTop() {
+  $('#form-title').textContent = editId ? '경기 수정' : '경기 등록';
+  $('#cancel-edit').hidden = !editId;
+  $('#save').textContent = editId ? '수정 저장' : '경기 저장';
+  $('#date').value = form.date;
+  const pl = places();
+  $('#places').innerHTML = pl.map(p => `<button type="button" class="pill" data-p="${esc(p)}" aria-pressed="${!form.custom && form.place === p}">${esc(p)}</button>`).join('')
+    + `<button type="button" class="pill" data-p="" aria-pressed="${form.custom}">직접 입력</button>`;
+  $('#place-custom').hidden = !form.custom;
+  if (form.custom) $('#place-custom').value = form.place;
+  $('#players').innerHTML = doc.players.map(p => `<button type="button" class="pill" data-p="${esc(p)}" aria-pressed="${form.picked.includes(p)}">${chip(colorOf(p))}${esc(p)}</button>`).join('');
+}
+function renderResults() {
+  $('#res-count').textContent = form.picked.length ? `${form.picked.length}명` : '';
+  if (!form.picked.length) { $('#results').innerHTML = `<p class="hint">참가자를 선택하면 금액 입력칸이 나타납니다</p>`; updateSum(); return; }
+  $('#results').innerHTML = form.picked.map(p => {
+    const v = form.vals[p], s = v.sign > 0 ? 'p' : 'm';
+    return `<div class="res-row" data-p="${esc(p)}">
+      <span class="res-name">${chip(colorOf(p))}${esc(p)}</span>
+      <span class="sign" role="group" aria-label="${esc(p)} 이익 또는 손실">
+        <button type="button" class="p" data-s="1" aria-pressed="${v.sign > 0}" aria-label="이익">＋</button>
+        <button type="button" class="m" data-s="-1" aria-pressed="${v.sign < 0}" aria-label="손실">−</button></span>
+      <input class="amt ${s}" inputmode="numeric" pattern="[0-9]*" placeholder="금액" value="${v.amt}" aria-label="${esc(p)} 금액" maxlength="7">
+    </div>`;
+  }).join('');
+  updateSum();
+}
+function totals() {
+  const empty = form.picked.filter(p => form.vals[p].amt === '');
+  const total = form.picked.reduce((a, p) => a + (form.vals[p].amt === '' ? 0 : form.vals[p].sign * Number(form.vals[p].amt)), 0);
+  return { empty, total };
+}
+function updateSum() {
+  const { empty, total } = totals(), msg = $('#sum-msg'), right = $('#sum-right'), btn = $('#save');
+  btn.classList.remove('warn'); msg.className = 'msg'; right.innerHTML = '';
+  if (form.picked.length < 2) { msg.textContent = '참가자를 2명 이상 선택하세요'; btn.disabled = true; return; }
+  if (empty.length) {
+    msg.textContent = `금액을 입력하세요 (${empty.length}명 남음)`; btn.disabled = true;
+    if (empty.length === 1) right.innerHTML = `<button type="button" class="auto" id="autofill">${esc(empty[0])} 자동 계산</button>`;
+    return;
+  }
+  btn.disabled = false;
+  right.innerHTML = `<span class="tot ${tone(total)}">합계 ${signed(total)}</span>`;
+  if (total === 0) { msg.textContent = '합계가 0으로 맞습니다'; msg.classList.add('ok'); }
+  else { msg.textContent = '합계가 0이 아닙니다'; msg.classList.add('bad'); btn.classList.add('warn'); }
+}
+
+/* ===== 폼 이벤트 ===== */
+$('#date').onchange = e => { form.date = e.target.value; };
+$('#places').onclick = e => {
+  const b = e.target.closest('.pill'); if (!b) return;
+  if (b.dataset.p) { form.place = b.dataset.p; form.custom = false; } else { form.custom = true; form.place = ''; }
+  renderTop(); if (form.custom) $('#place-custom').focus();
+};
+$('#place-custom').oninput = e => { form.place = e.target.value.trim(); };
+$('#players').onclick = e => {
+  const b = e.target.closest('.pill'); if (!b) return;
+  const p = b.dataset.p;
+  if (form.picked.includes(p)) form.picked = form.picked.filter(x => x !== p);
+  else { form.picked.push(p); form.vals[p] = form.vals[p] || { sign: 1, amt: '' }; }
+  renderTop(); renderResults();
+};
+$('#results').addEventListener('click', e => {
+  const b = e.target.closest('.sign button'); if (!b) return;
+  const p = b.closest('.res-row').dataset.p; form.vals[p].sign = Number(b.dataset.s);
+  renderResults();
+});
+$('#results').addEventListener('input', e => {
+  if (!e.target.classList.contains('amt')) return;
+  const clean = e.target.value.replace(/\D/g, '').replace(/^0+(?=\d)/, '').slice(0, 7);
+  if (clean !== e.target.value) e.target.value = clean;
+  form.vals[e.target.closest('.res-row').dataset.p].amt = clean;
+  updateSum();
+});
+$('#sum-right').addEventListener('click', e => {
+  if (e.target.id !== 'autofill') return;
+  const { empty, total } = totals(); const p = empty[0];
+  form.vals[p] = { sign: total > 0 ? -1 : 1, amt: String(Math.abs(total)) };
+  renderResults();
+});
+$('#toggle-add').onclick = () => { $('#add-row').hidden = !$('#add-row').hidden; if (!$('#add-row').hidden) $('#new-name').focus(); };
+$('#add-player').onclick = async () => {
+  const name = $('#new-name').value.trim(); if (!name) return;
+  try { doc = await api('POST', '/api/players', { name }); $('#new-name').value = ''; $('#add-row').hidden = true; toast(`${name} 추가했습니다`); renderTop(); }
+  catch (e) { toast(e.message); }
+};
+
+/* ===== 저장 ===== */
+$('#save').onclick = async () => {
+  const { total } = totals();
+  if (total !== 0 && !confirm(`합계가 ${signed(total)}입니다. 그래도 저장할까요?`)) return;
+  if (!form.date) { toast('날짜를 선택하세요'); return; }
+  const res = Object.fromEntries(form.picked.map(p => [p, form.vals[p].sign * Number(form.vals[p].amt)]));
+  const body = { date: form.date, place: form.place, res };
+  const btn = $('#save'); btn.disabled = true; btn.textContent = '저장 중…';
+  try {
+    doc = editId ? await api('PUT', '/api/sessions/' + editId, body) : await api('POST', '/api/sessions', body);
+    toast(editId ? '수정했습니다' : '저장했습니다');
+    resetForm();
+  } catch (e) { toast(e.message); renderTop(); updateSum(); }
+};
+function resetForm() {
+  editId = null;
+  form.picked = []; form.vals = {};
+  renderTop(); renderResults(); renderRecent();
+}
+$('#cancel-edit').onclick = () => { form.date = today(); resetForm(); };
+
+/* ===== 최근 기록 ===== */
+function renderRecent() {
+  const list = doc.sessions.slice().sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id)).slice(0, 12);
+  if (!list.length) { $('#recent').innerHTML = `<p class="hint">아직 기록이 없습니다. 위에서 첫 경기를 등록하세요.</p>`; return; }
+  $('#recent').innerHTML = list.map(s => {
+    const [y, m, d] = s.date.split('-').map(Number), dow = DOW[new Date(y, m - 1, d).getDay()];
+    const res = Object.entries(s.res).sort((a, b) => b[1] - a[1]);
+    return `<div class="rec${s.id === editId ? ' editing' : ''}" data-id="${s.id}">
+      <div class="rec-head"><span class="rec-date">${String(y).slice(2)}.${String(m).padStart(2, '0')}.${String(d).padStart(2, '0')} (${dow})</span><span class="rec-place">${esc(s.place)}</span>
+        <span class="rec-act"><button type="button" data-a="edit">수정</button><button type="button" class="del" data-a="del">삭제</button></span></div>
+      <div class="rec-res">${res.map(([p, v]) => `<span>${esc(p)} <b class="${tone(v)}">${signed(v)}</b></span>`).join('')}</div></div>`;
+  }).join('');
+}
+$('#recent').addEventListener('click', async e => {
+  const b = e.target.closest('button[data-a]'); if (!b) return;
+  const id = b.closest('.rec').dataset.id, s = doc.sessions.find(x => x.id === id);
+  if (b.dataset.a === 'edit') {
+    editId = id; form.date = s.date; form.place = s.place;
+    form.custom = !places().includes(s.place) && !!s.place;
+    form.picked = Object.keys(s.res);
+    form.vals = Object.fromEntries(Object.entries(s.res).map(([p, v]) => [p, { sign: v < 0 ? -1 : 1, amt: String(Math.abs(v)) }]));
+    renderTop(); renderResults(); renderRecent(); window.scrollTo({ top: 0, behavior: 'smooth' });
+  } else if (confirm(`${s.date.replace(/-/g, '.')} ${s.place} 경기를 삭제할까요? 되돌릴 수 없습니다.`)) {
+    try { doc = await api('DELETE', '/api/sessions/' + id); if (editId === id) resetForm(); else renderRecent(); toast('삭제했습니다'); }
+    catch (err) { toast(err.message); }
+  }
+});
+
+/* ===== 백업 ===== */
+$('#backup').onclick = () => {
+  const blob = new Blob([JSON.stringify(doc, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `holdem-backup-${today()}.json`;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+};
+
+/* ===== 시작 ===== */
+(async function init() {
+  $('#dash-link').href = CONFIG.DASHBOARD_URL;
+  if (!CONFIG.API_BASE) $('#banner').innerHTML = `<p class="banner">예시 모드입니다. 기록은 이 기기에만 저장됩니다. 친구들과 함께 쓰려면 API_BASE를 설정하세요.</p>`;
+  try { doc = await api('GET', '/api/data'); }
+  catch (e) { $('#results').innerHTML = `<p class="hint">기록을 불러오지 못했습니다. ${esc(e.message)}</p>`; return; }
+  const pl = places(); form.place = pl[0] || '';
+  renderTop(); renderResults(); renderRecent();
+  if (CONFIG.API_BASE && !pin) openPin();
+})();
+</script>
+</body>
+</html>

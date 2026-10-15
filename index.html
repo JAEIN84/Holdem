@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="홀덤 리그">
+<meta name="theme-color" content="#F2F4F1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0A0D0B" media="(prefers-color-scheme: dark)">
+<title>홀덤 리그</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♠</text></svg>">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+:root {
+  --bg: #F2F4F1; --surface: #FFFFFF; --surface-2: #F7F8F6; --ink: #111A15; --sub: #66736C; --faint: #9AA59F; --line: #E3E8E4;
+  --brand: #0F5A3F; --brand-2: #0A3F2C; --gold: #B8892B; --pos: #2563EB; --neg: #DC3B30; --zero: #9AA59F;
+  --bar-bg: rgba(255,255,255,.86);
+  --font: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", system-ui, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0A0D0B; --surface: #141916; --surface-2: #1A201C; --ink: #EEF2EF; --sub: #93A099; --faint: #66736C; --line: #242B27;
+    --brand: #145F44; --brand-2: #0B3A29; --gold: #DDB65C; --pos: #6EA1FF; --neg: #FF6F64; --zero: #6E7A74;
+    --bar-bg: rgba(20,25,22,.86);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0A0D0B; --surface: #141916; --surface-2: #1A201C; --ink: #EEF2EF; --sub: #93A099; --faint: #66736C; --line: #242B27;
+  --brand: #145F44; --brand-2: #0B3A29; --gold: #DDB65C; --pos: #6EA1FF; --neg: #FF6F64; --zero: #6E7A74;
+  --bar-bg: rgba(20,25,22,.86);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+[hidden] { display: none !important; }
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 16px; line-height: 1.45; -webkit-font-smoothing: antialiased; font-feature-settings: "tnum"; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; border-radius: 6px; }
+.pos { color: var(--pos); } .neg { color: var(--neg); } .zero { color: var(--zero); }
+.chip { width: 12px; height: 12px; border-radius: 50%; flex: none; display: inline-block; background: var(--c);
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,.92), inset 0 0 0 4px var(--c); }
+.app { max-width: 480px; margin: 0 auto; padding: 0 16px; }
+.large-title { font-size: 30px; font-weight: 800; letter-spacing: -.02em; margin: 14px 0 2px; }
+.caption { color: var(--sub); font-size: 14px; margin: 0 0 18px; }
+.group { background: var(--surface); border-radius: 16px; overflow: hidden; margin-bottom: 18px; }
+.group-title { font-size: 13px; color: var(--sub); font-weight: 600; margin: 22px 4px 8px; }
+.scroller { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 0 -16px 14px; padding: 2px 16px; }
+.scroller::-webkit-scrollbar { display: none; }
+.pill { flex: none; display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: 14px; font-weight: 600; color: var(--sub); }
+.pill[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--surface); }
+.toast { position: fixed; left: 50%; bottom: calc(96px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%) translateY(12px); background: var(--ink); color: var(--surface); padding: 10px 16px; border-radius: 12px; font-size: 14px; font-weight: 600; opacity: 0; pointer-events: none; transition: .2s; z-index: 50; white-space: nowrap; }
+.toast.on { opacity: 1; transform: translateX(-50%); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+body { padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
+.topline { display: flex; justify-content: space-between; align-items: center; padding-top: 10px; color: var(--sub); font-size: 13px; font-weight: 600; }
+.icon-btn { width: 36px; height: 36px; border-radius: 50%; border: 0; background: var(--surface); color: var(--sub); display: grid; place-items: center; }
+.icon-btn.spin svg { animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* 선두 카드 */
+.leader {
+  position: relative; overflow: hidden; border-radius: 20px; padding: 20px 20px 18px; color: #F4F1E8;
+  background: radial-gradient(140% 120% at 100% 0%, rgba(255,255,255,.10), transparent 55%), linear-gradient(160deg, var(--brand), var(--brand-2));
+}
+.leader::after { content: "♠"; position: absolute; right: -6px; bottom: -40px; font-size: 170px; line-height: 1; color: rgba(255,255,255,.06); pointer-events: none; }
+.leader-label { font-size: 13px; font-weight: 600; color: rgba(244,241,232,.72); display: flex; align-items: center; gap: 6px; }
+.leader-label .crown { color: #E9C46A; }
+.leader-name { display: flex; align-items: center; gap: 8px; font-size: 20px; font-weight: 700; margin-top: 8px; }
+.leader-name .chip { width: 14px; height: 14px; }
+.leader-value { font-size: 52px; font-weight: 800; letter-spacing: -.03em; line-height: 1.05; margin-top: 2px; }
+.leader-sub { font-size: 14px; color: rgba(244,241,232,.75); margin-top: 6px; }
+
+/* 순위 리스트 */
+.rank-list { list-style: none; padding: 0; margin-top: 0; }
+.rank-row { display: grid; grid-template-columns: 26px 1fr auto; align-items: center; gap: 4px 10px; padding: 13px 16px 12px; border: 0; width: 100%; background: none; text-align: left; }
+.rank-list li + li .rank-row { border-top: 1px solid var(--line); }
+.rank-no { font-size: 15px; font-weight: 800; color: var(--faint); }
+li:first-child .rank-no { color: var(--gold); }
+.rank-name { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 16px; min-width: 0; }
+.rank-meta { grid-column: 2; font-size: 12.5px; color: var(--sub); }
+.rank-val { grid-row: 1 / span 2; grid-column: 3; text-align: right; font-size: 20px; font-weight: 800; letter-spacing: -.02em; }
+.rank-bar { grid-column: 2 / 4; position: relative; height: 4px; border-radius: 2px; background: var(--surface-2); margin-top: 4px; }
+.rank-bar::before { content: ""; position: absolute; left: 50%; top: -3px; bottom: -3px; width: 1px; background: var(--line); }
+.rank-bar span { position: absolute; top: 0; bottom: 0; border-radius: 2px; }
+.rank-bar .up { left: 50%; background: var(--pos); } .rank-bar .down { right: 50%; background: var(--neg); }
+
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.stat { background: var(--surface); border-radius: 16px; padding: 14px 14px 12px; }
+.stat-k { font-size: 12.5px; color: var(--sub); font-weight: 600; }
+.stat-v { font-size: 24px; font-weight: 800; letter-spacing: -.02em; margin-top: 2px; }
+.stat-d { font-size: 12.5px; color: var(--sub); }
+.status { color: var(--faint); font-size: 12.5px; text-align: center; margin: 22px 0 8px; }
+
+/* 추이 */
+.chart-card { padding: 16px 0 6px; }
+.readout { padding: 0 16px; min-height: 76px; }
+.ro-label { font-size: 13px; color: var(--sub); font-weight: 600; display: flex; align-items: center; gap: 6px; }
+.ro-value { font-size: 34px; font-weight: 800; letter-spacing: -.03em; line-height: 1.15; }
+.ro-date { font-size: 12.5px; color: var(--sub); }
+#trend { display: block; width: 100%; touch-action: none; user-select: none; -webkit-user-select: none; }
+#trend text { fill: var(--faint); font-size: 11px; font-family: var(--font); }
+.at-list { list-style: none; padding: 0; }
+.at-row { display: flex; align-items: center; gap: 10px; padding: 11px 16px; }
+.at-row + .at-row { border-top: 1px solid var(--line); }
+.at-row .n { color: var(--faint); font-weight: 800; width: 18px; font-size: 14px; }
+.at-row .nm { flex: 1; display: flex; align-items: center; gap: 8px; font-weight: 600; }
+.at-row .v { font-weight: 800; }
+.tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.form { display: flex; gap: 4px; margin-top: 6px; }
+.form i { width: 18px; height: 18px; border-radius: 5px; background: var(--zero); display: block; }
+.form i.w { background: var(--pos); } .form i.l { background: var(--neg); }
+
+/* 월별 */
+.month-card { padding: 18px 16px 8px; }
+.mc-head { display: flex; justify-content: space-between; align-items: baseline; }
+.mc-title { font-size: 20px; font-weight: 800; }
+.mc-count { font-size: 13px; color: var(--sub); font-weight: 600; }
+.mc-mvp { font-size: 13.5px; color: var(--sub); margin: 4px 0 14px; }
+.mc-mvp b { color: var(--ink); }
+.dv { display: grid; grid-template-columns: 72px 1fr 58px; align-items: center; gap: 10px; padding: 9px 0; }
+.dv + .dv { border-top: 1px solid var(--line); }
+.dv-name { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; }
+.dv-track { position: relative; height: 22px; }
+.dv-track::before { content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--line); }
+.dv-track span { position: absolute; top: 3px; bottom: 3px; border-radius: 4px; transform-origin: var(--o); animation: grow .5s cubic-bezier(.2,.8,.2,1) both; }
+.dv-track .up { left: 50%; background: var(--pos); --o: left; } .dv-track .down { right: 50%; background: var(--neg); --o: right; }
+.dv-track .none { left: calc(50% - 12px); width: 24px; top: 10px; bottom: 10px; background: var(--line); }
+@keyframes grow { from { transform: scaleX(0); } }
+.dv-val { text-align: right; font-weight: 800; font-size: 15px; }
+.dv-val.absent { color: var(--faint); font-weight: 500; font-size: 13px; }
+.mvp-list { list-style: none; padding: 0; margin-top: 0; }
+.mvp-row { display: grid; grid-template-columns: 70px 1fr auto; gap: 10px; align-items: center; width: 100%; padding: 12px 16px; border: 0; background: none; text-align: left; }
+.mvp-list li + li .mvp-row { border-top: 1px solid var(--line); }
+.mvp-row .m { color: var(--sub); font-size: 14px; font-weight: 600; }
+.mvp-row .nm { display: flex; align-items: center; gap: 8px; font-weight: 700; }
+.mvp-row .v { font-weight: 800; }
+.mvp-row[aria-current="true"] { background: var(--surface-2); }
+
+/* 경기 기록 */
+.g-month { font-size: 13px; color: var(--sub); font-weight: 700; margin: 18px 4px 8px; }
+.game { background: var(--surface); border-radius: 16px; padding: 14px 16px; margin-bottom: 10px; }
+.game-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.game-date { font-size: 17px; font-weight: 800; }
+.game-dow { color: var(--sub); font-size: 13px; font-weight: 600; }
+.tag { margin-left: auto; font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: color-mix(in srgb, var(--pc) 18%, transparent); color: color-mix(in srgb, var(--pc) 75%, var(--ink)); }
+.game-res { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; }
+.gr { display: flex; justify-content: space-between; align-items: center; font-size: 14.5px; }
+.gr .nm { display: flex; align-items: center; gap: 6px; font-weight: 600; }
+.gr .v { font-weight: 800; }
+.game-warn { margin-top: 8px; font-size: 12.5px; color: var(--neg); font-weight: 600; }
+.empty { text-align: center; color: var(--sub); padding: 40px 0; }
+
+/* 탭바 */
+.tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; display: grid; grid-template-columns: repeat(4, 1fr);
+  padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px)); background: var(--bar-bg); backdrop-filter: saturate(1.6) blur(18px); -webkit-backdrop-filter: saturate(1.6) blur(18px); border-top: 1px solid var(--line); }
+.tabbar button { border: 0; background: none; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 0; font-size: 11px; font-weight: 600; color: var(--faint); }
+.tabbar svg { width: 25px; height: 25px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.tabbar button[aria-current="page"] { color: var(--ink); }
+.view { animation: fade .2s ease both; }
+@keyframes fade { from { opacity: 0; } }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- 순위 -->
+  <section class="view" id="v-rank">
+    <div class="topline"><span id="season"></span><button type="button" class="icon-btn" id="reload" aria-label="새로고침">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg></button></div>
+    <h1 class="large-title" id="title">홀덤 리그</h1>
+    <p class="caption" id="caption"></p>
+    <div class="leader" id="leader"></div>
+    <div class="group-title">순위</div>
+    <ol class="group rank-list" id="rank-list"></ol>
+    <div class="group-title">시즌 기록</div>
+    <div class="stat-grid" id="stat-grid"></div>
+    <p class="status" id="status"></p>
+  </section>
+
+  <!-- 추이 -->
+  <section class="view" id="v-trend" hidden>
+    <h1 class="large-title">스택 변화</h1>
+    <p class="caption">그래프를 밀어서 시점별 기록을 확인하세요</p>
+    <div class="scroller" id="trend-players" aria-label="플레이어 선택"></div>
+    <div class="group chart-card">
+      <div class="readout"><div class="ro-label" id="ro-label"></div><div class="ro-value" id="ro-value"></div><div class="ro-date" id="ro-date"></div></div>
+      <svg id="trend" aria-label="누적 손익 그래프"></svg>
+    </div>
+    <div id="trend-detail"></div>
+  </section>
+
+  <!-- 월별 -->
+  <section class="view" id="v-month" hidden>
+    <h1 class="large-title">월별 결산</h1>
+    <p class="caption" id="month-caption"></p>
+    <div class="scroller" id="month-tabs" aria-label="월 선택"></div>
+    <div class="group month-card" id="month-card"></div>
+    <div class="group-title">월간 1위</div>
+    <ol class="group mvp-list" id="mvp-list"></ol>
+  </section>
+
+  <!-- 기록 -->
+  <section class="view" id="v-games" hidden>
+    <h1 class="large-title">경기 기록</h1>
+    <p class="caption" id="games-caption"></p>
+    <div class="scroller" id="games-place" aria-label="장소 필터"></div>
+    <div class="scroller" id="games-player" aria-label="플레이어 필터"></div>
+    <div id="games-list"></div>
+  </section>
+</div>
+
+<nav class="tabbar" aria-label="화면 전환">
+  <button type="button" data-v="rank" aria-current="page"><svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M17 6h3a3 3 0 0 1-3 4M7 6H4a3 3 0 0 0 3 4"/></svg>순위</button>
+  <button type="button" data-v="trend"><svg viewBox="0 0 24 24"><path d="M3 17l5-5 4 3 8-8"/><path d="M15 7h5v5"/></svg>추이</button>
+  <button type="button" data-v="month"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>월별</button>
+  <button type="button" data-v="games"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="11" height="15" rx="2"/><path d="M9 21h9a2 2 0 0 0 2-2V8"/></svg>기록</button>
+</nav>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   설정: API_BASE 에 배포한 Worker 주소를 넣으세요 (끝에 / 없이)
+   예) 'https://holdem-api.내계정.workers.dev'
+   비워 두면 기기에 저장된 예시 데이터로 동작합니다.
+   ============================================================ */
+const CONFIG = {
+  API_BASE: '',
+  TITLE: '홀덤 리그',
+  PLAYER_COLORS: ['#E0A100', '#0F9B8E', '#7B4FC9', '#E0662A', '#4F7A99', '#C2417F', '#3E9A45', '#8C6D3F'],
+  PLACE_COLORS: { '인천': '#3B82F6', '천안': '#10B981', '수원': '#F59E0B' }
+};
+const SEED = {"players":["김준희","김자겸","박현석","임성완","박종효"],"sessions":[{"id":"s001","date":"2025-10-19","place":"인천","res":{"김준희":-15,"김자겸":121,"박현석":-63,"임성완":-43}},{"id":"s002","date":"2025-11-09","place":"천안","res":{"김준희":-140,"김자겸":130,"박현석":-94,"박종효":104}},{"id":"s003","date":"2025-11-15","place":"천안","res":{"김준희":-15,"김자겸":-93,"박현석":80,"박종효":28}},{"id":"s004","date":"2025-11-23","place":"천안","res":{"김준희":39,"김자겸":70,"박현석":-90,"박종효":-19}},{"id":"s005","date":"2025-11-29","place":"천안","res":{"김준희":0,"김자겸":-49,"박현석":49}},{"id":"s006","date":"2025-12-06","place":"천안","res":{"김준희":-61,"김자겸":92,"박현석":-31}},{"id":"s007","date":"2025-12-12","place":"천안","res":{"김준희":-19,"김자겸":67,"임성완":-40,"박종효":-8}},{"id":"s008","date":"2025-12-16","place":"인천","res":{"김준희":50,"김자겸":90,"임성완":-140}},{"id":"s009","date":"2026-01-02","place":"인천","res":{"김준희":-100,"김자겸":50,"임성완":50}},{"id":"s010","date":"2026-01-04","place":"천안","res":{"김준희":88,"김자겸":-110,"박현석":22}},{"id":"s011","date":"2026-01-10","place":"수원","res":{"김준희":-8,"김자겸":48,"박현석":-40}},{"id":"s012","date":"2026-01-17","place":"인천","res":{"김준희":80,"김자겸":-152,"임성완":72}},{"id":"s013","date":"2026-01-24","place":"천안","res":{"김준희":-25,"김자겸":43,"박현석":-26,"박종효":8}},{"id":"s014","date":"2026-01-31","place":"인천","res":{"김준희":162,"김자겸":-74,"임성완":-88}},{"id":"s015","date":"2026-02-07","place":"천안","res":{"김준희":83,"김자겸":-20,"박현석":-169,"임성완":60,"박종효":46}},{"id":"s016","date":"2026-02-14","place":"인천","res":{"김준희":10,"김자겸":120,"임성완":-130}},{"id":"s017","date":"2026-02-17","place":"인천","res":{"김준희":50,"김자겸":-90,"임성완":40}},{"id":"s018","date":"2026-02-28","place":"인천","res":{"김준희":-68,"김자겸":23,"임성완":45}},{"id":"s019","date":"2026-03-07","place":"천안","res":{"김준희":8,"김자겸":-53,"박현석":45}},{"id":"s020","date":"2026-03-20","place":"인천","res":{"김준희":-180,"김자겸":22,"임성완":158}},{"id":"s021","date":"2026-03-28","place":"천안","res":{"김준희":38,"김자겸":-60,"박현석":31,"박종효":-9}},{"id":"s022","date":"2026-04-18","place":"인천","res":{"김준희":78,"김자겸":-150,"임성완":72}},{"id":"s023","date":"2026-05-30","place":"천안","res":{"김준희":-10,"김자겸":130,"박현석":-120,"박종효":0}},{"id":"s024","date":"2026-06-27","place":"천안","res":{"김준희":-110,"김자겸":20,"박현석":150,"박종효":-60}},{"id":"s025","date":"2026-07-04","place":"인천","res":{"김준희":-11,"김자겸":41,"임성완":-30}},{"id":"s026","date":"2026-07-25","place":"수원","res":{"김준희":-70,"김자겸":120,"박현석":40,"임성완":-90}},{"id":"s027","date":"2026-08-04","place":"인천","res":{"김준희":80,"김자겸":58,"임성완":-138}},{"id":"s028","date":"2026-08-08","place":"천안","res":{"김준희":108,"김자겸":-90,"박현석":24,"박종효":-42}},{"id":"s029","date":"2026-08-22","place":"수원","res":{"김준희":-199,"김자겸":-35,"박현석":129,"임성완":215,"박종효":-110}},{"id":"s030","date":"2026-10-04","place":"인천","res":{"김준희":0,"김자겸":190,"임성완":-190}},{"id":"s031","date":"2026-10-08","place":"수원","res":{"김준희":334,"김자겸":-250,"박현석":-84}},{"id":"s032","date":"2026-10-10","place":"천안","res":{"김준희":110,"박현석":20,"박종효":-130}},{"id":"s033","date":"2026-10-12","place":"천안","res":{"김준희":140,"김자겸":-330,"박현석":190}}],"updatedAt":"2026-10-12T00:00:00.000Z"};
+const DEMO_KEY = 'holdem_demo_doc', CACHE_KEY = 'holdem_cache_doc';
+
+/* ===== 유틸 ===== */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const signed = v => v > 0 ? '+' + v.toLocaleString('ko-KR') : v < 0 ? '−' + Math.abs(v).toLocaleString('ko-KR') : '0';
+const tone = v => v > 0 ? 'pos' : v < 0 ? 'neg' : 'zero';
+const pct = v => (v * 100).toFixed(1) + '%';
+const D = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+const ymd = s => s.slice(2).replace(/-/g, '.');
+const ym = s => s.slice(0, 7);
+const ymLabel = k => `${k.slice(0, 4)}년 ${Number(k.slice(5))}월`;
+const DOW = ['일', '월', '화', '수', '목', '금', '토'];
+const chip = c => `<span class="chip" style="--c:${c}" aria-hidden="true"></span>`;
+const sum = a => a.reduce((x, y) => x + y, 0);
+const toast = msg => { const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('on'), 1800); };
+
+/* ===== 집계 ===== */
+function analyze(doc) {
+  const sessions = doc.sessions.slice().sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id));
+  const names = doc.players.filter(p => sessions.some(s => p in s.res));
+  const P = names.length, N = sessions.length;
+  const color = Object.fromEntries(doc.players.map((p, i) => [p, CONFIG.PLAYER_COLORS[i % CONFIG.PLAYER_COLORS.length]]));
+  const run = Object.fromEntries(names.map(p => [p, 0]));
+  const cum = sessions.map(s => { for (const p in s.res) if (p in run) run[p] += s.res[p]; return { ...run }; });
+
+  const stats = names.map(name => {
+    const xs = sessions.filter(s => name in s.res).map(s => s.res[name]);
+    const total = sum(xs);
+    let w = 0, l = 0, bw = 0, bl = 0;
+    xs.forEach(v => { if (v > 0) { w++; l = 0; } else if (v < 0) { l++; w = 0; } else { w = 0; l = 0; } bw = Math.max(bw, w); bl = Math.max(bl, l); });
+    const path = cum.map(c => c[name]);
+    return {
+      name, color: color[name], total, n: xs.length, rate: N ? xs.length / N : 0,
+      win: xs.length ? xs.filter(v => v > 0).length / xs.length : 0,
+      per: xs.length ? total / xs.length : 0,
+      max: Math.max(...xs), min: Math.min(...xs),
+      peak: Math.max(0, ...path), trough: Math.min(0, ...path),
+      bestStreak: bw, worstStreak: bl, last5: xs.slice(-5)
+    };
+  });
+  const ranked = stats.slice().sort((a, b) => b.total - a.total);
+
+  const months = new Map();
+  sessions.forEach(s => {
+    const k = ym(s.date);
+    if (!months.has(k)) months.set(k, { k, cnt: 0, sum: {} });
+    const m = months.get(k); m.cnt++;
+    for (const p in s.res) m.sum[p] = (m.sum[p] || 0) + s.res[p];
+  });
+
+  let best = { v: -Infinity }, worst = { v: Infinity }, seats = 0;
+  sessions.forEach(s => { for (const p in s.res) { seats++; const v = s.res[p];
+    if (v > best.v) best = { v, who: p, d: s.date }; if (v < worst.v) worst = { v, who: p, d: s.date }; } });
+  const places = {};
+  sessions.forEach(s => { if (s.place) places[s.place] = (places[s.place] || 0) + 1; });
+  return { sessions, names, P, N, color, cum, stats, ranked, months, best, worst, seats, places, updatedAt: doc.updatedAt };
+}
+
+/* ===== 순위 ===== */
+function renderRank(M) {
+  const { ranked, sessions, N, best, worst, seats, places } = M;
+  document.title = CONFIG.TITLE;
+  $('#title').textContent = CONFIG.TITLE;
+  $('#season').textContent = `${ymd(sessions[0].date)} 시즌 시작`;
+  $('#caption').textContent = `${N}경기 진행, 최근 경기 ${ymd(sessions[N - 1].date)} ${sessions[N - 1].place}`;
+  const L = ranked[0], S = ranked[1];
+  $('#leader').innerHTML = `
+    <div class="leader-label"><span class="crown" aria-hidden="true">♛</span>현재 선두</div>
+    <div class="leader-name">${chip(L.color)}${esc(L.name)}</div>
+    <div class="leader-value">${signed(L.total)}</div>
+    <div class="leader-sub">${S ? `2위 ${esc(S.name)}와 ${(L.total - S.total).toLocaleString('ko-KR')} 차이` : ''}</div>`;
+  const maxAbs = Math.max(1, ...ranked.map(s => Math.abs(s.total)));
+  $('#rank-list').innerHTML = ranked.map((s, k) => `<li><button type="button" class="rank-row" data-p="${esc(s.name)}">
+      <span class="rank-no">${k + 1}</span>
+      <span class="rank-name">${chip(s.color)}${esc(s.name)}</span>
+      <span class="rank-val ${tone(s.total)}">${signed(s.total)}</span>
+      <span class="rank-meta">${s.n}경기 참가, 승률 ${pct(s.win)}</span>
+      <span class="rank-bar" aria-hidden="true">${s.total ? `<span class="${s.total > 0 ? 'up' : 'down'}" style="width:${(Math.abs(s.total) / maxAbs * 50).toFixed(1)}%"></span>` : ''}</span>
+    </button></li>`).join('');
+  $('#rank-list').onclick = e => { const b = e.target.closest('.rank-row'); if (!b) return; focus = b.dataset.p; go('trend'); };
+
+  const pl = Object.entries(places).sort((a, b) => b[1] - a[1]);
+  $('#stat-grid').innerHTML = [
+    ['최고 단일 수익', `<span class="pos">${signed(best.v)}</span>`, `${esc(best.who)}, ${ymd(best.d)}`],
+    ['최대 단일 손실', `<span class="neg">${signed(worst.v)}</span>`, `${esc(worst.who)}, ${ymd(worst.d)}`],
+    ['평균 참가 인원', `${(seats / N).toFixed(1)}명`, `연인원 ${seats}명`],
+    ['자주 모인 곳', pl.length ? esc(pl[0][0]) : '-', pl.map(([k, v]) => `${esc(k)} ${v}`).join(', ')]
+  ].map(([k, v, d]) => `<div class="stat"><div class="stat-k">${k}</div><div class="stat-v">${v}</div><div class="stat-d">${d}</div></div>`).join('');
+}
+
+/* ===== 추이 ===== */
+let focus = null, scrub = null;
+function renderTrendPlayers(M) {
+  const opts = [['', '전체'], ...M.ranked.map(s => [s.name, s.name])];
+  $('#trend-players').innerHTML = opts.map(([v, t]) =>
+    `<button type="button" class="pill" data-p="${esc(v)}" aria-pressed="${(focus || '') === v}">${v ? chip(M.color[v]) : ''}${esc(t)}</button>`).join('');
+  $('#trend-players').onclick = e => { const b = e.target.closest('.pill'); if (!b) return; focus = b.dataset.p || null; scrub = null; renderTrend(M); };
+}
+
+function niceStep(range, count) {
+  const raw = range / count, mag = Math.pow(10, Math.floor(Math.log10(raw))), r = raw / mag;
+  return (r < 1.5 ? 1 : r < 3 ? 2 : r < 7 ? 5 : 10) * mag;
+}
+
+function renderTrend(M) {
+  renderTrendPlayers(M);
+  const svg = $('#trend');
+  const W = svg.parentElement.clientWidth || 360, H = 230;
+  const m = { l: 12, r: 46, t: 10, b: 24 };
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('height', H);
+  const { cum, sessions, names, color } = M, n = sessions.length;
+  const lines = focus ? [focus] : names;
+  const vals = cum.flatMap(c => lines.map(p => c[p]));
+  let lo = Math.min(0, ...vals), hi = Math.max(0, ...vals);
+  if (lo === hi) { lo -= 10; hi += 10; }
+  const step = niceStep(hi - lo, 4);
+  lo = Math.floor(lo / step) * step; hi = Math.ceil(hi / step) * step;
+  const x = i => m.l + (n <= 1 ? 0 : i * (W - m.l - m.r) / (n - 1));
+  const y = v => m.t + (hi - v) / (hi - lo) * (H - m.t - m.b);
+  const path = p => cum.map((c, j) => `${j ? 'L' : 'M'}${x(j).toFixed(1)} ${y(c[p]).toFixed(1)}`).join('');
+
+  let g = `<defs><linearGradient id="area" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="${focus ? color[focus] : '#000'}" stop-opacity=".28"/><stop offset="1" stop-color="${focus ? color[focus] : '#000'}" stop-opacity="0"/></linearGradient></defs>`;
+  for (let v = lo; v <= hi + 1e-9; v += step) {
+    g += `<line x1="${m.l}" x2="${W - m.r}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)" ${v === 0 ? 'stroke-dasharray="3 4" stroke="var(--faint)"' : ''}/>`;
+    g += `<text x="${W - m.r + 6}" y="${y(v) + 4}">${signed(v)}</text>`;
+  }
+  let lastX = -99, prev = '';
+  sessions.forEach((s, i) => { const k = ym(s.date);
+    if (k !== prev && x(i) - lastX > 52) { g += `<text x="${x(i)}" y="${H - 6}" text-anchor="${i === 0 ? 'start' : 'middle'}">${k.slice(2).replace('-', '.')}</text>`; lastX = x(i); }
+    prev = k; });
+  if (focus) {
+    names.filter(p => p !== focus).forEach(p => { g += `<path d="${path(p)}" fill="none" stroke="var(--faint)" stroke-opacity=".35" stroke-width="1.2"/>`; });
+    g += `<path d="${path(focus)}L${x(n - 1)} ${y(0)}L${x(0)} ${y(0)}Z" fill="url(#area)"/>`;
+    g += `<path d="${path(focus)}" fill="none" stroke="${color[focus]}" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>`;
+  } else {
+    names.forEach(p => { g += `<path d="${path(p)}" fill="none" stroke="${color[p]}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`; });
+  }
+  const j = scrub ?? n - 1;
+  g += `<line x1="${x(j)}" x2="${x(j)}" y1="${m.t}" y2="${H - m.b}" stroke="var(--sub)" stroke-width="1" ${scrub === null ? 'stroke-opacity="0"' : ''}/>`;
+  lines.forEach(p => { g += `<circle cx="${x(j)}" cy="${y(cum[j][p])}" r="${focus ? 5 : 3.5}" fill="${color[p]}" stroke="var(--surface)" stroke-width="2"/>`; });
+  svg.innerHTML = g;
+
+  // 읽기 영역
+  const s = sessions[j];
+  const dateTxt = `${ymd(s.date)} (${DOW[D(s.date).getDay()]}) ${s.place}${scrub === null ? ', 최신' : ''}`;
+  if (focus) {
+    $('#ro-label').innerHTML = `${chip(color[focus])}${esc(focus)} 누적`;
+    $('#ro-value').innerHTML = `<span class="${tone(cum[j][focus])}">${signed(cum[j][focus])}</span>`;
+    const d = s.res[focus];
+    $('#ro-date').textContent = dateTxt + (d === undefined ? ', 불참' : `, 이날 ${signed(d)}`);
+  } else {
+    const top = names.slice().sort((a, b) => cum[j][b] - cum[j][a])[0];
+    $('#ro-label').innerHTML = `이 시점 1위`;
+    $('#ro-value').innerHTML = `${chip(color[top])} ${esc(top)} <span class="${tone(cum[j][top])}">${signed(cum[j][top])}</span>`;
+    $('#ro-date').textContent = dateTxt;
+  }
+
+  // 하단 상세
+  if (focus) {
+    const st = M.stats.find(t => t.name === focus);
+    $('#trend-detail').innerHTML = `<div class="group-title">${esc(focus)} 기록</div><div class="tiles">
+      ${tile('최고 스택', `<span class="pos">${signed(st.peak)}</span>`, '시즌 중 가장 높았던 누적')}
+      ${tile('최저 스택', `<span class="neg">${signed(st.trough)}</span>`, '시즌 중 가장 낮았던 누적')}
+      ${tile('최다 연승', `${st.bestStreak}연승`, `승률 ${pct(st.win)}`)}
+      ${tile('최다 연패', `${st.worstStreak}연패`, `${st.n}경기 참가`)}
+      ${tile('최고 단일', `<span class="pos">${signed(st.max)}</span>`, `최저 ${signed(st.min)}`)}
+      ${tile('최근 5경기', `<span class="${tone(sum(st.last5))}">${signed(sum(st.last5))}</span>`, `<span class="form">${st.last5.map(v => `<i class="${v > 0 ? 'w' : v < 0 ? 'l' : ''}"></i>`).join('')}</span>`)}
+    </div>`;
+  } else {
+    const order = names.slice().sort((a, b) => cum[j][b] - cum[j][a]);
+    $('#trend-detail').innerHTML = `<div class="group-title">이 시점 순위</div><ol class="group at-list">${order.map((p, k) =>
+      `<li class="at-row"><span class="n">${k + 1}</span><span class="nm">${chip(color[p])}${esc(p)}</span><span class="v ${tone(cum[j][p])}">${signed(cum[j][p])}</span></li>`).join('')}</ol>`;
+  }
+
+  // 손가락으로 밀기
+  const pick = e => {
+    const r = svg.getBoundingClientRect();
+    const vx = (e.clientX - r.left) / r.width * W;
+    const k = Math.max(0, Math.min(n - 1, Math.round((vx - m.l) / ((W - m.l - m.r) / Math.max(1, n - 1)))));
+    if (k !== scrub) { scrub = k; renderTrend(M); if (navigator.vibrate) navigator.vibrate(4); }
+  };
+  svg.onpointerdown = e => { svg.setPointerCapture(e.pointerId); pick(e); };
+  svg.onpointermove = e => { if (e.buttons || e.pointerType === 'mouse') pick(e); };
+  svg.onpointerup = svg.onpointercancel = svg.onpointerleave = () => { if (scrub !== null) { scrub = null; renderTrend(M); } };
+}
+const tile = (k, v, d) => `<div class="stat"><div class="stat-k">${k}</div><div class="stat-v">${v}</div><div class="stat-d">${d}</div></div>`;
+
+/* ===== 월별 ===== */
+let month = null;
+function renderMonth(M) {
+  const keys = [...M.months.keys()].sort().reverse();
+  if (!month || !M.months.has(month)) month = keys[0];
+  $('#month-caption').textContent = `${keys.length}개월 동안의 월간 손익`;
+  $('#month-tabs').innerHTML = keys.map(k => `<button type="button" class="pill" data-m="${k}" aria-pressed="${k === month}">${k.slice(2).replace('-', '.')}</button>`).join('');
+  $('#month-tabs').onclick = e => { const b = e.target.closest('.pill'); if (!b) return; month = b.dataset.m; renderMonth(M); };
+  const mo = M.months.get(month);
+  const rows = M.names.map(p => ({ p, v: mo.sum[p] })).sort((a, b) => (b.v ?? -1e9) - (a.v ?? -1e9));
+  const maxAbs = Math.max(1, ...rows.filter(r => r.v !== undefined).map(r => Math.abs(r.v)));
+  const top = rows[0];
+  $('#month-card').innerHTML = `
+    <div class="mc-head"><span class="mc-title">${ymLabel(month)}</span><span class="mc-count">${mo.cnt}경기</span></div>
+    <p class="mc-mvp">이달의 1위 <b>${esc(top.p)} ${signed(top.v)}</b></p>
+    ${rows.map(({ p, v }) => `<div class="dv">
+      <span class="dv-name">${chip(M.color[p])}${esc(p)}</span>
+      <span class="dv-track" aria-hidden="true">${v === undefined ? '<span class="none"></span>' : v === 0 ? '' : `<span class="${v > 0 ? 'up' : 'down'}" style="width:${(Math.abs(v) / maxAbs * 50).toFixed(1)}%"></span>`}</span>
+      <span class="dv-val ${v === undefined ? 'absent' : tone(v)}">${v === undefined ? '불참' : signed(v)}</span></div>`).join('')}`;
+  const sel = $('#month-tabs [aria-pressed="true"]'); if (sel) sel.scrollIntoView({ inline: 'nearest', block: 'nearest' });
+
+  $('#mvp-list').innerHTML = keys.map(k => {
+    const s = M.months.get(k).sum, w = Object.keys(s).sort((a, b) => s[b] - s[a])[0];
+    return `<li><button type="button" class="mvp-row" data-m="${k}" aria-current="${k === month}">
+      <span class="m">${k.slice(2).replace('-', '.')}</span><span class="nm">${chip(M.color[w])}${esc(w)}</span><span class="v pos">${signed(s[w])}</span></button></li>`;
+  }).join('');
+  $('#mvp-list').onclick = e => { const b = e.target.closest('.mvp-row'); if (!b) return; month = b.dataset.m; renderMonth(M); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+}
+
+/* ===== 경기 기록 ===== */
+const gf = { place: '', player: '' };
+function renderGames(M) {
+  const places = Object.keys(M.places).sort((a, b) => M.places[b] - M.places[a]);
+  $('#games-place').innerHTML = [['', '전체 장소'], ...places.map(p => [p, p])].map(([v, t]) =>
+    `<button type="button" class="pill" data-v="${esc(v)}" aria-pressed="${gf.place === v}">${esc(t)}</button>`).join('');
+  $('#games-player').innerHTML = [['', '전체 플레이어'], ...M.ranked.map(s => [s.name, s.name])].map(([v, t]) =>
+    `<button type="button" class="pill" data-v="${esc(v)}" aria-pressed="${gf.player === v}">${v ? chip(M.color[v]) : ''}${esc(t)}</button>`).join('');
+  $('#games-place').onclick = e => { const b = e.target.closest('.pill'); if (!b) return; gf.place = b.dataset.v; renderGames(M); };
+  $('#games-player').onclick = e => { const b = e.target.closest('.pill'); if (!b) return; gf.player = b.dataset.v; renderGames(M); };
+
+  const list = M.sessions.slice().reverse().filter(s => (!gf.place || s.place === gf.place) && (!gf.player || gf.player in s.res));
+  $('#games-caption').textContent = `${list.length}경기`;
+  if (!list.length) { $('#games-list').innerHTML = `<p class="empty">조건에 맞는 경기가 없습니다. 필터를 바꿔 보세요.</p>`; return; }
+  let html = '', prev = '';
+  list.forEach(s => {
+    const k = ym(s.date);
+    if (k !== prev) { html += `<div class="g-month">${ymLabel(k)}</div>`; prev = k; }
+    const res = Object.entries(s.res).sort((a, b) => b[1] - a[1]);
+    const total = sum(res.map(r => r[1]));
+    html += `<article class="game">
+      <div class="game-head"><span class="game-date">${s.date.slice(5).replace('-', '.')}</span><span class="game-dow">${DOW[D(s.date).getDay()]}요일, ${res.length}명</span>
+        ${s.place ? `<span class="tag" style="--pc:${CONFIG.PLACE_COLORS[s.place] || '#8A9A92'}">${esc(s.place)}</span>` : ''}</div>
+      <div class="game-res">${res.map(([p, v]) => `<div class="gr"><span class="nm">${chip(M.color[p])}${esc(p)}</span><span class="v ${tone(v)}">${signed(v)}</span></div>`).join('')}</div>
+      ${total !== 0 ? `<div class="game-warn">합계가 ${signed(total)}입니다. 기록을 확인해 주세요.</div>` : ''}
+    </article>`;
+  });
+  $('#games-list').innerHTML = html;
+}
+
+/* ===== 화면 전환 ===== */
+let model = null, view = 'rank';
+function go(v) {
+  view = v;
+  document.querySelectorAll('.view').forEach(el => { el.hidden = el.id !== 'v-' + v; });
+  document.querySelectorAll('.tabbar button').forEach(b => { if (b.dataset.v === v) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
+  window.scrollTo(0, 0);
+  if (model) ({ rank: renderRank, trend: renderTrend, month: renderMonth, games: renderGames })[v](model);
+  try { history.replaceState(null, '', '#' + v); } catch (e) {}
+}
+$('.tabbar').addEventListener('click', e => { const b = e.target.closest('button'); if (b) go(b.dataset.v); });
+
+/* ===== 데이터 ===== */
+function show(doc, note) {
+  if (!doc.sessions.length) { $('#v-rank').insertAdjacentHTML('beforeend', '<p class="empty">아직 기록된 경기가 없습니다. 기록 페이지에서 첫 경기를 등록하세요.</p>'); return; }
+  model = analyze(doc);
+  go(view);
+  if (view !== 'rank') renderRank(model);
+  $('#status').textContent = note;
+}
+async function load() {
+  const btn = $('#reload'); btn.classList.add('spin');
+  try {
+    if (!CONFIG.API_BASE) {
+      let doc = SEED; try { doc = JSON.parse(localStorage.getItem(DEMO_KEY)) || SEED; } catch (e) {}
+      show(doc, '예시 모드: 이 기기에 저장된 데이터를 표시합니다.');
+      return;
+    }
+    const r = await fetch(CONFIG.API_BASE + '/api/data', { cache: 'no-store' });
+    if (!r.ok) throw new Error('서버 응답 ' + r.status);
+    const doc = await r.json();
+    try { localStorage.setItem(CACHE_KEY, JSON.stringify(doc)); } catch (e) {}
+    const t = new Date(doc.updatedAt);
+    show(doc, `마지막 기록 ${t.getMonth() + 1}월 ${t.getDate()}일 ${t.getHours()}:${String(t.getMinutes()).padStart(2, '0')}`);
+  } catch (err) {
+    let doc = null; try { doc = JSON.parse(localStorage.getItem(CACHE_KEY)); } catch (e) {}
+    if (doc) show(doc, '연결할 수 없어 마지막으로 받은 기록을 표시합니다.');
+    toast('기록을 불러오지 못했습니다. 연결을 확인하세요.');
+  } finally { btn.classList.remove('spin'); }
+}
+$('#reload').addEventListener('click', load);
+let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => model && view === 'trend' && renderTrend(model), 150); });
+view = (location.hash.slice(1) in { rank: 1, trend: 1, month: 1, games: 1 }) ? location.hash.slice(1) : 'rank';
+load();
+</script>
+</body>
+</html>
