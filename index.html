@@ -119,6 +119,9 @@ li:first-child .rank-no { color: var(--gold); }
 .ro-date { font-size: 12.5px; color: var(--sub); }
 #trend { display: block; width: 100%; touch-action: none; user-select: none; -webkit-user-select: none; }
 #trend text { fill: var(--faint); font-size: 11px; font-family: var(--font); }
+.trend-note { display: flex; align-items: center; gap: 8px; padding: 6px 16px 8px; font-size: 13px; color: var(--sub); font-weight: 600; }
+.trend-note .key { width: 22px; height: 0; border-top: 2px dashed var(--c); flex: none; }
+.trend-note b { font-weight: 800; }
 .at-list { list-style: none; padding: 0; }
 .at-row { display: flex; align-items: center; gap: 10px; padding: 11px 16px; }
 .at-row + .at-row { border-top: 1px solid var(--line); }
@@ -266,6 +269,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
       <div class="group chart-card">
         <div class="readout"><div class="ro-label" id="ro-label"></div><div class="ro-value" id="ro-value"></div><div class="ro-date" id="ro-date"></div></div>
         <svg id="trend" aria-label="누적 손익 그래프"></svg>
+        <div class="trend-note" id="trend-note" hidden></div>
       </div>
       <div id="trend-detail"></div>
     </div>
@@ -427,7 +431,18 @@ function renderTrend(M) {
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('height', H);
   const { cum, sessions, names, color } = M, n = sessions.length;
   const lines = focus ? [focus] : names;
-  const vals = cum.flatMap(c => lines.map(p => c[p]));
+  let fit = null;
+  if (focus) {
+    const j0 = sessions.findIndex(s => focus in s.res);
+    const pts = cum.slice(j0).map((c, k) => [j0 + k, c[focus]]);
+    if (pts.length >= 3) {
+      const mx = sum(pts.map(q => q[0])) / pts.length, my = sum(pts.map(q => q[1])) / pts.length;
+      const sxx = sum(pts.map(q => (q[0] - mx) ** 2)), sxy = sum(pts.map(q => (q[0] - mx) * (q[1] - my)));
+      const slope = sxx ? sxy / sxx : 0, icpt = my - slope * mx;
+      fit = { j0, j1: n - 1, slope, y0: icpt + slope * j0, y1: icpt + slope * (n - 1) };
+    }
+  }
+  const vals = cum.flatMap(c => lines.map(p => c[p])).concat(fit ? [fit.y0, fit.y1] : []);
   let lo = Math.min(0, ...vals), hi = Math.max(0, ...vals);
   if (lo === hi) { lo -= 10; hi += 10; }
   const step = niceStep(hi - lo, 4);
@@ -450,6 +465,7 @@ function renderTrend(M) {
     names.filter(p => p !== focus).forEach(p => { g += `<path d="${path(p)}" fill="none" stroke="var(--faint)" stroke-opacity=".35" stroke-width="1.2"/>`; });
     g += `<path d="${path(focus)}L${x(n - 1)} ${y(0)}L${x(0)} ${y(0)}Z" fill="url(#area)"/>`;
     g += `<path d="${path(focus)}" fill="none" stroke="${color[focus]}" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>`;
+    if (fit) g += `<line x1="${x(fit.j0)}" y1="${y(fit.y0)}" x2="${x(fit.j1)}" y2="${y(fit.y1)}" stroke="var(--ink)" stroke-opacity=".55" stroke-width="1.6" stroke-dasharray="6 5" stroke-linecap="round"/>`;
   } else {
     names.forEach(p => { g += `<path d="${path(p)}" fill="none" stroke="${color[p]}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`; });
   }
@@ -472,6 +488,15 @@ function renderTrend(M) {
     $('#ro-value').innerHTML = `${chip(color[top])} ${esc(top)} <span class="${tone(cum[j][top])}">${signed(cum[j][top])}</span>`;
     $('#ro-date').textContent = dateTxt;
   }
+
+  // 추세 설명
+  const note = $('#trend-note');
+  if (fit) {
+    const v = Math.round(fit.slope * 10) / 10;
+    const word = Math.abs(v) < 1 ? '보합 흐름' : v > 0 ? '상승 흐름' : '하락 흐름';
+    note.hidden = false;
+    note.innerHTML = `<span class="key" style="--c:var(--ink)" aria-hidden="true"></span>추세선 경기당 <b class="${tone(v)}">${signed(v)}</b><span>${word}</span>`;
+  } else note.hidden = true;
 
   // 하단 상세
   if (focus) {
