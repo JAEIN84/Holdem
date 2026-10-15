@@ -73,6 +73,22 @@ body { padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
 .top-actions { display: flex; align-items: center; gap: 12px; }
 .pend { display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: var(--warn); color: #fff; font-size: 11px; }
 .me { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: var(--sub); }
+.me-btn { border: 0; background: var(--surface); color: var(--ink); font-size: 13px; font-weight: 700; padding: 6px 12px; border-radius: 999px; }
+.sheet { position: fixed; inset: 0; z-index: 60; display: grid; align-items: end; background: rgba(0,0,0,.45); }
+.sheet-in { background: var(--surface); border-radius: 22px 22px 0 0; padding: 18px 20px calc(20px + env(safe-area-inset-bottom, 0px)); max-width: 480px; width: 100%; margin: 0 auto; max-height: 92vh; overflow: auto; }
+.sheet-head { display: flex; justify-content: space-between; align-items: center; }
+.sheet-head h2 { margin: 0; font-size: 20px; font-weight: 800; }
+.sheet-x { border: 0; background: var(--surface-2); width: 34px; height: 34px; border-radius: 50%; font-size: 15px; color: var(--sub); }
+.sheet-sub { color: var(--sub); font-size: 13.5px; margin: 4px 0 14px; }
+.sf { display: block; margin-bottom: 10px; }
+.sf span { display: block; font-size: 13px; font-weight: 700; color: var(--sub); margin: 0 2px 5px; }
+.sf input { width: 100%; height: 46px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2); padding: 0 12px; font-size: 16px; }
+.sheet-msg { min-height: 20px; margin: 2px 2px 8px; font-size: 13.5px; font-weight: 600; color: var(--sub); }
+.sheet-msg.bad { color: var(--warn); } .sheet-msg.ok { color: #1F9D62; }
+.sheet-btn { width: 100%; height: 48px; border: 0; border-radius: 12px; background: var(--brand); color: #fff; font-size: 16px; font-weight: 800; }
+.sheet-btn:disabled { background: var(--line); color: var(--faint); }
+.sheet-out { width: 100%; height: 46px; margin-top: 10px; border: 0; border-radius: 12px; background: var(--surface-2); color: var(--warn); font-size: 15px; font-weight: 700; }
+@media (orientation: landscape) and (max-height: 500px) { .sheet { align-items: center; } .sheet-in { border-radius: 18px; max-height: 96vh; } }
 .me-out { border: 0; background: var(--surface); color: var(--sub); font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; }
 .top-link { color: var(--brand); text-decoration: none; font-weight: 700; font-size: 14px; }
 :root[data-theme="dark"] .top-link { color: var(--gold); }
@@ -253,7 +269,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 
   <!-- 순위 -->
   <section class="view" id="v-rank">
-    <div class="topline"><span class="me"><span id="me-name"></span><button type="button" class="me-out" id="logout">로그아웃</button></span><span class="top-actions"><a class="top-link" id="admin-link" href="admin.html" hidden>Admin ›</a><a class="top-link" id="rec-link" href="record.html" hidden>Record ›</a><button type="button" class="icon-btn" id="reload" aria-label="새로고침">
+    <div class="topline"><span class="me"><button type="button" class="me-btn" id="me-btn" aria-haspopup="dialog"><span id="me-name"></span> ▾</button></span><span class="top-actions"><a class="top-link" id="admin-link" href="admin.html" hidden>Admin ›</a><a class="top-link" id="rec-link" href="record.html" hidden>Record ›</a><button type="button" class="icon-btn" id="reload" aria-label="새로고침">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg></button></span></div>
     <h1 class="large-title" id="title">Tri-City Hold’em</h1>
     <p class="caption" id="caption"></p>
@@ -308,6 +324,18 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   <button type="button" data-v="games"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="11" height="15" rx="2"/><path d="M9 21h9a2 2 0 0 0 2-2V8"/></svg>기록</button>
 </nav>
 <div class="toast" id="toast"></div>
+<div class="sheet" id="me-sheet" hidden><div class="sheet-in" role="dialog" aria-modal="true" aria-labelledby="me-title">
+  <div class="sheet-head"><h2 id="me-title">내 계정</h2><button type="button" class="sheet-x" id="me-close" aria-label="닫기">✕</button></div>
+  <p class="sheet-sub" id="me-info"></p>
+  <form id="pw-form" novalidate>
+    <label class="sf"><span>현재 비밀번호</span><input type="password" id="pw-cur" autocomplete="current-password"></label>
+    <label class="sf"><span>새 비밀번호</span><input type="password" id="pw-new" autocomplete="new-password" placeholder="영문과 숫자를 섞어 8자 이상"></label>
+    <label class="sf"><span>새 비밀번호 확인</span><input type="password" id="pw-new2" autocomplete="new-password"></label>
+    <p class="sheet-msg" id="pw-msg"></p>
+    <button type="submit" class="sheet-btn" id="pw-btn" disabled>비밀번호 변경</button>
+  </form>
+  <button type="button" class="sheet-out" id="logout">로그아웃</button>
+</div></div>
 
 <script src="auth.js"></script>
 <script>
@@ -629,11 +657,30 @@ if (ME) {
   $('#rec-link').hidden = !CAN_EDIT;
   $('#admin-link').hidden = ME.role !== 'admin';
   if (ME.role === 'admin') api('GET', '/api/users').then(list => {
-    const n = list.filter(u => u.status === 'pending').length;
+    const n = list.filter(u => u.status === 'pending' || u.resetRequestedAt).length;
     if (n) $('#admin-link').innerHTML = `Admin <span class="pend">${n}</span> ›`;
   }).catch(() => {});
 }
 $('#logout').addEventListener('click', () => { if (confirm('로그아웃할까요?')) Auth.logout(); });
+/* 내 계정: 비밀번호 변경 */
+const ROLE_KO = { viewer: '조회', editor: '기록', admin: '관리자' };
+$('#me-btn').addEventListener('click', () => { $('#me-info').textContent = `${ME.name} (${ME.id}), 권한: ${ROLE_KO[ME.role]}`; $('#pw-form').reset(); $('#pw-msg').textContent = ''; $('#pw-btn').disabled = true; $('#me-sheet').hidden = false; });
+$('#me-close').addEventListener('click', () => { $('#me-sheet').hidden = true; });
+$('#me-sheet').addEventListener('click', e => { if (e.target.id === 'me-sheet') $('#me-sheet').hidden = true; });
+$('#pw-form').addEventListener('input', () => {
+  const n = $('#pw-new').value, n2 = $('#pw-new2').value, msg = $('#pw-msg');
+  const ok = n.length >= 8 && /[A-Za-z]/.test(n) && /\d/.test(n);
+  msg.className = 'sheet-msg' + (n && !ok ? ' bad' : n2 && n !== n2 ? ' bad' : '');
+  msg.textContent = n && !ok ? '영문과 숫자를 섞어 8자 이상 입력하세요' : n2 && n !== n2 ? '새 비밀번호가 일치하지 않습니다' : '';
+  $('#pw-btn').disabled = !($('#pw-cur').value && ok && n === n2);
+});
+$('#pw-form').addEventListener('submit', async e => {
+  e.preventDefault(); const btn = $('#pw-btn'), msg = $('#pw-msg'); btn.disabled = true;
+  try {
+    await api('PUT', '/api/password', { current: $('#pw-cur').value, password: $('#pw-new').value });
+    msg.className = 'sheet-msg ok'; msg.textContent = '비밀번호를 바꿨습니다. 다른 기기에서는 다시 로그인해야 합니다.'; $('#pw-form').reset();
+  } catch (err) { msg.className = 'sheet-msg bad'; msg.textContent = err.message; btn.disabled = false; }
+});
 let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (model && view === 'trend') renderTrend(model); }, 150); });
 view = (location.hash.slice(1) in { rank: 1, trend: 1, month: 1, games: 1 }) ? location.hash.slice(1) : 'rank';
 if (ME) load();
