@@ -320,14 +320,14 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 
 /* ===== 시작 로딩 화면 ===== */
 .splash { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center;
-  background: radial-gradient(120% 80% at 50% 20%, #8E1A2B 0%, #5A0C18 55%, #2E050C 100%); color: #F7F2E6;
+  background: radial-gradient(110% 70% at 50% 30%, #1A211D 0%, #0E1311 55%, #0A0D0B 100%); color: #EEF2EF;
   transition: opacity .35s ease, visibility .35s; }
 .splash.hide { opacity: 0; visibility: hidden; }
 .splash-in { display: flex; flex-direction: column; align-items: center; gap: 14px; transform: translateY(-4vh); }
-.splash img { width: 96px; height: 96px; border-radius: 22px; box-shadow: 0 16px 40px rgba(0,0,0,.45); animation: pop .6s cubic-bezier(.2,.9,.2,1.2) both; }
+.splash img { width: 96px; height: 96px; border-radius: 22px; box-shadow: 0 16px 40px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.06); animation: pop .6s cubic-bezier(.2,.9,.2,1.2) both; }
 .splash-name { font-size: 22px; font-weight: 800; letter-spacing: -.01em; animation: rise .6s .1s ease both; }
 .splash-dots { display: flex; gap: 7px; margin-top: 6px; }
-.splash-dots i { width: 7px; height: 7px; border-radius: 50%; background: rgba(247,242,230,.85); animation: blink 1s infinite ease-in-out; }
+.splash-dots i { width: 7px; height: 7px; border-radius: 50%; background: rgba(238,242,239,.8); animation: blink 1s infinite ease-in-out; }
 .splash-dots i:nth-child(2) { animation-delay: .15s; } .splash-dots i:nth-child(3) { animation-delay: .3s; }
 @keyframes pop { from { transform: scale(.82); opacity: 0; } }
 @keyframes rise { from { transform: translateY(8px); opacity: 0; } }
@@ -431,9 +431,10 @@ const CONFIG = {
 };
 const CACHE_KEY = 'holdem_cache_doc';
 const SPLASH_AT = Date.now();
+const SPLASH_MIN_MS = 2000;   // 로딩 화면 최소 표시 시간 (밀리초)
 function hideSplash() {
   const el = document.getElementById('splash'); if (!el || el.classList.contains('hide')) return;
-  setTimeout(() => { el.classList.add('hide'); setTimeout(() => el.remove(), 400); }, Math.max(0, 400 - (Date.now() - SPLASH_AT)));
+  setTimeout(() => { el.classList.add('hide'); setTimeout(() => el.remove(), 400); }, Math.max(0, SPLASH_MIN_MS - (Date.now() - SPLASH_AT)));
 }
 const ME = Auth.require();
 const CAN_EDIT = !!ME && ['editor', 'admin'].includes(ME.role);
