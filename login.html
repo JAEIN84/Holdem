@@ -92,6 +92,18 @@ body { min-height: 100vh; }
 .primary:disabled { background: var(--line); color: var(--faint); }
 .msg { min-height: 22px; font-size: 14px; font-weight: 600; margin: 12px 2px 0; text-align: center; }
 .msg.bad { color: var(--warn); } .msg.ok { color: #1F9D62; }
+.text-link { display: block; margin: 14px auto 0; border: 0; background: none; color: var(--sub); font-size: 14px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.panel-title { margin: 0 0 4px; font-size: 18px; font-weight: 800; }
+.panel-note { margin: 0 0 16px; color: var(--sub); font-size: 13.5px; line-height: 1.5; }
+.privacy { background: var(--surface-2); border-radius: 12px; padding: 12px 12px 10px; margin: 4px 0 16px; }
+.privacy .check { margin: 0; color: var(--ink); align-items: flex-start; }
+.privacy .check span { line-height: 1.4; }
+.privacy b { color: var(--warn); font-weight: 700; }
+.privacy details { margin: 8px 0 0 28px; }
+.privacy summary { font-size: 13px; color: var(--sub); font-weight: 600; cursor: pointer; }
+.privacy dl { margin: 8px 0 2px; font-size: 12.5px; color: var(--sub); line-height: 1.5; }
+.privacy dt { font-weight: 700; color: var(--ink); margin-top: 6px; }
+.privacy dd { margin: 0; }
 .done { text-align: center; padding: 10px 4px 4px; }
 .done .ic { font-size: 42px; }
 .done h2 { margin: 8px 0 6px; font-size: 20px; font-weight: 800; }
@@ -152,6 +164,7 @@ body { min-height: 100vh; }
     <label class="check"><input type="checkbox" id="l-save"> 아이디 저장</label>
     <button class="primary" id="l-btn" type="submit">로그인</button>
     <p class="msg" id="l-msg" role="status"></p>
+    <button type="button" class="text-link" id="go-reset">비밀번호를 잊으셨나요?</button>
   </form>
 
   <!-- 가입 신청 -->
@@ -168,9 +181,42 @@ body { min-height: 100vh; }
       <input id="j-pw2" type="password" autocomplete="new-password" maxlength="64">
       <p class="hint" id="h-pw2"></p></div>
     <div class="f"><label for="j-phone">연락처</label>
-      <input id="j-phone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="010-1234-5678" maxlength="13"></div>
+      <input id="j-phone" class="phone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="010-1234-5678" maxlength="13"></div>
+    <div class="privacy">
+      <label class="check req"><input type="checkbox" id="j-agree"> <span>개인정보 수집·이용에 동의합니다 <b>(필수)</b></span></label>
+      <details>
+        <summary>자세히 보기</summary>
+        <dl>
+          <dt>수집 항목</dt><dd>아이디, 성명, 연락처, 비밀번호 (비밀번호는 암호화해 저장하며 원문은 보관하지 않습니다)</dd>
+          <dt>이용 목적</dt><dd>멤버 확인, 가입 승인 연락, 비밀번호 재설정 시 본인 확인</dd>
+          <dt>열람 범위</dt><dd>연락처는 관리자만 볼 수 있으며, 다른 멤버에게 공개되지 않습니다</dd>
+          <dt>보관 기간</dt><dd>탈퇴를 요청하거나 관리자가 계정을 삭제할 때까지. 단, 경기 기록의 변경 이력에는 기록한 사람의 이름이 남습니다</dd>
+          <dt>동의 거부</dt><dd>동의하지 않을 수 있으나, 이 경우 가입할 수 없습니다</dd>
+        </dl>
+      </details>
+    </div>
     <button class="primary" id="j-btn" type="submit" disabled>가입 신청</button>
     <p class="msg" id="j-msg" role="status"></p>
+  </form>
+
+  <!-- 비밀번호 재설정 요청 -->
+  <form class="panel" id="p-reset" novalidate hidden>
+    <h2 class="panel-title">비밀번호 재설정 요청</h2>
+    <p class="panel-note">가입할 때 입력한 정보를 적고 새 비밀번호를 정하세요. 관리자가 승인하면 새 비밀번호로 로그인할 수 있습니다.</p>
+    <div class="f"><label for="r-id">아이디</label>
+      <input id="r-id" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="20"></div>
+    <div class="f"><label for="r-name">성명</label><input id="r-name" autocomplete="name" maxlength="20"></div>
+    <div class="f"><label for="r-phone">연락처</label>
+      <input id="r-phone" class="phone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="010-1234-5678" maxlength="13"></div>
+    <div class="f"><label for="r-pw">새 비밀번호</label>
+      <input id="r-pw" type="password" autocomplete="new-password" maxlength="64">
+      <p class="hint" id="h-rpw">영문과 숫자를 섞어 8자 이상</p></div>
+    <div class="f"><label for="r-pw2">새 비밀번호 확인</label>
+      <input id="r-pw2" type="password" autocomplete="new-password" maxlength="64">
+      <p class="hint" id="h-rpw2"></p></div>
+    <button class="primary" id="r-btn" type="submit" disabled>재설정 요청</button>
+    <p class="msg" id="r-msg" role="status"></p>
+    <button type="button" class="text-link" id="back-login">로그인으로 돌아가기</button>
   </form>
 
   <!-- 신청 완료 -->
@@ -200,7 +246,8 @@ if (Auth.token() && Auth.user()) location.replace(nextPage());
 function tab(which) {
   $('#t-login').setAttribute('aria-selected', which === 'login');
   $('#t-join').setAttribute('aria-selected', which === 'join');
-  $('#p-login').hidden = which !== 'login'; $('#p-join').hidden = which !== 'join'; $('#p-done').hidden = true;
+  $('#p-login').hidden = which !== 'login'; $('#p-join').hidden = which !== 'join'; $('#p-done').hidden = true; $('#p-reset').hidden = which !== 'reset';
+  document.querySelector('.tabs').hidden = which === 'reset';
 }
 $('#t-login').onclick = () => tab('login');
 $('#t-join').onclick = () => tab('join');
@@ -240,19 +287,21 @@ function validate() {
   hint($('#h-id'), id, ID_RE.test(id.value), '사용할 수 있는 형식입니다', '영문 소문자, 숫자, 밑줄(_) 4~20자로 입력하세요', '영문 소문자, 숫자, 밑줄(_) 4~20자');
   hint($('#h-pw'), pw, pwOk(pw.value), '안전한 비밀번호입니다', '영문과 숫자를 섞어 8자 이상 입력하세요', '영문과 숫자를 섞어 8자 이상');
   hint($('#h-pw2'), pw2, pw2.value === pw.value, '비밀번호가 일치합니다', '비밀번호가 일치하지 않습니다', '');
-  const all = ID_RE.test(id.value) && nm.value.trim() && pwOk(pw.value) && pw.value === pw2.value && phoneOk(ph.value);
+  const all = ID_RE.test(id.value) && nm.value.trim() && pwOk(pw.value) && pw.value === pw2.value && phoneOk(ph.value) && $('#j-agree').checked;
   $('#j-btn').disabled = !all;
 }
-$('#j-phone').addEventListener('input', e => {
+document.addEventListener('input', e => {
+  if (!e.target.classList || !e.target.classList.contains('phone')) return;
   const d = e.target.value.replace(/\D/g, '').slice(0, 11);
   e.target.value = d.length < 4 ? d : d.length < 8 ? `${d.slice(0, 3)}-${d.slice(3)}` : `${d.slice(0, 3)}-${d.slice(3, d.length - 4)}-${d.slice(-4)}`;
-});
+}, true);  // 캡처 단계: 검증보다 먼저 하이픈 정리
 $('#p-join').addEventListener('input', validate);
+$('#j-agree').addEventListener('change', validate);
 $('#p-join').onsubmit = async e => {
   e.preventDefault(); validate(); if ($('#j-btn').disabled) return;
   const btn = $('#j-btn'), msg = $('#j-msg'); btn.disabled = true; btn.textContent = '신청 중…'; msg.textContent = '';
   try {
-    const r = await api('POST', '/api/signup', { id: $('#j-id').value.trim(), name: $('#j-name').value.trim(), password: $('#j-pw').value, phone: $('#j-phone').value });
+    const r = await api('POST', '/api/signup', { id: $('#j-id').value.trim(), name: $('#j-name').value.trim(), password: $('#j-pw').value, phone: $('#j-phone').value, agree: $('#j-agree').checked });
     $('#p-join').hidden = true; $('#p-done').hidden = false;
     $('#d-title').textContent = '가입 신청이 접수되었습니다'; $('#d-text').textContent = '관리자가 승인하면 로그인할 수 있습니다.';
     if (r.status === 'active') { $('#d-title').textContent = '관리자 계정이 만들어졌습니다'; $('#d-text').textContent = '바로 로그인할 수 있습니다.'; }
@@ -262,6 +311,30 @@ $('#p-join').onsubmit = async e => {
   finally { btn.textContent = '가입 신청'; validate(); }
 };
 $('#d-btn').onclick = () => { tab('login'); $('#l-pw').focus(); };
+
+/* 비밀번호 재설정 요청 */
+$('#go-reset').onclick = () => { tab('reset'); $('#r-id').value = $('#l-id').value.trim(); $('#r-id').focus(); };
+$('#back-login').onclick = () => tab('login');
+function validateReset() {
+  const id = $('#r-id'), pw = $('#r-pw'), pw2 = $('#r-pw2');
+  id.value = id.value.toLowerCase();
+  hint($('#h-rpw'), pw, pwOk(pw.value), '안전한 비밀번호입니다', '영문과 숫자를 섞어 8자 이상 입력하세요', '영문과 숫자를 섞어 8자 이상');
+  hint($('#h-rpw2'), pw2, pw2.value === pw.value, '비밀번호가 일치합니다', '비밀번호가 일치하지 않습니다', '');
+  $('#r-btn').disabled = !(ID_RE.test(id.value) && $('#r-name').value.trim() && phoneOk($('#r-phone').value) && pwOk(pw.value) && pw.value === pw2.value);
+}
+$('#p-reset').addEventListener('input', validateReset);
+$('#p-reset').onsubmit = async e => {
+  e.preventDefault(); validateReset(); if ($('#r-btn').disabled) return;
+  const btn = $('#r-btn'), msg = $('#r-msg'); btn.disabled = true; btn.textContent = '요청 중…'; msg.textContent = '';
+  try {
+    await api('POST', '/api/reset-request', { id: $('#r-id').value.trim(), name: $('#r-name').value.trim(), phone: $('#r-phone').value, password: $('#r-pw').value });
+    $('#l-id').value = $('#r-id').value.trim();
+    $('#p-reset').reset(); $('#p-reset').hidden = true; $('#p-done').hidden = false;
+    $('#d-title').textContent = '재설정 요청이 접수되었습니다';
+    $('#d-text').textContent = '관리자가 승인하면 새 비밀번호로 로그인할 수 있습니다. 입력한 정보가 가입 정보와 다르면 처리되지 않으니, 승인이 늦어지면 관리자에게 알려 주세요.';
+  } catch (err) { msg.className = 'msg bad'; msg.textContent = err.message; }
+  finally { btn.textContent = '재설정 요청'; validateReset(); }
+};
 </script>
 </body>
 </html>
