@@ -144,12 +144,12 @@ input[type="date"] { min-height: 38px; }
 .sheet .save { margin-top: 12px; }
 
 /* ===== 넓은 화면: 폴더블(펼침)·태블릿·PC ===== */
-@media (min-width: 760px) {
+@media (min-width: 760px), (orientation: landscape) and (max-height: 500px) and (min-width: 600px) {
   body { padding-bottom: 40px; }
   .app { max-width: 1080px; padding: 0 32px; }
   .large-title { font-size: 36px; }
   .rec-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; align-items: start; }
-  .col-form { position: sticky; top: calc(12px + env(safe-area-inset-top, 0px)); padding-bottom: 150px; }
+  .col-form { padding-bottom: 150px; }
   .col-list .sec:first-child { margin-top: 0; }
   .col-list { padding-top: 0; }
   .savebar { left: max(32px, calc(50% - 540px + 32px)); right: auto; width: min(calc(50% - 48px), calc((1080px - 64px - 32px) / 2));
@@ -161,6 +161,23 @@ input[type="date"] { min-height: 38px; }
   .app { max-width: 1160px; }
   .savebar { left: calc(50% - 580px + 32px); width: calc((1160px - 64px - 32px) / 2); }
   .col-list #recent { display: grid; grid-template-columns: 1fr; }
+}
+
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+.app { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+@media (min-width: 760px) and (min-height: 760px) {
+  .col-form { position: sticky; top: calc(12px + env(safe-area-inset-top, 0px)); }
+}
+/* ===== 휴대폰 가로 모드: 저장 바를 한 줄로 줄여 입력 공간 확보 ===== */
+@media (orientation: landscape) and (max-height: 500px) {
+  .large-title { font-size: 26px; margin-top: 6px; }
+  .col-form { padding-bottom: 90px; }
+  .savebar { left: 0; right: 0; width: auto; bottom: 0; border-radius: 0; border-width: 1px 0 0; box-shadow: none;
+    padding: 8px max(20px, env(safe-area-inset-right, 0px)) calc(8px + env(safe-area-inset-bottom, 0px)) max(20px, env(safe-area-inset-left, 0px)); }
+  .savebar-in { display: flex; align-items: center; gap: 12px; max-width: 1080px; margin: 0 auto; }
+  .sum-line { flex: 1; margin: 0; flex-wrap: wrap; gap: 4px 10px; }
+  .save { width: auto; min-width: 150px; height: 46px; padding: 0 18px; }
+  .toast { bottom: 80px; }
 }
 </style>
 </head>
