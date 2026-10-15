@@ -140,7 +140,7 @@ input[type="date"] { min-height: 38px; }
 .sheet h2 { margin: 0 0 4px; font-size: 21px; font-weight: 800; }
 .sheet p { margin: 0 0 16px; color: var(--sub); font-size: 14px; }
 .sheet .err { color: var(--neg); font-weight: 600; min-height: 20px; margin: 8px 0 0; }
-.pin-in { width: 100%; height: 54px; border: 0; border-radius: 14px; background: var(--surface-2); font-size: 24px; font-weight: 800; letter-spacing: .3em; text-align: center; }
+.pin-in { width: 100%; height: 54px; border: 0; border-radius: 14px; background: var(--surface-2); font-size: 22px; font-weight: 800; letter-spacing: .18em; text-align: center; }
 .sheet .save { margin-top: 12px; }
 
 /* ===== 넓은 화면: 폴더블(펼침)·태블릿·PC ===== */
@@ -219,7 +219,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 <div class="sheet" id="pin-sheet" hidden><div class="sheet-in" role="dialog" aria-modal="true" aria-labelledby="pin-title">
   <h2 id="pin-title">비밀번호 입력</h2>
   <p>기록을 등록하거나 고치려면 비밀번호가 필요합니다. 이 기기에 저장되어 다음부터는 묻지 않습니다.</p>
-  <input class="pin-in" id="pin" type="password" inputmode="numeric" autocomplete="current-password" aria-label="비밀번호">
+  <input class="pin-in" id="pin" type="password" autocomplete="current-password" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="비밀번호">
   <p class="err" id="pin-err"></p>
   <button type="button" class="save" id="pin-ok">확인</button>
 </div></div>
