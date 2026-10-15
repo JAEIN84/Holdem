@@ -264,7 +264,12 @@ $('#p-login').onsubmit = async e => {
     const r = await api('POST', '/api/login', { id, password });
     Auth.set(r.token, r.user);
     Auth.saveId($('#l-save').checked ? id : '');
-    location.replace(nextPage());
+    // 밝은 로그인 화면에서 검은 로딩 화면으로 갑자기 바뀌지 않도록 먼저 어둡게 전환
+    const veil = document.createElement('div');
+    veil.style.cssText = 'position:fixed;inset:0;z-index:999;background:#0A0D0B;opacity:0;transition:opacity .25s ease';
+    document.body.appendChild(veil);
+    requestAnimationFrame(() => { veil.style.opacity = '1'; });
+    setTimeout(() => location.replace(nextPage()), 260);
   } catch (err) {
     msg.className = 'msg bad'; msg.textContent = err.message;
     btn.disabled = false; btn.textContent = '로그인';
