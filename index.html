@@ -318,9 +318,9 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 }
 
 /* ===== 시작 로딩 화면 ===== */
-html.booting { background: #0A0D0B; }
+html.booting, html.booting body { background: #0A0D0B; }
 
-.splash { position: fixed; top: 0; left: 0; right: 0; height: 100vh; height: 100lvh; z-index: 100; display: grid; place-items: center;
+.splash { position: fixed; top: 0; left: 0; right: 0; bottom: calc(-1 * (env(safe-area-inset-bottom, 0px) + 80px)); min-height: 100lvh; box-sizing: border-box; padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 80px); z-index: 100; display: grid; place-items: center;
   background: radial-gradient(110% 70% at 50% 30%, #1A211D 0%, #0E1311 55%, #0A0D0B 100%); color: #EEF2EF;
   transition: opacity .35s ease, visibility .35s; }
 .splash.hide { opacity: 0; pointer-events: none; transition: opacity .3s ease-out; }
