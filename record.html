@@ -5,11 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="홀덤 기록">
+<meta name="apple-mobile-web-app-title" content="Record">
 <meta name="theme-color" content="#F2F4F1" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0A0D0B" media="(prefers-color-scheme: dark)">
 <title>New Game — Hold’em League</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♣</text></svg>">
+<link rel="icon" type="image/png" href="record-icon.png">
+<link rel="apple-touch-icon" href="record-icon.png">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
 :root {
@@ -249,6 +250,7 @@ function places() {
 function renderTop() {
   $('#form-title').textContent = editId ? 'Edit Game' : 'New Game';
   $('#cancel-edit').hidden = !editId;
+  if (!fromDash) $('#cancel-edit').textContent = '수정 취소';
   $('#save').textContent = editId ? '수정 저장' : '경기 저장';
   $('#date').value = form.date;
   const pl = places();
@@ -344,7 +346,9 @@ $('#save').onclick = async () => {
   try {
     doc = editId ? await api('PUT', '/api/sessions/' + editId, body) : await api('POST', '/api/sessions', body);
     toast(editId ? '수정했습니다' : '저장했습니다');
+    const back = fromDash && editId;
     resetForm();
+    if (back) { fromDash = false; setTimeout(() => { location.href = CONFIG.DASHBOARD_URL + '#games'; }, 700); }
   } catch (e) { toast(e.message); renderTop(); updateSum(); }
 };
 function resetForm() {
@@ -352,7 +356,10 @@ function resetForm() {
   form.picked = []; form.vals = {};
   renderTop(); renderResults(); renderRecent();
 }
-$('#cancel-edit').onclick = () => { form.date = today(); resetForm(); };
+$('#cancel-edit').onclick = () => {
+  if (fromDash) { location.href = CONFIG.DASHBOARD_URL + '#games'; return; }
+  form.date = today(); resetForm();
+};
 
 /* ===== 지난 기록 (월 선택 + 더 보기) ===== */
 const PAGE = 15;
@@ -385,16 +392,25 @@ $('#recent').addEventListener('click', async e => {
   const b = e.target.closest('button[data-a]'); if (!b) return;
   const id = b.closest('.rec').dataset.id, s = doc.sessions.find(x => x.id === id);
   if (b.dataset.a === 'edit') {
-    editId = id; form.date = s.date; form.place = s.place;
-    form.custom = !places().includes(s.place) && !!s.place;
-    form.picked = Object.keys(s.res);
-    form.vals = Object.fromEntries(Object.entries(s.res).map(([p, v]) => [p, { sign: v < 0 ? -1 : 1, amt: String(Math.abs(v)) }]));
-    renderTop(); renderResults(); renderRecent(); window.scrollTo({ top: 0, behavior: 'smooth' });
+    fromDash = false; startEdit(id);
   } else if (confirm(`${s.date.replace(/-/g, '.')} ${s.place} 경기를 삭제할까요? 되돌릴 수 없습니다.`)) {
     try { doc = await api('DELETE', '/api/sessions/' + id); if (editId === id) resetForm(); else renderRecent(); toast('삭제했습니다'); }
     catch (err) { toast(err.message); }
   }
 });
+
+/* ===== 수정 모드 진입 (목록 또는 대시보드에서) ===== */
+let fromDash = false;
+function startEdit(id) {
+  const s = doc.sessions.find(x => x.id === id);
+  if (!s) { toast('해당 경기를 찾을 수 없습니다'); return false; }
+  editId = id; form.date = s.date; form.place = s.place;
+  form.custom = !places().includes(s.place) && !!s.place;
+  form.picked = Object.keys(s.res);
+  form.vals = Object.fromEntries(Object.entries(s.res).map(([p, v]) => [p, { sign: v < 0 ? -1 : 1, amt: String(Math.abs(v)) }]));
+  renderTop(); renderResults(); renderRecent(); window.scrollTo({ top: 0, behavior: 'smooth' });
+  return true;
+}
 
 /* ===== 백업 ===== */
 $('#backup').onclick = () => {
@@ -411,6 +427,11 @@ $('#backup').onclick = () => {
   catch (e) { $('#results').innerHTML = `<p class="hint">기록을 불러오지 못했습니다. ${esc(e.message)}</p>`; return; }
   const pl = places(); form.place = pl[0] || '';
   renderTop(); renderResults(); renderRecent();
+  const want = new URLSearchParams(location.search).get('edit');
+  if (want) {
+    if (startEdit(want)) { fromDash = true; $('#cancel-edit').textContent = '취소하고 돌아가기'; }
+    try { history.replaceState(null, '', location.pathname); } catch (e) {}
+  }
   if (CONFIG.API_BASE && !pin) openPin();
 })();
 </script>
