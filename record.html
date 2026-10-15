@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="홀덤 기록">
 <meta name="theme-color" content="#F2F4F1" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0A0D0B" media="(prefers-color-scheme: dark)">
-<title>경기 기록 — 홀덤 리그</title>
+<title>New Game — Hold’em League</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♣</text></svg>">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
@@ -135,9 +135,9 @@ input[type="date"] { min-height: 38px; }
 </head>
 <body>
 <div class="app">
-  <div class="topline"><span>기록 관리</span><a id="dash-link" href="index.html">대시보드 보기</a></div>
+  <div class="topline"><span>기록 관리</span><a id="dash-link" href="index.html">Dashboard ›</a></div>
   <div id="banner"></div>
-  <div class="title-row"><h1 class="large-title" id="form-title">경기 등록</h1><button type="button" class="link-btn" id="cancel-edit" hidden>수정 취소</button></div>
+  <div class="title-row"><h1 class="large-title" id="form-title">New Game</h1><button type="button" class="link-btn" id="cancel-edit" hidden>수정 취소</button></div>
 
   <div class="card">
     <div class="field"><label for="date">날짜</label><input type="date" id="date"></div>
@@ -247,7 +247,7 @@ function places() {
   return list;
 }
 function renderTop() {
-  $('#form-title').textContent = editId ? '경기 수정' : '경기 등록';
+  $('#form-title').textContent = editId ? 'Edit Game' : 'New Game';
   $('#cancel-edit').hidden = !editId;
   $('#save').textContent = editId ? '수정 저장' : '경기 저장';
   $('#date').value = form.date;
