@@ -486,6 +486,8 @@ $('#backup').onclick = () => {
     try { history.replaceState(null, '', location.pathname); } catch (e) {}
   }
   if (CONFIG.API_BASE && !pin) openPin();
+  // 저장된 비밀번호가 바뀌었는지 접속할 때 바로 확인 (틀리면 입력창이 뜸)
+  else if (CONFIG.API_BASE && pin) api('POST', '/api/auth').catch(() => {});
 })();
 </script>
 </body>
