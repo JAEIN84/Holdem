@@ -447,6 +447,8 @@ body { min-height: calc(100vh + env(safe-area-inset-top, 0px) + 1px); min-height
 @keyframes pop-in { from { opacity: 0; transform: scale(.96); } }
 @media (orientation: landscape) and (max-height: 500px) { .sheet.popup .sheet-in { max-height: 86vh; } }
 @media (prefers-reduced-motion: reduce) { .sheet.popup .sheet-in { animation: none; } }
+.sheet.popup .cmt-form { margin-bottom: -20px; padding-bottom: 14px; }
+@supports (height: 100dvh) { .sheet.popup .sheet-in { max-height: min(78dvh, 680px); } }
 </style>
 </head>
 <body>
@@ -533,7 +535,7 @@ body { min-height: calc(100vh + env(safe-area-inset-top, 0px) + 1px); min-height
   <button type="button" data-v="board"><span class="tab-ic"><svg viewBox="0 0 24 24"><path d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H10l-4 3v-3H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"/><path d="M8 10h8M8 13h5"/></svg><i class="new-dot" id="board-dot" hidden></i></span>게시판</button>
 </nav>
 <div class="toast" id="toast"></div>
-<div class="sheet" id="post-sheet" hidden><div class="sheet-in" role="dialog" aria-modal="true" aria-labelledby="post-title">
+<div class="sheet popup" id="post-sheet" hidden><div class="sheet-in" role="dialog" aria-modal="true" aria-labelledby="post-title">
   <div class="sheet-head"><span class="ptype" id="post-type"></span><button type="button" class="sheet-x" data-close aria-label="닫기">✕</button></div>
   <h2 class="post-h" id="post-title"></h2>
   <p class="post-meta" id="post-meta"></p>
@@ -548,7 +550,7 @@ body { min-height: calc(100vh + env(safe-area-inset-top, 0px) + 1px); min-height
     </form>
   </div>
 </div></div>
-<div class="sheet" id="write-sheet" hidden><div class="sheet-in" role="dialog" aria-modal="true" aria-labelledby="write-title">
+<div class="sheet popup" id="write-sheet" hidden><div class="sheet-in" role="dialog" aria-modal="true" aria-labelledby="write-title">
   <div class="sheet-head"><h2 id="write-title">글쓰기</h2><button type="button" class="sheet-x" data-close aria-label="닫기">✕</button></div>
   <form id="write-form" novalidate>
     <div class="sf"><span>유형</span><div class="type-seg" id="w-type"></div></div>
@@ -563,7 +565,7 @@ body { min-height: calc(100vh + env(safe-area-inset-top, 0px) + 1px); min-height
   <div class="sheet-head"><h2 id="pf-name"></h2><button type="button" class="sheet-x" data-close aria-label="닫기">✕</button></div>
   <div id="pf-body"></div>
 </div></div>
-<div class="sheet" id="event-sheet" hidden><div class="sheet-in" role="dialog" aria-modal="true" aria-labelledby="ev-title">
+<div class="sheet popup" id="event-sheet" hidden><div class="sheet-in" role="dialog" aria-modal="true" aria-labelledby="ev-title">
   <div class="sheet-head"><h2 id="ev-title">다음 모임 등록</h2><button type="button" class="sheet-x" data-close aria-label="닫기">✕</button></div>
   <form id="ev-form" novalidate>
     <label class="sf"><span>날짜</span><input type="date" id="ev-date"></label>
