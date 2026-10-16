@@ -198,6 +198,13 @@ body { min-height: calc(100vh + env(safe-area-inset-top, 0px) + 1px); min-height
 .amt-wrap { position: relative; display: block; }
 .amt-wrap .amt { padding-right: 30px; }
 .amt-u { position: absolute; right: 11px; top: 50%; transform: translateY(-50%); font-size: 13px; font-weight: 700; color: var(--sub); pointer-events: none; }
+
+.draft-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; background: color-mix(in srgb, var(--gold) 16%, var(--surface)); border-radius: 14px; padding: 10px 12px; margin: 16px 0 0; font-size: 13.5px; font-weight: 700; }
+.draft-bar span { flex: 1 1 100%; }
+.draft-bar button { border: 0; border-radius: 10px; height: 34px; padding: 0 14px; font-weight: 800; font-size: 13.5px; background: var(--ink); color: var(--surface); }
+.draft-bar button.ghost { background: var(--surface); color: var(--ink); }
+.rsvp-import { display: block; width: 100%; margin: 14px 0 0; border: 1.5px dashed var(--line); background: var(--surface); border-radius: 14px; padding: 11px; font-size: 14px; font-weight: 700; color: var(--ink); }
+.saved-note { font-size: 12px; color: var(--faint); font-weight: 600; }
 </style>
 </head>
 <body>
@@ -213,6 +220,8 @@ body { min-height: calc(100vh + env(safe-area-inset-top, 0px) + 1px); min-height
     <div class="wrap-pills" id="places" style="padding-top:0"></div>
   </div>
 
+  <div class="draft-bar" id="draft-bar" hidden><span id="draft-text">작성 중이던 기록이 있습니다</span><button type="button" id="draft-load">이어서 작성</button><button type="button" class="ghost" id="draft-drop">버리기</button></div>
+  <button type="button" class="rsvp-import" id="rsvp-import" hidden></button>
   <div class="sec"><span>참가자</span><button type="button" id="toggle-add">플레이어 추가</button></div>
   <div class="card">
     <div class="wrap-pills" id="players"></div>
@@ -317,8 +326,48 @@ function updateSum() {
   else { msg.textContent = '합계가 0이 아닙니다'; msg.classList.add('bad'); btn.classList.add('warn'); }
 }
 
+/* ===== 입력 중 임시 저장: 저장 순간 연결이 끊겨도 입력이 사라지지 않게 ===== */
+const DRAFT_KEY = 'holdem_record_draft';
+function hasInput() { return form.picked.length && form.picked.some(p => form.vals[p] && form.vals[p].amt !== ''); }
+function saveDraft() {
+  try { if (hasInput()) localStorage.setItem(DRAFT_KEY, JSON.stringify({ form, editId, savedAt: Date.now() })); else localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+}
+function clearDraft() { try { localStorage.removeItem(DRAFT_KEY); } catch (e) {} $('#draft-bar').hidden = true; }
+function offerDraft() {
+  let d = null; try { d = JSON.parse(localStorage.getItem(DRAFT_KEY)); } catch (e) {}
+  if (!d || !d.form || !d.form.picked || !d.form.picked.length) return;
+  const t = new Date(d.savedAt), n = d.form.picked.length;
+  $('#draft-text').textContent = `작성 중이던 기록이 있습니다 (${d.form.date.replace(/-/g, '.')} ${d.form.place || ''}, ${n}명, ${t.getMonth() + 1}/${t.getDate()} ${t.toTimeString().slice(0, 5)} 저장)`;
+  $('#draft-bar').hidden = false;
+  $('#draft-load').onclick = () => {
+    Object.assign(form, d.form); editId = d.editId && doc && doc.sessions.some(x => x.id === d.editId) ? d.editId : null;
+    renderTop(); renderResults(); renderRecent(); $('#draft-bar').hidden = true; toast('이어서 작성합니다');
+  };
+  $('#draft-drop').onclick = () => { if (confirm('작성 중이던 기록을 버릴까요?')) clearDraft(); };
+}
+['input', 'click', 'change'].forEach(ev => document.querySelector('.col-form').addEventListener(ev, () => setTimeout(saveDraft, 0)));
+
+/* ===== 다음 모임 참석자 불러오기 ===== */
+let EVENTS = null;
+function offerRsvp() {
+  const btn = $('#rsvp-import'); btn.hidden = true;
+  if (!EVENTS || editId) return;
+  const ev = [...(EVENTS.upcoming || []), ...(EVENTS.past || [])].find(e => e.date === form.date);
+  if (!ev) return;
+  const yes = ev.rsvps.filter(r => r.status === 'yes' && r.player && doc.players.includes(r.player)).map(r => r.player);
+  if (!yes.length) return;
+  btn.textContent = `📋 ${form.date.slice(5).replace('-', '/')} 모임 참석자 ${yes.length}명 불러오기 (${yes.join(', ')})`;
+  btn.hidden = false;
+  btn.onclick = () => {
+    yes.forEach(p => { if (!form.picked.includes(p)) { form.picked.push(p); form.vals[p] = form.vals[p] || { sign: 1, amt: '' }; } });
+    if (ev.place && !form.place) form.place = ev.place;
+    if (ev.place && places().includes(ev.place)) { form.place = ev.place; form.custom = false; }
+    renderTop(); renderResults(); btn.hidden = true; toast(`참석자 ${yes.length}명을 불러왔습니다`);
+  };
+}
+
 /* ===== 폼 이벤트 ===== */
-$('#date').onchange = e => { form.date = e.target.value; };
+$('#date').onchange = e => { form.date = e.target.value; offerRsvp(); };
 $('#places').onclick = e => {
   const b = e.target.closest('.pill'); if (!b) return;
   if (b.dataset.p) { form.place = b.dataset.p; form.custom = false; } else { form.custom = true; form.place = ''; }
@@ -371,10 +420,11 @@ $('#save').onclick = async () => {
   try {
     doc = editId ? await api('PUT', '/api/sessions/' + editId, body) : await api('POST', '/api/sessions', body);
     toast(editId ? '수정했습니다' : '저장했습니다');
+    clearDraft();
     const back = fromDash && editId, wasEdit = !!editId;
     resetForm(!wasEdit);
     if (back) { fromDash = false; setTimeout(() => { location.href = CONFIG.DASHBOARD_URL + '#games'; }, 700); }
-  } catch (e) { toast(e.message); renderTop(); updateSum(); }
+  } catch (e) { saveDraft(); toast(`저장하지 못했습니다: ${e.message} 입력 내용은 이 기기에 보관해 두었습니다.`); renderTop(); updateSum(); }
 };
 function resetForm(keepPlayers) {
   editId = null;
@@ -383,6 +433,7 @@ function resetForm(keepPlayers) {
   renderTop(); renderResults(); renderRecent();
 }
 $('#cancel-edit').onclick = () => {
+  clearDraft();
   if (fromDash) { location.href = CONFIG.DASHBOARD_URL + '#games'; return; }
   form.date = today(); resetForm();
 };
@@ -455,10 +506,11 @@ $('#backup').onclick = () => {
     document.querySelector('.savebar').hidden = true; $('#form-title').textContent = 'New Game'; return;
   }
   $('#me-line').textContent = `${ME.name}님`;
-  try { doc = await api('GET', '/api/data'); }
-  catch (e) { $('#results').innerHTML = `<p class="hint">기록을 불러오지 못했습니다. ${esc(e.message)}</p>`; return; }
+  try { [doc, EVENTS] = await Promise.all([api('GET', '/api/data'), api('GET', '/api/events').catch(() => null)]); }
+  catch (e) { $('#results').innerHTML = `<p class="hint">기록을 불러오지 못했습니다. ${esc(e.message)}</p>`; offerDraft(); return; }
   const pl = places(); form.place = pl[0] || '';
   renderTop(); renderResults(); renderRecent();
+  offerDraft(); offerRsvp();
   const want = new URLSearchParams(location.search).get('edit');
   if (want) {
     if (startEdit(want)) { fromDash = true; $('#cancel-edit').textContent = '취소하고 돌아가기'; }
