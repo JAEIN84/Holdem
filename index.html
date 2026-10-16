@@ -386,11 +386,51 @@ body { min-height: calc(100vh + env(safe-area-inset-top, 0px) + 1px); min-height
 .cmt-top .crown-b, .post-info .crown-b, .pill .crown-b { width: 24px; height: 17.6px; }
 
 /* 왕관이 붙는 좁은 자리 정리 */
-.dv { grid-template-columns: 118px 1fr 58px; }
+.dv { grid-template-columns: 118px 1fr 70px; }
+.dv-val { white-space: nowrap; }
 .dv-name { min-width: 0; }
 .dv-name .crowns, .mvp-row .crowns, .at-row .crowns, .champ .crowns, .stat-d .crowns, .ro-label .crowns, .mc-mvp .crowns, .ro-value .crowns, .group-title .crowns { margin-left: 2px; }
 .dv-name .crown-b, .mvp-row .crown-b, .at-row .crown-b, .champ .crown-b, .stat-d .crown-b, .ro-label .crown-b, .mc-mvp .crown-b, .group-title .crown-b { width: 22px; height: 16px; }
 .ro-value .crown-b { width: 30px; height: 22px; }
+
+.u { font-size: .62em; font-weight: 700; margin-left: 1px; letter-spacing: 0; vertical-align: baseline; }
+.leader-value .u, .ro-value .u, .stat-v .u { font-size: .5em; margin-left: 2px; }
+
+/* ===== 전적 탭 ===== */
+.subseg { display: grid; grid-template-columns: repeat(4, 1fr); background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px; padding: 3px; margin: 0 0 14px; }
+.subseg button { border: 0; background: none; height: 34px; border-radius: 9px; font-weight: 700; font-size: 13px; color: var(--sub); white-space: nowrap; }
+.subseg button[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+.vs { padding: 14px 16px; }
+.vs + .vs { border-top: 1px solid var(--line); }
+.vs-head { display: flex; align-items: center; gap: 6px; font-weight: 800; font-size: 15.5px; }
+.vs-head .n { margin-left: auto; font-size: 12.5px; color: var(--sub); font-weight: 600; }
+.vs-line { display: flex; justify-content: space-between; gap: 10px; font-size: 13.5px; margin-top: 6px; color: var(--sub); font-weight: 600; }
+.vs-line b { font-weight: 800; }
+.vs-bar { display: flex; height: 8px; border-radius: 4px; overflow: hidden; margin-top: 8px; background: var(--surface-2); }
+.vs-bar span { display: block; height: 100%; }
+.vs-verdict { margin-top: 6px; font-size: 12.5px; font-weight: 700; }
+.vs-verdict.up { color: var(--pos); } .vs-verdict.down { color: var(--neg); } .vs-verdict.even { color: var(--sub); }
+.pl-row { padding: 12px 16px; }
+.pl-row + .pl-row { border-top: 1px solid var(--line); }
+.pl-top { display: flex; align-items: center; gap: 6px; font-weight: 800; }
+.pl-line { font-size: 13px; color: var(--sub); margin-top: 4px; font-weight: 600; line-height: 1.5; }
+.pl-line b { font-weight: 800; }
+.awards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.award { background: var(--surface); border-radius: 16px; padding: 14px 14px 12px; }
+.award.main { grid-column: 1 / -1; background: linear-gradient(160deg, var(--brand), var(--brand-2)); color: #F4F1E8; }
+.award-k { font-size: 12.5px; font-weight: 700; color: var(--sub); }
+.award.main .award-k { color: rgba(244,241,232,.75); }
+.award-who { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 16px; font-weight: 800; margin-top: 6px; }
+.award.main .award-who { font-size: 22px; }
+.award-v { font-size: 13px; font-weight: 700; margin-top: 3px; color: var(--sub); }
+.award.main .award-v { color: rgba(244,241,232,.85); font-size: 15px; }
+.award-note { font-size: 12px; color: var(--faint); margin: 10px 4px 0; line-height: 1.5; }
+@media (min-width: 720px), (orientation: landscape) and (max-height: 500px) and (min-width: 600px) {
+  .awards { grid-template-columns: repeat(3, 1fr); }
+  #sub-h2h .group, #sub-place .two-col { display: grid; grid-template-columns: 1fr 1fr; }
+  #sub-h2h .vs + .vs { border-top: 0; }
+  #sub-h2h .vs { border-bottom: 1px solid var(--line); }
+}
 </style>
 </head>
 <body>
@@ -432,14 +472,22 @@ body { min-height: calc(100vh + env(safe-area-inset-top, 0px) + 1px); min-height
 
   <!-- 월별 -->
   <section class="view" id="v-month" hidden>
-    <div class="title-row"><h1 class="large-title">Monthly Report</h1><select class="season-sel" aria-label="시즌 선택"></select></div>
+    <div class="title-row"><h1 class="large-title">Stats</h1><select class="season-sel" aria-label="시즌 선택"></select></div>
     <p class="caption" id="month-caption"></p>
-    <div class="scroller" id="month-tabs" aria-label="월 선택"></div>
-    <div class="group month-card" id="season-sum"></div>
-    <div class="month-grid">
-      <div class="group month-card" id="month-card"></div>
-      <div class="mvp-block"><div class="group-title">월간 1위</div><ol class="group mvp-list" id="mvp-list"></ol></div>
+    <div class="subseg" id="stats-seg" role="tablist" aria-label="전적 종류">
+      <button type="button" data-s="month" aria-selected="true">월별</button><button type="button" data-s="h2h" aria-selected="false">상대 전적</button><button type="button" data-s="place" aria-selected="false">장소별</button><button type="button" data-s="award" aria-selected="false">시즌 시상</button>
     </div>
+    <div id="sub-month">
+      <div class="scroller" id="month-tabs" aria-label="월 선택"></div>
+      <div class="group month-card" id="season-sum"></div>
+      <div class="month-grid">
+        <div class="group month-card" id="month-card"></div>
+        <div class="mvp-block"><div class="group-title">월간 1위</div><ol class="group mvp-list" id="mvp-list"></ol></div>
+      </div>
+    </div>
+    <div id="sub-h2h" hidden></div>
+    <div id="sub-place" hidden></div>
+    <div id="sub-award" hidden></div>
   </section>
 
   <!-- 기록 -->
@@ -463,7 +511,7 @@ body { min-height: calc(100vh + env(safe-area-inset-top, 0px) + 1px); min-height
 <nav class="tabbar" aria-label="화면 전환">
   <button type="button" data-v="rank" aria-current="page"><svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M17 6h3a3 3 0 0 1-3 4M7 6H4a3 3 0 0 0 3 4"/></svg>순위</button>
   <button type="button" data-v="trend"><svg viewBox="0 0 24 24"><path d="M3 17l5-5 4 3 8-8"/><path d="M15 7h5v5"/></svg>추이</button>
-  <button type="button" data-v="month"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>월별</button>
+  <button type="button" data-v="month"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>전적</button>
   <button type="button" data-v="games"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="11" height="15" rx="2"/><path d="M9 21h9a2 2 0 0 0 2-2V8"/></svg>기록</button>
   <button type="button" data-v="board"><span class="tab-ic"><svg viewBox="0 0 24 24"><path d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H10l-4 3v-3H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"/><path d="M8 10h8M8 13h5"/></svg><i class="new-dot" id="board-dot" hidden></i></span>게시판</button>
 </nav>
@@ -529,7 +577,10 @@ const CAN_EDIT = !!ME && ['editor', 'admin'].includes(ME.role);
 /* ===== 유틸 ===== */
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const signed = v => v > 0 ? '+' + v.toLocaleString('ko-KR') : v < 0 ? '−' + Math.abs(v).toLocaleString('ko-KR') : '0';
+// 금액 단위: 만원. 화면용(signed)은 작은 '만'을 붙이고, 그래프 눈금·일반 글자용(signedT)은 숫자만
+const signedT = v => v > 0 ? '+' + v.toLocaleString('ko-KR') : v < 0 ? '−' + Math.abs(v).toLocaleString('ko-KR') : '0';
+const UNIT = '<span class="u">만</span>';
+const signed = v => signedT(v) + UNIT;
 const tone = v => v > 0 ? 'pos' : v < 0 ? 'neg' : 'zero';
 const pct = v => (v * 100).toFixed(1) + '%';
 const D = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
@@ -661,7 +712,7 @@ function renderRank() {
       <div class="leader-label"><span class="crown" aria-hidden="true">♛</span>${head}</div>
       <div class="leader-name">${chip(L.color)}${esc(L.name)}${crowns(L.name)}</div>
       <div class="leader-value">${signed(L.total)}</div>
-      <div class="leader-sub">${S2 ? `2위 ${esc(S2.name)}와 ${(L.total - S2.total).toLocaleString('ko-KR')} 차이` : ''}${days !== null ? `${S2 ? ', ' : ''}시즌 종료까지 ${days}일` : ''}</div>`;
+      <div class="leader-sub">${S2 ? `2위 ${esc(S2.name)}와 ${(L.total - S2.total).toLocaleString('ko-KR')}${UNIT} 차이` : ''}${days !== null ? `${S2 ? ', ' : ''}시즌 종료까지 ${days}일` : ''}</div>`;
     const maxAbs = Math.max(1, ...M.ranked.map(t => Math.abs(t.total)));
     const rows = M.ranked.map((t, k) => {
       const all = statOf(MA, t.name);
@@ -767,7 +818,7 @@ function renderTrend() {
       <stop offset="0" stop-color="${focus ? color[focus] : '#000'}" stop-opacity=".28"/><stop offset="1" stop-color="${focus ? color[focus] : '#000'}" stop-opacity="0"/></linearGradient></defs>`;
   for (let v = lo; v <= hi + 1e-9; v += step) {
     g += `<line x1="${m.l}" x2="${W - m.r}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)" ${v === 0 ? 'stroke-dasharray="3 4" stroke="var(--faint)"' : ''}/>`;
-    g += `<text x="${W - m.r + 6}" y="${y(v) + 4}">${signed(v)}</text>`;
+    g += `<text x="${W - m.r + 6}" y="${y(v) + 4}">${signedT(v)}</text>`;
   }
   let lastX = -99, prev = '';
   sessions.forEach((s, i) => { const k = ym(s.date);
@@ -793,7 +844,7 @@ function renderTrend() {
     $('#ro-label').innerHTML = `${chip(color[focus])}${esc(focus)}${crowns(focus)} 누적`;
     $('#ro-value').innerHTML = `<span class="${tone(cum[j][focus])}">${signed(cum[j][focus])}</span>`;
     const d = s.res[focus];
-    $('#ro-date').textContent = dateTxt + (d === undefined ? ', 불참' : `, 이날 ${signed(d)}`);
+    $('#ro-date').textContent = dateTxt + (d === undefined ? ', 불참' : `, 이날 ${signedT(d)}만`);
   } else {
     const top = names.slice().sort((a, b) => cum[j][b] - cum[j][a])[0];
     $('#ro-label').innerHTML = `이 시점 1위`;
@@ -850,9 +901,120 @@ function personTiles(name) {
   </div>`;
 }
 
+/* ===== 전적 탭: 하위 화면 전환 ===== */
+let statsSub = 'month';
+try { statsSub = sessionStorage.getItem('holdem_stats_sub') || 'month'; } catch (e) {}
+$('#stats-seg').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  statsSub = b.dataset.s; try { sessionStorage.setItem('holdem_stats_sub', statsSub); } catch (err) {}
+  renderMonth();
+});
+const STATS_CAPTION = { h2h: '두 사람이 함께 친 판만 모아 비교합니다', place: '장소마다 누가 강한지 경기당 평균으로 비교합니다', award: '' };
+function renderStats() {
+  document.querySelectorAll('#stats-seg button').forEach(b => b.setAttribute('aria-selected', b.dataset.s === statsSub));
+  ['month', 'h2h', 'place', 'award'].forEach(k => { $('#sub-' + k).hidden = k !== statsSub; });
+  if (statsSub === 'h2h') renderH2H(); else if (statsSub === 'place') renderPlace(); else if (statsSub === 'award') renderAward();
+  if (statsSub !== 'month') $('#month-caption').textContent = `${seasonLabel()}${STATS_CAPTION[statsSub] ? ', ' + STATS_CAPTION[statsSub] : ''}`;
+}
+const MIN_GAMES = M => Math.max(3, Math.ceil(M.N * 0.3));   // 승률·평균 상은 이 이상 참가한 사람만 대상
+
+/* ----- 상대 전적 ----- */
+let h2hA = null;
+function renderH2H() {
+  const M = MS, el = $('#sub-h2h');
+  if (!M.N) { el.innerHTML = '<p class="empty">이 시즌에는 아직 경기가 없습니다</p>'; return; }
+  const names = M.ranked.map(t => t.name);
+  if (!h2hA || !names.includes(h2hA)) h2hA = names.includes(ME.name) ? ME.name : names[0];
+  const A = h2hA;
+  const rows = names.filter(B => B !== A).map(B => {
+    const g = M.sessions.filter(x => A in x.res && B in x.res);
+    const aW = g.filter(x => x.res[A] > x.res[B]).length, bW = g.filter(x => x.res[B] > x.res[A]).length;
+    return { B, n: g.length, aSum: sum(g.map(x => x.res[A])), bSum: sum(g.map(x => x.res[B])), aW, bW, d: g.length - aW - bW };
+  }).sort((x, y) => y.n - x.n);
+  el.innerHTML = `<div class="scroller" id="h2h-pick">${names.map(n => `<button type="button" class="pill" data-p="${esc(n)}" aria-pressed="${n === A}">${chip(M.color[n])}${esc(n)}${crowns(n)}</button>`).join('')}</div>
+    <div class="group">${rows.map(r => {
+      const byWin = r.aW > r.bW ? A : r.bW > r.aW ? r.B : null, byMoney = r.aSum > r.bSum ? A : r.bSum > r.aSum ? r.B : null;
+      const verdict = r.n < 3 ? ['even', '함께 친 판이 적어 판단하기 이릅니다']
+        : byWin && byMoney && byWin !== byMoney ? ['even', `맞대결 횟수는 ${esc(byWin)}, 금액은 ${esc(byMoney)} 우세`]
+        : (byWin || byMoney) === A ? ['up', `${esc(A)} 우세`] : (byWin || byMoney) === r.B ? ['down', `${esc(r.B)} 우세`] : ['even', '팽팽함'];
+      const wa = r.n ? r.aW / r.n * 100 : 0, wd = r.n ? r.d / r.n * 100 : 0;
+      return `<div class="vs">
+        <div class="vs-head">vs ${chip(M.color[r.B])}${esc(r.B)}${crowns(r.B)}<span class="n">함께 ${r.n}경기</span></div>
+        ${r.n ? `<div class="vs-line"><span>${esc(A)} <b class="${tone(r.aSum)}">${signed(r.aSum)}</b></span><span>${esc(r.B)} <b class="${tone(r.bSum)}">${signed(r.bSum)}</b></span></div>
+        <div class="vs-line"><span>맞대결 <b>${r.aW}승 ${r.bW}패</b>${r.d ? ` ${r.d}무` : ''}</span><span>그 판에서 더 많이 딴 횟수 기준</span></div>
+        <div class="vs-bar" aria-hidden="true"><span style="width:${wa}%;background:${M.color[A]}"></span><span style="width:${wd}%;background:var(--line)"></span><span style="flex:1;background:${M.color[r.B]}"></span></div>
+        <div class="vs-verdict ${verdict[0]}">${verdict[1]}</div>` : '<div class="vs-line"><span>아직 함께 친 판이 없습니다</span></div>'}
+      </div>`;
+    }).join('')}</div>`;
+  $('#h2h-pick').onclick = e => { const b = e.target.closest('.pill'); if (!b) return; h2hA = b.dataset.p; renderH2H(); };
+}
+
+/* ----- 장소별 ----- */
+let placeSel = null;
+function renderPlace() {
+  const M = MS, el = $('#sub-place');
+  if (!M.N) { el.innerHTML = '<p class="empty">이 시즌에는 아직 경기가 없습니다</p>'; return; }
+  const places = Object.keys(M.places).sort((a, b) => M.places[b] - M.places[a]);
+  if (!placeSel || !places.includes(placeSel)) placeSel = places[0];
+  const at = name => { const xs = M.sessions.filter(x => x.place === placeSel && name in x.res).map(x => x.res[name]); return { n: xs.length, total: sum(xs), per: xs.length ? sum(xs) / xs.length : 0 }; };
+  const rows = M.names.map(nm => ({ nm, ...at(nm) })).filter(r => r.n).sort((a, b) => b.per - a.per);
+  const maxAbs = Math.max(1, ...rows.map(r => Math.abs(r.per)));
+  // 사람별 최고·최저 장소 (2경기 이상 친 장소 기준)
+  const bestWorst = M.ranked.map(t => {
+    const list = places.map(pl => { const xs = M.sessions.filter(x => x.place === pl && t.name in x.res).map(x => x.res[t.name]); return { pl, n: xs.length, per: xs.length ? sum(xs) / xs.length : 0 }; }).filter(r => r.n >= 2).sort((a, b) => b.per - a.per);
+    return { t, best: list[0], worst: list.length > 1 ? list[list.length - 1] : null };
+  });
+  el.innerHTML = `<div class="scroller" id="place-pick">${places.map(pl => `<button type="button" class="pill" data-p="${esc(pl)}" aria-pressed="${pl === placeSel}">${esc(pl)} ${M.places[pl]}</button>`).join('')}</div>
+    <div class="group month-card"><div class="mc-head"><span class="mc-title">${esc(placeSel)}</span><span class="mc-count">${M.places[placeSel]}경기</span></div>
+      <p class="mc-mvp">경기당 평균 순서</p>
+      ${rows.map(r => `<div class="dv"><span class="dv-name">${chip(M.color[r.nm])}${esc(r.nm)}${crowns(r.nm)}</span>
+        <span class="dv-track" aria-hidden="true">${r.per ? `<span class="${r.per > 0 ? 'up' : 'down'}" style="width:${(Math.abs(r.per) / maxAbs * 50).toFixed(1)}%"></span>` : ''}</span>
+        <span class="dv-val ${tone(r.per)}">${per1(r.per)}</span></div>`).join('')}
+      <p class="award-note" style="margin:8px 0 6px">막대와 숫자는 경기당 평균, 참가 수가 적으면 한 판에 크게 흔들립니다</p>
+    </div>
+    <div class="group-title">플레이어별 강한 곳, 약한 곳</div>
+    <div class="group">${bestWorst.map(({ t, best, worst }) => `<div class="pl-row">
+      <div class="pl-top">${chip(t.color)}${esc(t.name)}${crowns(t.name)}</div>
+      <div class="pl-line">${best ? `강한 곳 <b>${esc(best.pl)}</b> 경기당 <b class="${tone(best.per)}">${per1(best.per)}</b> (${best.n}경기)` : '2경기 이상 친 장소가 아직 없습니다'}
+        ${worst ? `<br>약한 곳 <b>${esc(worst.pl)}</b> 경기당 <b class="${tone(worst.per)}">${per1(worst.per)}</b> (${worst.n}경기)` : ''}</div>
+    </div>`).join('')}</div>`;
+  $('#place-pick').onclick = e => { const b = e.target.closest('.pill'); if (!b) return; placeSel = b.dataset.p; renderPlace(); };
+}
+
+/* ----- 시즌 시상 ----- */
+function renderAward() {
+  const M = MS, el = $('#sub-award');
+  if (!M.N) { el.innerHTML = '<p class="empty">이 시즌에는 아직 경기가 없습니다</p>'; return; }
+  const live = !isAll() && seasonInfo(season).live, minG = MIN_GAMES(M);
+  const tops = (arr, key) => { if (!arr.length) return []; const m = Math.max(...arr.map(key)); return arr.filter(x => key(x) === m); };
+  const who = list => list.map(t => `${chip(t.color)}${esc(t.name)}${crowns(t.name)}`).join('<span style="color:var(--faint)">,</span> ');
+  const st = M.stats, el2 = st.filter(t => t.n >= minG);
+  const sd = t => { const xs = M.sessions.filter(x => t.name in x.res).map(x => x.res[t.name]); const m = sum(xs) / xs.length; return Math.sqrt(sum(xs.map(v => (v - m) ** 2)) / xs.length); };
+  const champ = M.ranked[0];
+  const bestOne = st.filter(t => t.max === M.best.v), worstOne = st.filter(t => t.min === M.worst.v);
+  const cards = [
+    ['최다 참가', tops(st, t => t.n), t => `${t.n}경기 (참가율 ${pct(t.rate)})`],
+    ['최고 단일 수익', bestOne, () => `${signed(M.best.v)}, ${ymd(M.best.d)}`],
+    ['최장 연승', tops(st, t => t.bestStreak), t => `${t.bestStreak}연승`],
+    ['최고 승률', el2.length ? tops(el2, t => t.win) : [], t => `${pct(t.win)} (${t.n}경기)`],
+    ['경기당 최고', el2.length ? tops(el2, t => t.per) : [], t => `경기당 ${per1(t.per)}`],
+    ['꾸준왕', el2.length ? tops(el2, t => -Math.round(sd(t) * 10)) : [], t => `한 판 변동폭 ±${Math.round(sd(t))}${UNIT}`],
+    ['가장 아픈 밤', worstOne, () => `${signed(M.worst.v)}, ${ymd(M.worst.d)}`]
+  ];
+  el.innerHTML = `<div class="awards">
+    <div class="award main"><div class="award-k">${isAll() ? '전체 기간 1위' : live ? `${seasonInfo(season).label} 우승 (진행 중, 현재 기준)` : `${seasonInfo(season).label} 우승`}</div>
+      <div class="award-who">${who([champ])}</div><div class="award-v">누적 ${signed(champ.total)}, ${champ.n}경기</div></div>
+    ${cards.map(([k, list, val]) => `<div class="award"><div class="award-k">${k}</div>
+      ${list.length ? `<div class="award-who">${who(list)}</div><div class="award-v">${val(list[0])}</div>` : `<div class="award-v">대상자 없음</div>`}</div>`).join('')}
+  </div>
+  <p class="award-note">${live ? '시즌이 진행 중이라 결과가 계속 바뀝니다. 시즌이 끝나면(9월 30일) 그 시점 기준으로 확정됩니다. ' : ''}최고 승률·경기당 최고·꾸준왕은 ${minG}경기 이상 참가한 사람만 대상입니다. 꾸준왕은 한 판 결과의 변동폭(표준편차)이 가장 작은 사람입니다.</p>`;
+}
+
 /* ===== 월별 ===== */
 let month = null;
 function renderMonth() {
+  renderStats();
+  if (statsSub !== 'month') return;
   const M = MS;
   // 시즌 합계 (시즌을 볼 때만)
   if (!isAll() && M.N) {
