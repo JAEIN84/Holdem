@@ -31,51 +31,9 @@
 <title>Tri-City Hold’em</title>
 <link rel="icon" type="image/png" href="apple-touch-icon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="stylesheet" href="app.css?v=1">
 <style>
-:root {
-  --bg: #F2F4F1; --surface: #FFFFFF; --surface-2: #F7F8F6; --ink: #111A15; --sub: #66736C; --faint: #9AA59F; --line: #E3E8E4;
-  --brand: #0F5A3F; --brand-2: #0A3F2C; --gold: #B8892B; --pos: #DC3B30; --neg: #2563EB; --warn: #D93A2F; --zero: #9AA59F;
-  --bar-bg: rgba(255,255,255,.86);
-  --font: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", system-ui, sans-serif;
-  color-scheme: light;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #0A0D0B; --surface: #141916; --surface-2: #1A201C; --ink: #EEF2EF; --sub: #93A099; --faint: #66736C; --line: #242B27;
-    --brand: #145F44; --brand-2: #0B3A29; --gold: #DDB65C; --pos: #FF6F64; --neg: #6EA1FF; --warn: #FF7468; --zero: #6E7A74;
-    --bar-bg: rgba(20,25,22,.86);
-    color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --bg: #0A0D0B; --surface: #141916; --surface-2: #1A201C; --ink: #EEF2EF; --sub: #93A099; --faint: #66736C; --line: #242B27;
-  --brand: #145F44; --brand-2: #0B3A29; --gold: #DDB65C; --pos: #FF6F64; --neg: #6EA1FF; --warn: #FF7468; --zero: #6E7A74;
-  --bar-bg: rgba(20,25,22,.86);
-  color-scheme: dark;
-}
-* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-[hidden] { display: none !important; }
-:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
-html { scroll-padding-top: env(safe-area-inset-top, 0px); }
-body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 16px; line-height: 1.45; -webkit-font-smoothing: antialiased; font-feature-settings: "tnum"; }
-button, input, select { font: inherit; color: inherit; }
-button { cursor: pointer; }
-:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; border-radius: 6px; }
-.pos { color: var(--pos); } .neg { color: var(--neg); } .zero { color: var(--zero); }
-.chip { width: 12px; height: 12px; border-radius: 50%; flex: none; display: inline-block; background: var(--c);
-  box-shadow: inset 0 0 0 2px rgba(255,255,255,.92), inset 0 0 0 4px var(--c); }
-.app { max-width: 480px; margin: 0 auto; padding: 0 16px; }
-.large-title { font-size: 30px; font-weight: 800; letter-spacing: -.02em; margin: 14px 0 2px; }
-.caption { color: var(--sub); font-size: 14px; margin: 0 0 18px; }
-.group { background: var(--surface); border-radius: 16px; overflow: hidden; margin-bottom: 18px; }
-.group-title { font-size: 13px; color: var(--sub); font-weight: 600; margin: 22px 4px 8px; }
-.scroller { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 0 -16px 14px; padding: 2px 16px; }
-.scroller::-webkit-scrollbar { display: none; }
-.pill { flex: none; display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: 14px; font-weight: 600; color: var(--sub); }
-.pill[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--surface); }
-.toast { position: fixed; left: 50%; bottom: calc(96px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%) translateY(12px); background: var(--ink); color: var(--surface); padding: 10px 16px; border-radius: 12px; font-size: 14px; font-weight: 600; opacity: 0; pointer-events: none; transition: .2s; z-index: 50; white-space: nowrap; }
-.toast.on { opacity: 1; transform: translateX(-50%); }
-@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
 body { padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
 .topline { display: flex; justify-content: space-between; align-items: center; padding-top: 10px; color: var(--sub); font-size: 13px; font-weight: 600; }
 .top-actions { display: flex; align-items: center; gap: 12px; }
@@ -84,7 +42,11 @@ body { padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
 .me-btn { border: 0; background: var(--surface); color: var(--ink); font-size: 13px; font-weight: 700; padding: 6px 12px; border-radius: 999px; }
 .sheet { position: fixed; inset: 0; z-index: 60; display: grid; align-items: end; background: rgba(0,0,0,.45); }
 .sheet-in { background: var(--surface); border-radius: 22px 22px 0 0; padding: 18px 20px calc(20px + env(safe-area-inset-bottom, 0px)); max-width: 480px; width: 100%; margin: 0 auto; max-height: 92vh; overflow: auto; }
-.sheet-head { display: flex; justify-content: space-between; align-items: center; }
+.sheet-head { display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  position: sticky; top: -18px; z-index: 3; background: var(--surface); margin: -18px -20px 0; padding: 18px 20px 10px; }
+.sheet-in { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+.sheet { overscroll-behavior: contain; }
+body.sheet-lock { position: fixed; left: 0; right: 0; overflow: hidden; }
 .sheet-head h2 { margin: 0; font-size: 20px; font-weight: 800; }
 .sheet-x { border: 0; background: var(--surface-2); width: 34px; height: 34px; border-radius: 50%; font-size: 15px; color: var(--sub); }
 .sheet-sub { color: var(--sub); font-size: 13.5px; margin: 4px 0 14px; }
@@ -251,7 +213,6 @@ li:first-child .rank-no { color: var(--gold); }
 }
 
 /* ===== 공통: 글자 자동 확대 방지, 가로 모드 노치 영역 피하기 ===== */
-html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 .app { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
 /* ===== 휴대폰 가로 모드: 하단 탭바 → 왼쪽 세로 메뉴로, 세로 공간 확보 ===== */
 @media (orientation: landscape) and (max-height: 500px) {
@@ -393,7 +354,6 @@ body { min-height: calc(100vh + env(safe-area-inset-top, 0px) + 1px); min-height
 .dv-name .crown-b, .mvp-row .crown-b, .at-row .crown-b, .champ .crown-b, .stat-d .crown-b, .ro-label .crown-b, .mc-mvp .crown-b, .group-title .crown-b { width: 22px; height: 16px; }
 .ro-value .crown-b { width: 30px; height: 22px; }
 
-.u { font-size: .62em; font-weight: 700; margin-left: 1px; letter-spacing: 0; vertical-align: baseline; }
 .leader-value .u, .ro-value .u, .stat-v .u { font-size: .5em; margin-left: 2px; }
 
 /* ===== 전적 탭 ===== */
@@ -478,6 +438,7 @@ body { min-height: calc(100vh + env(safe-area-inset-top, 0px) + 1px); min-height
 .pf-btn { width: 100%; height: 46px; margin-top: 16px; border: 0; border-radius: 12px; background: var(--ink); color: var(--surface); font-weight: 800; font-size: 15px; }
 [data-profile] { cursor: pointer; }
 .rank-meta b, .rank-meta2 b, .stat-d b, .pl-line b, .vs-line b, .ev-who b { white-space: nowrap; }
+.pf-pair .stat-v, .pf-tiles .stat-v { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 </style>
 </head>
 <body>
@@ -625,6 +586,7 @@ body { min-height: calc(100vh + env(safe-area-inset-top, 0px) + 1px); min-height
 </div></div>
 
 <script src="auth.js"></script>
+<script src="common.js?v=1"></script>
 <script>
 const CONFIG = {
   TITLE: 'Tri-City Hold’em',
@@ -633,8 +595,15 @@ const CONFIG = {
   PLACE_COLORS: { '인천': '#3B82F6', '천안': '#10B981', '수원': '#F59E0B' }
 };
 const CACHE_KEY = 'holdem_cache_doc';
+// 앱을 열 때는 게시판 전체를 받지 않고, 최근 활동 기록 한 칸만 읽어 새 글 표시 여부를 판단
+async function checkBoardDot() {
+  try {
+    const recent = await api('GET', '/api/board-meta'), seen = localStorage.getItem(BOARD_SEEN) || '';
+    $('#board-dot').hidden = !recent.some(a => a.at > seen && a.by !== ME.id);
+  } catch (e) {}
+}
 function afterReveal() {
-  loadPosts();
+  checkBoardDot();
   if (ME && ME.role === 'admin') api('GET', '/api/users').then(list => {
     const n = list.filter(u => u.status === 'pending' || u.resetRequestedAt).length;
     if (n) document.getElementById('admin-link').innerHTML = `Admin <span class="pend">${n}</span> ›`;
@@ -644,22 +613,6 @@ const ME = Auth.require();
 const CAN_EDIT = !!ME && ['editor', 'admin'].includes(ME.role);
 
 /* ===== 유틸 ===== */
-const $ = s => document.querySelector(s);
-const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-// 금액 단위: 만원. 화면용(signed)은 작은 '만'을 붙이고, 그래프 눈금·일반 글자용(signedT)은 숫자만
-const signedT = v => v > 0 ? '+' + v.toLocaleString('ko-KR') : v < 0 ? '−' + Math.abs(v).toLocaleString('ko-KR') : '0';
-const UNIT = '<span class="u">만</span>';
-const signed = v => signedT(v) + UNIT;
-const tone = v => v > 0 ? 'pos' : v < 0 ? 'neg' : 'zero';
-const pct = v => (v * 100).toFixed(1) + '%';
-const D = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
-const ymd = s => s.slice(2).replace(/-/g, '.');
-const ym = s => s.slice(0, 7);
-const ymLabel = k => `${k.slice(0, 4)}년 ${Number(k.slice(5))}월`;
-const DOW = ['일', '월', '화', '수', '목', '금', '토'];
-const chip = c => `<span class="chip" style="--c:${c}" aria-hidden="true"></span>`;
-const sum = a => a.reduce((x, y) => x + y, 0);
-const toast = msg => { const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('on'), 1800); };
 
 /* ===== 집계 ===== */
 function analyze(doc) {
@@ -709,7 +662,6 @@ function analyze(doc) {
 
 /* ===== 시즌: 매년 10월 1일 ~ 다음 해 9월 30일, 2025.10 = 시즌 1 (날짜로 자동 계산) ===== */
 const SEASON = { BASE_YEAR: 2025, START_MONTH: 10 };
-const todayStr = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
 const seasonNo = date => Math.max(1, +date.slice(0, 4) - SEASON.BASE_YEAR + (+date.slice(5, 7) >= SEASON.START_MONTH ? 1 : 0));
 function seasonInfo(n) {
   const y0 = SEASON.BASE_YEAR + n - 1, mm = String(SEASON.START_MONTH).padStart(2, '0'), em = String(SEASON.START_MONTH - 1 || 12).padStart(2, '0');
@@ -1186,7 +1138,6 @@ function renderGames() {
 let POSTS = null, boardFilter = '';
 const BOARD_SEEN = 'holdem_board_seen';
 const TYPE_KO = { notice: '공지사항', free: '자유' };
-const when = iso => { const d = new Date(iso); return `${String(d.getFullYear()).slice(2)}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')} ${d.toTimeString().slice(0, 5)}`; };
 async function loadPosts() {
   try { POSTS = await api('GET', '/api/posts'); } catch (e) { POSTS = POSTS || []; toast(e.message); }
   markNew();
@@ -1494,6 +1445,21 @@ function shareGame(id) {
 }
 $('#share-rank').addEventListener('click', e => { e.stopPropagation(); shareRanking(); });
 document.addEventListener('click', e => { const b = e.target.closest('[data-share-game]'); if (b) shareGame(b.dataset.shareGame); });
+
+/* ===== 창(시트)이 열린 동안 뒤쪽 화면이 같이 스크롤되지 않게 고정 ===== */
+(function () {
+  let lockedY = 0;
+  const sync = () => {
+    const open = [...document.querySelectorAll('.sheet')].some(el => !el.hidden);
+    const locked = document.body.classList.contains('sheet-lock');
+    if (open && !locked) { lockedY = window.scrollY; document.body.style.top = `-${lockedY}px`; document.body.classList.add('sheet-lock'); }
+    else if (!open && locked) { document.body.classList.remove('sheet-lock'); document.body.style.top = ''; window.scrollTo(0, lockedY); }
+  };
+  const mo = new MutationObserver(sync);
+  document.querySelectorAll('.sheet').forEach(el => mo.observe(el, { attributes: true, attributeFilter: ['hidden'] }));
+  // 창이 열리면 항상 맨 위부터 보이게
+  document.querySelectorAll('.sheet').forEach(el => new MutationObserver(() => { if (!el.hidden) { const i = el.querySelector('.sheet-in'); if (i) i.scrollTop = 0; } }).observe(el, { attributes: true, attributeFilter: ['hidden'] }));
+})();
 
 /* ===== 화면 전환 ===== */
 let view = 'rank';
