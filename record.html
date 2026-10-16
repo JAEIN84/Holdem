@@ -193,6 +193,11 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 /* iOS 홈 화면 앱: 내용이 짧은 화면에서는 기기가 화면 높이를 상태표시줄만큼 짧게 계산해
    하단 탭바가 위로 떠 보이는 문제 → 문서를 항상 화면보다 조금 길게 만들어 정상 높이로 계산되게 함 */
 body { min-height: calc(100vh + env(safe-area-inset-top, 0px) + 1px); min-height: calc(100lvh + env(safe-area-inset-top, 0px) + 1px); }
+
+.u { font-size: .62em; font-weight: 700; margin-left: 1px; }
+.amt-wrap { position: relative; display: block; }
+.amt-wrap .amt { padding-right: 30px; }
+.amt-u { position: absolute; right: 11px; top: 50%; transform: translateY(-50%); font-size: 13px; font-weight: 700; color: var(--sub); pointer-events: none; }
 </style>
 </head>
 <body>
@@ -243,7 +248,8 @@ const ME = Auth.require(['editor', 'admin']);
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const signed = v => v > 0 ? '+' + v.toLocaleString('ko-KR') : v < 0 ? '−' + Math.abs(v).toLocaleString('ko-KR') : '0';
+const signedT = v => v > 0 ? '+' + v.toLocaleString('ko-KR') : v < 0 ? '−' + Math.abs(v).toLocaleString('ko-KR') : '0';
+const signed = v => signedT(v) + '<span class="u">만</span>';   // 금액 단위: 만원
 const tone = v => v > 0 ? 'pos' : v < 0 ? 'neg' : 'zero';
 const chip = c => `<span class="chip" style="--c:${c}" aria-hidden="true"></span>`;
 const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
@@ -286,7 +292,7 @@ function renderResults() {
       <span class="sign" role="group" aria-label="${esc(p)} 이익 또는 손실">
         <button type="button" class="p" data-s="1" aria-pressed="${v.sign > 0}" aria-label="이익">＋</button>
         <button type="button" class="m" data-s="-1" aria-pressed="${v.sign < 0}" aria-label="손실">−</button></span>
-      <input class="amt ${s}" inputmode="numeric" pattern="[0-9]*" placeholder="금액" value="${v.amt}" aria-label="${esc(p)} 금액" maxlength="7">
+      <span class="amt-wrap"><input class="amt ${s}" inputmode="numeric" pattern="[0-9]*" placeholder="금액" value="${v.amt}" aria-label="${esc(p)} 금액(만원)" maxlength="7"><span class="amt-u" aria-hidden="true">만</span></span>
     </div>`;
   }).join('');
   updateSum();
@@ -354,7 +360,7 @@ $('#add-player').onclick = async () => {
 /* ===== 저장 ===== */
 $('#save').onclick = async () => {
   const { total } = totals();
-  if (total !== 0 && !confirm(`합계가 ${signed(total)}입니다. 그래도 저장할까요?`)) return;
+  if (total !== 0 && !confirm(`합계가 ${signedT(total)}만입니다. 그래도 저장할까요?`)) return;
   if (!form.date) { toast('날짜를 선택하세요'); return; }
   if (!form.place) { toast('장소를 선택하거나 입력하세요'); return; }
   const dup = doc.sessions.find(x => x.id !== editId && x.date === form.date && x.place === form.place);
