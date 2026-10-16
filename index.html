@@ -440,15 +440,25 @@ body { min-height: calc(100vh + env(safe-area-inset-top, 0px) + 1px); min-height
 .rank-meta b, .rank-meta2 b, .stat-d b, .pl-line b, .vs-line b, .ev-who b { white-space: nowrap; }
 .pf-pair .stat-v, .pf-tiles .stat-v { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 
-/* ===== 프로필: 화면 가운데 뜨는 팝업 (뒤로 메인 화면이 비쳐 보임) ===== */
-.sheet.popup { align-items: center; padding: calc(24px + env(safe-area-inset-top, 0px)) 16px calc(24px + env(safe-area-inset-bottom, 0px)); background: rgba(0, 0, 0, .38); }
-.sheet.popup .sheet-in { border-radius: 22px; max-height: min(78vh, 680px); max-width: 440px; padding-bottom: 20px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, .35); animation: pop-in .18s ease-out; }
-@keyframes pop-in { from { opacity: 0; transform: scale(.96); } }
-@media (orientation: landscape) and (max-height: 500px) { .sheet.popup .sheet-in { max-height: 86vh; } }
-@media (prefers-reduced-motion: reduce) { .sheet.popup .sheet-in { animation: none; } }
+/* ===== 팝업: 화면 가운데, 위아래 여백을 넉넉히 (뒤로 메인 화면이 비쳐 보임) ===== */
+.sheet.popup { align-items: center; padding: calc(64px + env(safe-area-inset-top, 0px)) 16px calc(64px + env(safe-area-inset-bottom, 0px));
+  background: rgba(0, 0, 0, .42); animation: dim-in .22s ease-out both; }
+.sheet.popup .sheet-in { border-radius: 22px; max-height: min(64vh, 560px); max-width: 440px; padding-bottom: 20px;
+  box-shadow: 0 28px 70px rgba(0, 0, 0, .4); transform-origin: 50% 55%; animation: pop-in .28s cubic-bezier(.2, .9, .3, 1.25) both; }
+/* 닫힐 때: 살짝 작아지며 아래로 사라짐 */
+.sheet.popup.closing { animation: dim-out .19s ease-in both; }
+.sheet.popup.closing .sheet-in { animation: pop-out .19s ease-in both; }
+@keyframes dim-in { from { background: rgba(0, 0, 0, 0); } }
+@keyframes dim-out { to { background: rgba(0, 0, 0, 0); } }
+@keyframes pop-in { from { opacity: 0; transform: translateY(18px) scale(.9); } }
+@keyframes pop-out { to { opacity: 0; transform: translateY(14px) scale(.92); } }
+/* 닫기(✕) 버튼은 손가락으로 누르기 쉽게 크게 */
+.sheet.popup .sheet-x { width: 40px; height: 40px; font-size: 16px; flex: none; }
+.sheet.popup .sheet-head { padding-top: 14px; padding-bottom: 10px; }
+@media (orientation: landscape) and (max-height: 500px) { .sheet.popup { padding-top: 16px; padding-bottom: 16px; } .sheet.popup .sheet-in { max-height: 88vh; } }
+@media (prefers-reduced-motion: reduce) { .sheet.popup, .sheet.popup .sheet-in { animation: none !important; } }
 .sheet.popup .cmt-form { margin-bottom: -20px; padding-bottom: 14px; }
-@supports (height: 100dvh) { .sheet.popup .sheet-in { max-height: min(78dvh, 680px); } }
+@supports (height: 100dvh) { .sheet.popup .sheet-in { max-height: min(64dvh, 560px); } }
 </style>
 </head>
 <body>
@@ -1187,9 +1197,9 @@ function openPost(id) {
   $('#post-acts').innerHTML = can ? `<button type="button" data-a="edit">수정</button><button type="button" class="del" data-a="del">삭제</button>` : '';
   $('#post-acts').onclick = async e => {
     const b = e.target.closest('button'); if (!b) return;
-    if (b.dataset.a === 'edit') { $('#post-sheet').hidden = true; openWrite(p); }
+    if (b.dataset.a === 'edit') { closeSheet($('#post-sheet')); openWrite(p); }
     if (b.dataset.a === 'del' && confirm('이 글을 삭제할까요?')) {
-      try { POSTS = await api('DELETE', '/api/posts/' + p.id); $('#post-sheet').hidden = true; toast('삭제했습니다'); renderBoard(); } catch (err) { toast(err.message); }
+      try { POSTS = await api('DELETE', '/api/posts/' + p.id); closeSheet($('#post-sheet')); toast('삭제했습니다'); renderBoard(); } catch (err) { toast(err.message); }
     }
   };
   renderComments(p.id);
@@ -1255,13 +1265,13 @@ $('#write-form').addEventListener('submit', async e => {
   const body = { type: wType, title: $('#w-title').value.trim(), body: $('#w-body').value.trim() };
   try {
     POSTS = editingPost ? await api('PUT', '/api/posts/' + editingPost.id, body) : await api('POST', '/api/posts', body);
-    $('#write-sheet').hidden = true; toast(editingPost ? '수정했습니다' : '등록했습니다'); boardFilter = ''; renderBoard();
+    closeSheet($('#write-sheet')); toast(editingPost ? '수정했습니다' : '등록했습니다'); boardFilter = ''; renderBoard();
   } catch (err) { $('#w-msg').className = 'sheet-msg bad'; $('#w-msg').textContent = err.message; validateWrite(); }
 });
 $('#write-btn').addEventListener('click', () => openWrite(null));
 document.addEventListener('click', e => {
-  if (e.target.closest('[data-close]')) e.target.closest('.sheet').hidden = true;
-  else if (e.target.classList && e.target.classList.contains('sheet') && e.target.id !== 'me-sheet') e.target.hidden = true;
+  if (e.target.closest('[data-close]')) closeSheet(e.target.closest('.sheet'));
+  else if (e.target.classList && e.target.classList.contains('sheet') && e.target.id !== 'me-sheet') closeSheet(e.target);
 });
 
 /* ===== 순위 변동: 직전 경기 전 순위와 비교 ===== */
@@ -1330,7 +1340,7 @@ function openProfile(name) {
     <div class="pf-sec">최근 5경기</div>
     <table class="pf-table"><tbody>${recent.map(s => `<tr><td>${ymd(s.date)} <span style="color:var(--sub);font-weight:600">${esc(s.place)}</span></td><td class="${tone(s.res[name])}">${signed(s.res[name])}</td></tr>`).join('')}</tbody></table>
     <button type="button" class="pf-btn" id="pf-trend">추이 그래프로 보기</button>`;
-  $('#pf-trend').onclick = () => { $('#profile-sheet').hidden = true; focus = name; trendScope = 'all'; scrub = null; go('trend'); };
+  $('#pf-trend').onclick = () => { closeSheet($('#profile-sheet')); focus = name; trendScope = 'all'; scrub = null; go('trend'); };
   $('#profile-sheet').hidden = false;
 }
 
@@ -1384,12 +1394,12 @@ $('#ev-form').addEventListener('submit', async ev => {
   const body = { date: $('#ev-date').value, time: $('#ev-time').value, place: $('#ev-place').value.trim(), note: $('#ev-note').value.trim() };
   try {
     EVENTS = editingEvent ? await api('PUT', '/api/events/' + editingEvent.id, body) : await api('POST', '/api/events', body);
-    $('#event-sheet').hidden = true; renderEventCard(); toast(editingEvent ? '일정을 수정했습니다' : '일정을 등록했습니다');
+    closeSheet($('#event-sheet')); renderEventCard(); toast(editingEvent ? '일정을 수정했습니다' : '일정을 등록했습니다');
   } catch (err) { $('#ev-msg').className = 'sheet-msg bad'; $('#ev-msg').textContent = err.message; }
 });
 $('#ev-del').addEventListener('click', async () => {
   if (!editingEvent || !confirm('이 일정을 삭제할까요? 참석 응답도 함께 지워집니다.')) return;
-  try { EVENTS = await api('DELETE', '/api/events/' + editingEvent.id); $('#event-sheet').hidden = true; renderEventCard(); toast('일정을 삭제했습니다'); } catch (err) { toast(err.message); }
+  try { EVENTS = await api('DELETE', '/api/events/' + editingEvent.id); closeSheet($('#event-sheet')); renderEventCard(); toast('일정을 삭제했습니다'); } catch (err) { toast(err.message); }
 });
 
 /* ===== 공유 이미지 (카톡 등에 바로 올릴 수 있는 그림) ===== */
@@ -1455,6 +1465,14 @@ function shareGame(id) {
 }
 $('#share-rank').addEventListener('click', e => { e.stopPropagation(); shareRanking(); });
 document.addEventListener('click', e => { const b = e.target.closest('[data-share-game]'); if (b) shareGame(b.dataset.shareGame); });
+
+/* ===== 팝업 닫기: 작아지며 사라지는 효과를 보여 준 뒤 숨김 ===== */
+function closeSheet(el) {
+  if (!el || el.hidden || el.classList.contains('closing')) return;
+  if (!el.classList.contains('popup') || matchMedia('(prefers-reduced-motion: reduce)').matches) { el.hidden = true; return; }
+  el.classList.add('closing');
+  setTimeout(() => { el.hidden = true; el.classList.remove('closing'); }, 190);
+}
 
 /* ===== 창(시트)이 열린 동안 뒤쪽 화면이 같이 스크롤되지 않게 고정 ===== */
 (function () {
