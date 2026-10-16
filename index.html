@@ -431,6 +431,53 @@ body { min-height: calc(100vh + env(safe-area-inset-top, 0px) + 1px); min-height
   #sub-h2h .vs + .vs { border-top: 0; }
   #sub-h2h .vs { border-bottom: 1px solid var(--line); }
 }
+
+/* ===== 순위 변동 ===== */
+.rank-no { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.15; }
+.dlt { font-style: normal; font-size: 10.5px; font-weight: 800; margin-top: 1px; letter-spacing: -.02em; }
+.dlt.up { color: var(--pos); } .dlt.down { color: var(--neg); } .dlt.same { color: var(--faint); } .dlt.new { color: var(--gold); }
+.all-table td.r { white-space: nowrap; }
+.all-table .dlt { margin-left: 2px; }
+/* ===== 공유 버튼 ===== */
+.gt-row { display: flex; align-items: center; justify-content: space-between; }
+.share-btn { border: 1px solid var(--line); background: var(--surface); color: var(--sub); font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; }
+.game-head .share-link { margin-left: 6px; font-size: 12px; font-weight: 700; color: var(--sub); padding: 3px 9px; border-radius: 999px; background: var(--surface-2); border: 0; }
+.game-head .tag + .share-link, .game-head .share-link:first-of-type { margin-left: auto; }
+.game-head .share-link + .edit-link { margin-left: 6px; }
+/* ===== 다음 모임 ===== */
+.ev-card { background: var(--surface); border-radius: 18px; padding: 14px 16px; margin: 0 0 16px; border: 1px solid var(--line); }
+.ev-top { display: flex; align-items: center; gap: 8px; }
+.ev-badge { font-size: 11.5px; font-weight: 800; color: #fff; background: var(--brand); padding: 2px 9px; border-radius: 999px; }
+.ev-dday { font-size: 12px; font-weight: 800; color: var(--gold); }
+.ev-edit { margin-left: auto; border: 0; background: none; color: var(--sub); font-size: 12.5px; font-weight: 700; }
+.ev-when { font-size: 19px; font-weight: 800; margin-top: 8px; }
+.ev-where { font-size: 14px; color: var(--sub); font-weight: 600; margin-top: 2px; }
+.ev-note { font-size: 13.5px; margin-top: 6px; white-space: pre-wrap; }
+.ev-who { font-size: 13px; color: var(--sub); margin-top: 8px; line-height: 1.55; }
+.ev-who b { color: var(--ink); }
+.ev-rsvp { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 12px; }
+.ev-rsvp button { height: 40px; border-radius: 11px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); font-weight: 800; font-size: 14px; }
+.ev-rsvp button[aria-pressed="true"][data-s="yes"] { background: var(--brand); border-color: var(--brand); color: #fff; }
+.ev-rsvp button[aria-pressed="true"][data-s="maybe"] { background: var(--gold); border-color: var(--gold); color: #fff; }
+.ev-rsvp button[aria-pressed="true"][data-s="no"] { background: var(--sub); border-color: var(--sub); color: #fff; }
+.ev-add { display: block; width: 100%; border: 1.5px dashed var(--line); background: none; border-radius: 16px; padding: 12px; color: var(--sub); font-weight: 700; font-size: 14px; margin: 0 0 16px; }
+.ev-more { margin-top: 10px; font-size: 12.5px; color: var(--sub); }
+.ev-more button { border: 0; background: none; color: var(--sub); text-decoration: underline; font-weight: 700; font-size: 12.5px; padding: 0; }
+/* ===== 개인 프로필 ===== */
+#pf-name { display: flex; align-items: center; gap: 8px; }
+.pf-tiles { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 6px 0 14px; }
+.pf-tiles .stat { background: var(--surface-2); }
+.pf-sec { font-size: 13px; font-weight: 800; color: var(--sub); margin: 16px 0 8px; }
+.pf-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.pf-table th { font-size: 12px; color: var(--sub); font-weight: 600; text-align: right; padding: 4px 6px; }
+.pf-table th:first-child, .pf-table td:first-child { text-align: left; }
+.pf-table td { padding: 8px 6px; border-top: 1px solid var(--line); text-align: right; font-weight: 700; white-space: nowrap; }
+.pf-spark { width: 100%; height: 70px; display: block; }
+.pf-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.pf-pair .stat { background: var(--surface-2); }
+.pf-btn { width: 100%; height: 46px; margin-top: 16px; border: 0; border-radius: 12px; background: var(--ink); color: var(--surface); font-weight: 800; font-size: 15px; }
+[data-profile] { cursor: pointer; }
+.rank-meta b, .rank-meta2 b, .stat-d b, .pl-line b, .vs-line b, .ev-who b { white-space: nowrap; }
 </style>
 </head>
 <body>
@@ -442,9 +489,10 @@ body { min-height: calc(100vh + env(safe-area-inset-top, 0px) + 1px); min-height
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg></button></span></div>
     <div class="title-row"><h1 class="large-title" id="title">Tri-City Hold’em</h1><select class="season-sel" aria-label="시즌 선택"></select></div>
     <p class="caption" id="caption"></p>
+    <div id="event-card"></div>
     <div class="rank-grid">
       <div class="leader" id="leader"></div>
-      <div class="rank-block"><div class="group-title">순위</div><ol class="group rank-list" id="rank-list"></ol></div>
+      <div class="rank-block"><div class="group-title gt-row"><span>순위</span><button type="button" class="share-btn" id="share-rank">공유</button></div><ol class="group rank-list" id="rank-list"></ol></div>
       <div class="stats-block"><div class="group-title" id="stats-title">시즌 기록</div><div class="stat-grid" id="stat-grid"></div></div>
     </div>
     <div class="season-extra">
@@ -541,6 +589,27 @@ body { min-height: calc(100vh + env(safe-area-inset-top, 0px) + 1px); min-height
     <p class="sheet-msg" id="w-msg"></p>
     <button type="submit" class="sheet-btn" id="w-btn" disabled>등록</button>
   </form>
+</div></div>
+<div class="sheet" id="profile-sheet" hidden><div class="sheet-in" role="dialog" aria-modal="true" aria-labelledby="pf-name">
+  <div class="sheet-head"><h2 id="pf-name"></h2><button type="button" class="sheet-x" data-close aria-label="닫기">✕</button></div>
+  <div id="pf-body"></div>
+</div></div>
+<div class="sheet" id="event-sheet" hidden><div class="sheet-in" role="dialog" aria-modal="true" aria-labelledby="ev-title">
+  <div class="sheet-head"><h2 id="ev-title">다음 모임 등록</h2><button type="button" class="sheet-x" data-close aria-label="닫기">✕</button></div>
+  <form id="ev-form" novalidate>
+    <label class="sf"><span>날짜</span><input type="date" id="ev-date"></label>
+    <label class="sf"><span>시간 (선택)</span><input type="time" id="ev-time"></label>
+    <label class="sf"><span>장소</span><input id="ev-place" maxlength="20" list="ev-places" placeholder="예: 천안"><datalist id="ev-places"></datalist></label>
+    <label class="sf"><span>메모 (선택)</span><input id="ev-note" maxlength="300" placeholder="예: 늦으면 미리 알려 주세요"></label>
+    <p class="sheet-msg" id="ev-msg"></p>
+    <button type="submit" class="sheet-btn" id="ev-save">등록</button>
+    <button type="button" class="sheet-out" id="ev-del" hidden>이 일정 삭제</button>
+  </form>
+</div></div>
+<div class="sheet" id="share-sheet" hidden><div class="sheet-in" role="dialog" aria-modal="true" aria-labelledby="sh-title">
+  <div class="sheet-head"><h2 id="sh-title">공유 이미지</h2><button type="button" class="sheet-x" data-close aria-label="닫기">✕</button></div>
+  <img id="sh-img" alt="공유용 이미지" style="width:100%;border-radius:14px;display:block">
+  <p class="sheet-sub" style="margin-top:10px">이미지를 길게 눌러 저장하거나 공유하세요.</p>
 </div></div>
 <div class="sheet" id="me-sheet" hidden><div class="sheet-in" role="dialog" aria-modal="true" aria-labelledby="me-title">
   <div class="sheet-head"><h2 id="me-title">내 계정</h2><button type="button" class="sheet-x" id="me-close" aria-label="닫기">✕</button></div>
@@ -714,10 +783,11 @@ function renderRank() {
       <div class="leader-value">${signed(L.total)}</div>
       <div class="leader-sub">${S2 ? `2위 ${esc(S2.name)}와 ${(L.total - S2.total).toLocaleString('ko-KR')}${UNIT} 차이` : ''}${days !== null ? `${S2 ? ', ' : ''}시즌 종료까지 ${days}일` : ''}</div>`;
     const maxAbs = Math.max(1, ...M.ranked.map(t => Math.abs(t.total)));
+    const prevRank = rankBefore(M);
     const rows = M.ranked.map((t, k) => {
       const all = statOf(MA, t.name);
       return `<li><button type="button" class="rank-row" data-p="${esc(t.name)}">
-        <span class="rank-no">${k + 1}</span>
+        <span class="rank-no">${k + 1}${deltaTag(prevRank, t.name, k + 1)}</span>
         <span class="rank-name">${chip(t.color)}${esc(t.name)}${crowns(t.name)}</span>
         <span class="rank-val ${tone(t.total)}">${signed(t.total)}</span>
         <span class="rank-meta">${t.n}경기, 승률 ${pct(t.win)}, 경기당 <b class="${tone(t.per)}">${per1(t.per)}</b></span>
@@ -738,21 +808,20 @@ function renderRank() {
       ['자주 모인 곳', pl.length ? esc(pl[0][0]) : '-', pl.map(([k, v]) => `${esc(k)} ${v}`).join(', ')]
     ].map(([k, v, d]) => `<div class="stat"><div class="stat-k">${k}</div><div class="stat-v">${v}</div><div class="stat-d">${d}</div></div>`).join('');
   }
-  $('#rank-list').onclick = e => {
-    const b = e.target.closest('.rank-row'); if (!b) return;
-    focus = b.dataset.p; trendScope = b.dataset.all ? 'all' : 'season'; go('trend');
-  };
+  $('#rank-list').onclick = e => { const b = e.target.closest('.rank-row'); if (b) openProfile(b.dataset.p); };
+  renderEventCard();
 
+  const rankBeforeAll = rankBefore(MA);
   // 전체 순위 (시즌을 볼 때만)
   $('#all-block').innerHTML = isAll() ? '' : `<div class="group-title">전체 순위 (${MA.N}경기)</div>
     <div class="group"><table class="all-table"><thead><tr><th>순위</th><th>누적</th><th>경기당</th><th>참가</th></tr></thead><tbody>
-    ${MA.ranked.map((t, k) => `<tr><td class="nm"><span class="r">${k + 1}</span>${chip(t.color)}${esc(t.name)}${crowns(t.name)}</td>
+    ${MA.ranked.map((t, k, _a, pr = rankBeforeAll) => `<tr data-profile="${esc(t.name)}"><td class="nm"><span class="r">${k + 1}${deltaTag(pr, t.name, k + 1)}</span>${chip(t.color)}${esc(t.name)}${crowns(t.name)}</td>
       <td class="${tone(t.total)}">${signed(t.total)}</td><td class="${tone(t.per)}">${per1(t.per)}</td><td class="sub">${t.n}경기</td></tr>`).join('')}
     </tbody></table></div>`;
   // 시즌 챔피언
   $('#champ-block').innerHTML = `<div class="group-title">시즌 챔피언</div><ol class="group champ-list">${SEASONS.map(n => {
     const i = seasonInfo(n), Mx = n === season ? MS : analyze(subsetDoc(n)), w = Mx.ranked[0];
-    return `<li class="champ${i.live ? ' live' : ''}"><span class="sn">${i.label}<span class="sr">${i.range}</span></span>
+    return `<li class="champ${i.live ? ' live' : ''}"${w ? ` data-profile="${esc(w.name)}"` : ''}><span class="sn">${i.label}<span class="sr">${i.range}</span></span>
       ${w ? `<span class="nm">${chip(w.color)}<span>${esc(w.name)}${crowns(w.name)}<span class="st">${Mx.N}경기${i.live ? ', 현재 1위' : ''}</span></span></span><span class="v ${tone(w.total)}">${signed(w.total)}</span>`
           : `<span class="nm"><span class="st">아직 경기가 없습니다</span></span><span></span>`}</li>`;
   }).join('')}</ol>`;
@@ -940,7 +1009,7 @@ function renderH2H() {
         : (byWin || byMoney) === A ? ['up', `${esc(A)} 우세`] : (byWin || byMoney) === r.B ? ['down', `${esc(r.B)} 우세`] : ['even', '팽팽함'];
       const wa = r.n ? r.aW / r.n * 100 : 0, wd = r.n ? r.d / r.n * 100 : 0;
       return `<div class="vs">
-        <div class="vs-head">vs ${chip(M.color[r.B])}${esc(r.B)}${crowns(r.B)}<span class="n">함께 ${r.n}경기</span></div>
+        <div class="vs-head" data-profile="${esc(r.B)}">vs ${chip(M.color[r.B])}${esc(r.B)}${crowns(r.B)}<span class="n">함께 ${r.n}경기</span></div>
         ${r.n ? `<div class="vs-line"><span>${esc(A)} <b class="${tone(r.aSum)}">${signed(r.aSum)}</b></span><span>${esc(r.B)} <b class="${tone(r.bSum)}">${signed(r.bSum)}</b></span></div>
         <div class="vs-line"><span>맞대결 <b>${r.aW}승 ${r.bW}패</b>${r.d ? ` ${r.d}무` : ''}</span><span>그 판에서 더 많이 딴 횟수 기준</span></div>
         <div class="vs-bar" aria-hidden="true"><span style="width:${wa}%;background:${M.color[A]}"></span><span style="width:${wd}%;background:var(--line)"></span><span style="flex:1;background:${M.color[r.B]}"></span></div>
@@ -975,7 +1044,7 @@ function renderPlace() {
     </div>
     <div class="group-title">플레이어별 강한 곳, 약한 곳</div>
     <div class="group">${bestWorst.map(({ t, best, worst }) => `<div class="pl-row">
-      <div class="pl-top">${chip(t.color)}${esc(t.name)}${crowns(t.name)}</div>
+      <div class="pl-top" data-profile="${esc(t.name)}">${chip(t.color)}${esc(t.name)}${crowns(t.name)}</div>
       <div class="pl-line">${best ? `강한 곳 <b>${esc(best.pl)}</b> 경기당 <b class="${tone(best.per)}">${per1(best.per)}</b> (${best.n}경기)` : '2경기 이상 친 장소가 아직 없습니다'}
         ${worst ? `<br>약한 곳 <b>${esc(worst.pl)}</b> 경기당 <b class="${tone(worst.per)}">${per1(worst.per)}</b> (${worst.n}경기)` : ''}</div>
     </div>`).join('')}</div>`;
@@ -988,7 +1057,7 @@ function renderAward() {
   if (!M.N) { el.innerHTML = '<p class="empty">이 시즌에는 아직 경기가 없습니다</p>'; return; }
   const live = !isAll() && seasonInfo(season).live, minG = MIN_GAMES(M);
   const tops = (arr, key) => { if (!arr.length) return []; const m = Math.max(...arr.map(key)); return arr.filter(x => key(x) === m); };
-  const who = list => list.map(t => `${chip(t.color)}${esc(t.name)}${crowns(t.name)}`).join('<span style="color:var(--faint)">,</span> ');
+  const who = list => list.map(t => `<span data-profile="${esc(t.name)}" style="display:inline-flex;align-items:center;gap:6px">${chip(t.color)}${esc(t.name)}${crowns(t.name)}</span>`).join('<span style="color:var(--faint)">,</span> ');
   const st = M.stats, el2 = st.filter(t => t.n >= minG);
   const sd = t => { const xs = M.sessions.filter(x => t.name in x.res).map(x => x.res[t.name]); const m = sum(xs) / xs.length; return Math.sqrt(sum(xs.map(v => (v - m) ** 2)) / xs.length); };
   const champ = M.ranked[0];
@@ -1079,6 +1148,7 @@ function gameCards(list) {
     html += `<article class="game">
       <div class="game-head"><span class="game-date">${s.date.slice(5).replace('-', '.')}</span><span class="game-dow">${DOW[D(s.date).getDay()]}요일, ${res.length}명</span>
         ${s.place ? `<span class="tag" style="--pc:${CONFIG.PLACE_COLORS[s.place] || '#8A9A92'}">${esc(s.place)}</span>` : ''}
+        <button type="button" class="share-link" data-share-game="${s.id}">공유</button>
         ${CAN_EDIT ? `<a class="edit-link" href="${CONFIG.RECORD_URL}?edit=${encodeURIComponent(s.id)}" aria-label="${s.date} 경기 수정">수정</a>` : ''}</div>
       <div class="game-res">${res.map(([p, v]) => `<div class="gr"><span class="nm">${chip(MA.color[p])}${esc(p)}</span><span class="v ${tone(v)}">${signed(v)}</span></div>`).join('')}</div>
       ${total !== 0 ? `<div class="game-warn">합계가 ${signed(total)}입니다. 기록을 확인해 주세요.</div>` : ''}
@@ -1233,6 +1303,198 @@ document.addEventListener('click', e => {
   else if (e.target.classList && e.target.classList.contains('sheet') && e.target.id !== 'me-sheet') e.target.hidden = true;
 });
 
+/* ===== 순위 변동: 직전 경기 전 순위와 비교 ===== */
+function rankBefore(M) {
+  if (M.N < 2) return null;
+  const last = M.sessions[M.N - 1];
+  const P = analyze({ ...DOC, sessions: M.sessions.slice(0, -1) });
+  return Object.fromEntries(P.ranked.map((t, i) => [t.name, i + 1]));
+}
+function deltaTag(prev, name, now) {
+  if (!prev) return '';
+  if (!(name in prev)) return '<i class="dlt new">NEW</i>';
+  const d = prev[name] - now;
+  return d > 0 ? `<i class="dlt up" aria-label="${d}계단 상승">▲${d}</i>` : d < 0 ? `<i class="dlt down" aria-label="${-d}계단 하락">▼${-d}</i>` : '<i class="dlt same" aria-label="변동 없음">–</i>';
+}
+
+/* ===== 개인 프로필 ===== */
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-profile]'); if (!t || e.target.closest('.sheet .pf-btn')) return;
+  if (t.dataset.profile) openProfile(t.dataset.profile);
+});
+function openProfile(name) {
+  const st = statOf(MA, name); if (!st) return;
+  const color = MA.color[name];
+  $('#pf-name').innerHTML = `${chip(color)}${esc(name)}${crowns(name)}`;
+  // 시즌별 성적
+  const seasonRows = SEASONS.slice().sort((a, b) => b - a).map(n => {
+    const Mx = analyze(subsetDoc(n)), i = Mx.ranked.findIndex(t => t.name === name), t = Mx.ranked[i];
+    return t ? `<tr><td>${seasonInfo(n).label}${seasonInfo(n).live ? ' <span style="color:var(--gold);font-size:11px">진행 중</span>' : ''}</td><td>${i + 1}위/${Mx.ranked.length}</td><td>${t.n}경기</td><td class="${tone(t.total)}">${signed(t.total)}</td><td class="${tone(t.per)}">${per1(t.per)}</td></tr>`
+      : `<tr><td>${seasonInfo(n).label}</td><td colspan="4" style="color:var(--faint);font-weight:600">참가 없음</td></tr>`;
+  }).join('');
+  // 누적 흐름 미니 그래프
+  const path = MA.cum.map(c => c[name]); const lo = Math.min(0, ...path), hi = Math.max(0, ...path), W = 320, H = 70;
+  const x = i => path.length < 2 ? W / 2 : i * W / (path.length - 1), y = v => 6 + (hi - v) / ((hi - lo) || 1) * (H - 12);
+  const spark = `<svg class="pf-spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><line x1="0" x2="${W}" y1="${y(0)}" y2="${y(0)}" stroke="var(--line)" stroke-dasharray="3 4"/>
+    <path d="${path.map((v, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join('')}" fill="none" stroke="${color}" stroke-width="2.4" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>`;
+  // 장소
+  const places = Object.keys(MA.places).map(pl => { const xs = MA.sessions.filter(s => s.place === pl && name in s.res).map(s => s.res[name]); return { pl, n: xs.length, per: xs.length ? sum(xs) / xs.length : 0 }; }).filter(r => r.n >= 2).sort((a, b) => b.per - a.per);
+  // 천적과 밥: 함께 3판 이상 친 상대 중, 같은 판들에서의 금액 차이로 판단
+  const rivals = MA.names.filter(b => b !== name).map(b => { const g = MA.sessions.filter(s => name in s.res && b in s.res); return { b, n: g.length, diff: sum(g.map(s => s.res[name])) - sum(g.map(s => s.res[b])) }; }).filter(r => r.n >= 3).sort((a, b) => a.diff - b.diff);
+  const nemesis = rivals.find(r => r.diff < 0) || null, prey = rivals.slice().reverse().find(r => r.diff > 0) || null;
+  const recent = MA.sessions.filter(s => name in s.res).slice(-5).reverse();
+  const crownList = (CROWNS[name] || []).map(c => `S${c.n} ${c.live ? '현재 선두' : '우승'}`).join(', ');
+  const tile = (k, v, d) => `<div class="stat"><div class="stat-k">${k}</div><div class="stat-v">${v}</div><div class="stat-d">${d}</div></div>`;
+  $('#pf-body').innerHTML = `
+    <div class="pf-tiles">
+      ${tile('전체 누적', `<span class="${tone(st.total)}">${signed(st.total)}</span>`, `${st.n}경기, 참가율 ${pct(st.rate)}`)}
+      ${tile('경기당 평균', `<span class="${tone(st.per)}">${per1(st.per)}</span>`, `승률 ${pct(st.win)}`)}
+      ${tile('최고 단일', `<span class="pos">${signed(st.max)}</span>`, `최저 ${signed(st.min)}`)}
+      ${tile('최다 연승', `${st.bestStreak}연승`, `최다 연패 ${st.worstStreak}연패`)}
+    </div>
+    ${crownList ? `<div class="pf-sec">왕관</div><div style="font-weight:700">${crowns(name)} <span style="color:var(--sub);font-size:13px;margin-left:4px">${crownList}</span></div>` : ''}
+    <div class="pf-sec">시즌별 성적</div>
+    <table class="pf-table"><thead><tr><th>시즌</th><th>순위</th><th>참가</th><th>누적</th><th>경기당</th></tr></thead><tbody>${seasonRows}</tbody></table>
+    <div class="pf-sec">누적 흐름 (전체 기간)</div>${spark}
+    <div class="pf-sec">천적과 밥</div>
+    <div class="pf-pair">
+      ${tile('천적', nemesis ? `${chip(MA.color[nemesis.b])}${esc(nemesis.b)}` : '-', nemesis ? `함께 ${nemesis.n}경기, 금액 차 ${signed(nemesis.diff)}` : rivals.length ? '모든 상대에게 우세합니다' : '함께 3판 이상 친 상대가 아직 없습니다')}
+      ${tile('밥', prey ? `${chip(MA.color[prey.b])}${esc(prey.b)}` : '-', prey ? `함께 ${prey.n}경기, 금액 차 ${signed(prey.diff)}` : rivals.length ? '아직 우세한 상대가 없습니다' : '')}
+    </div>
+    <div class="pf-sec">장소</div>
+    <div class="pf-pair">
+      ${tile('강한 곳', places[0] ? esc(places[0].pl) : '-', places[0] ? `경기당 ${per1(places[0].per)} (${places[0].n}경기)` : '2경기 이상 친 장소가 없습니다')}
+      ${tile('약한 곳', places.length > 1 ? esc(places[places.length - 1].pl) : '-', places.length > 1 ? `경기당 ${per1(places[places.length - 1].per)} (${places[places.length - 1].n}경기)` : '')}
+    </div>
+    <div class="pf-sec">최근 5경기</div>
+    <table class="pf-table"><tbody>${recent.map(s => `<tr><td>${ymd(s.date)} <span style="color:var(--sub);font-weight:600">${esc(s.place)}</span></td><td class="${tone(s.res[name])}">${signed(s.res[name])}</td></tr>`).join('')}</tbody></table>
+    <button type="button" class="pf-btn" id="pf-trend">추이 그래프로 보기</button>`;
+  $('#pf-trend').onclick = () => { $('#profile-sheet').hidden = true; focus = name; trendScope = 'all'; scrub = null; go('trend'); };
+  $('#profile-sheet').hidden = false;
+}
+
+/* ===== 다음 모임 ===== */
+let EVENTS = { upcoming: [], past: [] }, editingEvent = null;
+const canManageEvents = () => ['editor', 'admin'].includes(ME.role);
+function evWhen(e) {
+  const d = D(e.date), dow = DOW[d.getDay()];
+  return `${d.getMonth() + 1}월 ${d.getDate()}일 (${dow})${e.time ? ' ' + e.time : ''}`;
+}
+function renderEventCard() {
+  const el = $('#event-card'); if (!el) return;
+  const e = EVENTS.upcoming[0];
+  if (!e) { el.innerHTML = canManageEvents() ? '<button type="button" class="ev-add" id="ev-add">＋ 다음 모임 등록</button>' : ''; const b = $('#ev-add'); if (b) b.onclick = () => openEvent(null); return; }
+  const days = Math.round((D(e.date) - D(todayStr())) / 86400000);
+  const by = st => e.rsvps.filter(r => r.status === st);
+  const mine = (e.rsvps.find(r => r.uid === ME.id) || {}).status;
+  const names = list => list.map(r => esc(r.name)).join(', ');
+  const canEdit = ME.role === 'admin' || (canManageEvents() && e.by === ME.id);
+  el.innerHTML = `<div class="ev-card">
+    <div class="ev-top"><span class="ev-badge">다음 모임</span><span class="ev-dday">${days === 0 ? '오늘' : `D-${days}`}</span>${canEdit ? '<button type="button" class="ev-edit" id="ev-edit">수정</button>' : ''}</div>
+    <div class="ev-when">${evWhen(e)}</div>
+    <div class="ev-where">📍 ${esc(e.place)}</div>
+    ${e.note ? `<div class="ev-note">${esc(e.note)}</div>` : ''}
+    <div class="ev-who"><b>참석 ${by('yes').length}</b>${by('yes').length ? ` (${names(by('yes'))})` : ''} · 미정 ${by('maybe').length}${by('maybe').length ? ` (${names(by('maybe'))})` : ''} · 불참 ${by('no').length}${by('no').length ? ` (${names(by('no'))})` : ''}</div>
+    <div class="ev-rsvp" role="group" aria-label="참석 여부">
+      <button type="button" data-s="yes" aria-pressed="${mine === 'yes'}">참석</button><button type="button" data-s="maybe" aria-pressed="${mine === 'maybe'}">미정</button><button type="button" data-s="no" aria-pressed="${mine === 'no'}">불참</button>
+    </div>
+    ${EVENTS.upcoming.length > 1 || canManageEvents() ? `<div class="ev-more">${EVENTS.upcoming.length > 1 ? `이후 일정 ${EVENTS.upcoming.length - 1}개 · ` : ''}${canManageEvents() ? '<button type="button" id="ev-add2">새 일정 등록</button>' : ''}</div>` : ''}
+  </div>`;
+  el.querySelector('.ev-rsvp').onclick = async ev => {
+    const b = ev.target.closest('button'); if (!b) return;
+    try { EVENTS = await api('PUT', `/api/events/${e.id}/rsvp`, { status: b.dataset.s }); renderEventCard(); toast(b.dataset.s === 'yes' ? '참석으로 표시했습니다' : b.dataset.s === 'no' ? '불참으로 표시했습니다' : '미정으로 표시했습니다'); }
+    catch (err) { toast(err.message); }
+  };
+  if ($('#ev-edit')) $('#ev-edit').onclick = () => openEvent(e);
+  if ($('#ev-add2')) $('#ev-add2').onclick = () => openEvent(null);
+}
+function openEvent(e) {
+  editingEvent = e;
+  $('#ev-title').textContent = e ? '모임 일정 수정' : '다음 모임 등록';
+  $('#ev-date').value = e ? e.date : todayStr(); $('#ev-time').value = e ? e.time : '';
+  $('#ev-place').value = e ? e.place : (Object.entries(MA.places).sort((a, b) => b[1] - a[1])[0] || [''])[0];
+  $('#ev-note').value = e ? e.note : '';
+  $('#ev-places').innerHTML = Object.keys(MA.places).map(p => `<option value="${esc(p)}">`).join('');
+  $('#ev-save').textContent = e ? '수정 저장' : '등록'; $('#ev-del').hidden = !e; $('#ev-msg').textContent = '';
+  $('#event-sheet').hidden = false;
+}
+$('#ev-form').addEventListener('submit', async ev => {
+  ev.preventDefault();
+  const body = { date: $('#ev-date').value, time: $('#ev-time').value, place: $('#ev-place').value.trim(), note: $('#ev-note').value.trim() };
+  try {
+    EVENTS = editingEvent ? await api('PUT', '/api/events/' + editingEvent.id, body) : await api('POST', '/api/events', body);
+    $('#event-sheet').hidden = true; renderEventCard(); toast(editingEvent ? '일정을 수정했습니다' : '일정을 등록했습니다');
+  } catch (err) { $('#ev-msg').className = 'sheet-msg bad'; $('#ev-msg').textContent = err.message; }
+});
+$('#ev-del').addEventListener('click', async () => {
+  if (!editingEvent || !confirm('이 일정을 삭제할까요? 참석 응답도 함께 지워집니다.')) return;
+  try { EVENTS = await api('DELETE', '/api/events/' + editingEvent.id); $('#event-sheet').hidden = true; renderEventCard(); toast('일정을 삭제했습니다'); } catch (err) { toast(err.message); }
+});
+
+/* ===== 공유 이미지 (카톡 등에 바로 올릴 수 있는 그림) ===== */
+const SANS = '-apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif';
+function canvasBase(w, h, title, sub) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d');
+  const grd = g.createLinearGradient(0, 0, 0, h); grd.addColorStop(0, '#0F5A3F'); grd.addColorStop(1, '#06281C'); g.fillStyle = grd; g.fillRect(0, 0, w, h);
+  g.fillStyle = 'rgba(255,255,255,.05)'; g.font = `700 520px ${SANS}`; g.textAlign = 'right'; g.fillText('♠', w + 40, h - 40);
+  g.textAlign = 'left'; g.fillStyle = '#E9C46A'; g.font = `800 34px ${SANS}`; g.fillText("Tri-City Hold'em", 72, 110);
+  g.fillStyle = '#F4F1E8'; g.font = `800 64px ${SANS}`; g.fillText(title, 72, 196);
+  g.fillStyle = 'rgba(244,241,232,.7)'; g.font = `600 32px ${SANS}`; g.fillText(sub, 72, 248);
+  return { c, g };
+}
+function drawCrown(g, x, y, label, k = 1) {
+  g.save(); g.translate(x, y); g.scale(k, k);
+  g.fillStyle = '#F5C542'; g.beginPath(); g.moveTo(2, 4); g.lineTo(8, 9); g.lineTo(15, 2); g.lineTo(22, 9); g.lineTo(28, 4); g.lineTo(27, 11); g.lineTo(3, 11); g.closePath(); g.fill();
+  g.fillStyle = '#E0A82E'; g.fillRect(2, 11, 26, 10);
+  g.font = `700 9px ${SANS}`; g.textAlign = 'center'; g.lineWidth = 1.6; g.strokeStyle = '#8C5E06'; g.strokeText(label, 15, 19.3); g.fillStyle = '#fff'; g.fillText(label, 15, 19.3);
+  g.restore(); g.textAlign = 'left';
+}
+const fmtAmt = v => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toLocaleString('ko-KR');
+function drawRows(g, rows, top, w) {
+  rows.forEach((r, i) => {
+    const y = top + i * 104;
+    g.fillStyle = 'rgba(255,255,255,.07)'; g.beginPath(); g.roundRect ? g.roundRect(56, y, w - 112, 88, 22) : g.rect(56, y, w - 112, 88); g.fill();
+    g.fillStyle = r.rankColor || 'rgba(244,241,232,.55)'; g.font = `800 38px ${SANS}`; g.fillText(r.rank || '', 88, y + 58);
+    g.fillStyle = r.color; g.beginPath(); g.arc(r.rank ? 168 : 100, y + 44, 12, 0, 7); g.fill();
+    g.fillStyle = '#F4F1E8'; g.font = `700 40px ${SANS}`; const nx = r.rank ? 194 : 126; g.fillText(r.name, nx, y + 58);
+    let cx = nx + g.measureText(r.name).width + 14;
+    (CROWNS[r.name] || []).forEach(cr => { drawCrown(g, cx, y + 20, 'S' + cr.n, 2.3); cx += 74; });
+    const v = fmtAmt(r.v); g.textAlign = 'right';
+    g.font = `800 26px ${SANS}`; const uw = g.measureText('만').width;
+    g.fillStyle = r.v > 0 ? '#FF8478' : r.v < 0 ? '#86AEFF' : 'rgba(244,241,232,.6)'; g.fillText('만', w - 88, y + 58);
+    g.font = `800 44px ${SANS}`; g.fillText(v, w - 92 - uw, y + 58); g.textAlign = 'left';
+  });
+}
+async function shareCanvas(c, name) {
+  const blob = await new Promise(r => c.toBlob(r, 'image/png'));
+  const file = new File([blob], name, { type: 'image/png' });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: "Tri-City Hold'em" }); return; } catch (e) { if (e.name === 'AbortError') return; }
+  }
+  $('#sh-img').src = c.toDataURL('image/png'); $('#share-sheet').hidden = false;
+}
+function shareRanking() {
+  const M = MS; if (!M.N) { toast('공유할 기록이 없습니다'); return; }
+  const rows = M.ranked.slice(0, 8).map((t, i) => ({ rank: String(i + 1), name: t.name, color: t.color, v: t.total, rankColor: i === 0 ? '#E9C46A' : null }));
+  const W = 1080, H = 330 + rows.length * 104 + 110;
+  const { c, g } = canvasBase(W, H, isAll() ? '전체 순위' : `${seasonInfo(season).label} 시즌 순위`, `${M.N}경기, ${ymd(M.sessions[M.N - 1].date)} 기준`);
+  drawRows(g, rows, 300, W);
+  g.fillStyle = 'rgba(244,241,232,.45)'; g.font = `600 26px ${SANS}`; g.fillText('jaein84.github.io/Holdem', 72, H - 52);
+  shareCanvas(c, 'tricity-ranking.png');
+}
+function shareGame(id) {
+  const s = MA.sessions.find(x => x.id === id); if (!s) return;
+  const res = Object.entries(s.res).sort((a, b) => b[1] - a[1]);
+  const rows = res.map(([p, v], i) => ({ rank: String(i + 1), name: p, color: MA.color[p], v, rankColor: i === 0 ? '#E9C46A' : null }));
+  const W = 1080, H = 330 + rows.length * 104 + 110;
+  const { c, g } = canvasBase(W, H, `${ymd(s.date)} 결과`, `${DOW[D(s.date).getDay()]}요일, ${s.place}, ${res.length}명`);
+  drawRows(g, rows, 300, W);
+  g.fillStyle = 'rgba(244,241,232,.45)'; g.font = `600 26px ${SANS}`; g.fillText('jaein84.github.io/Holdem', 72, H - 52);
+  shareCanvas(c, `tricity-${s.date}.png`);
+}
+$('#share-rank').addEventListener('click', e => { e.stopPropagation(); shareRanking(); });
+document.addEventListener('click', e => { const b = e.target.closest('[data-share-game]'); if (b) shareGame(b.dataset.shareGame); });
+
 /* ===== 화면 전환 ===== */
 let view = 'rank';
 const renderView = v => ({ rank: renderRank, trend: renderTrend, month: renderMonth, games: renderGames, board: renderBoard })[v]();
@@ -1262,7 +1524,8 @@ function show(doc, note) {
 async function load() {
   const btn = $('#reload'); btn.classList.add('spin');
   try {
-    const [doc, me] = await Promise.all([api('GET', '/api/data'), api('GET', '/api/me').catch(() => null)]);
+    const [doc, me, evs] = await Promise.all([api('GET', '/api/data'), api('GET', '/api/me').catch(() => null), api('GET', '/api/events').catch(() => null)]);
+    if (evs) EVENTS = evs;
     if (me) { Object.assign(ME, me); try { sessionStorage.setItem('holdem_user', JSON.stringify(me)); } catch (e) {} }
     try { sessionStorage.setItem(CACHE_KEY, JSON.stringify(doc)); } catch (e) {}
     const t = new Date(doc.updatedAt);
