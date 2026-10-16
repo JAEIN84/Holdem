@@ -439,6 +439,14 @@ body { min-height: calc(100vh + env(safe-area-inset-top, 0px) + 1px); min-height
 [data-profile] { cursor: pointer; }
 .rank-meta b, .rank-meta2 b, .stat-d b, .pl-line b, .vs-line b, .ev-who b { white-space: nowrap; }
 .pf-pair .stat-v, .pf-tiles .stat-v { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+
+/* ===== 프로필: 화면 가운데 뜨는 팝업 (뒤로 메인 화면이 비쳐 보임) ===== */
+.sheet.popup { align-items: center; padding: calc(24px + env(safe-area-inset-top, 0px)) 16px calc(24px + env(safe-area-inset-bottom, 0px)); background: rgba(0, 0, 0, .38); }
+.sheet.popup .sheet-in { border-radius: 22px; max-height: min(78vh, 680px); max-width: 440px; padding-bottom: 20px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, .35); animation: pop-in .18s ease-out; }
+@keyframes pop-in { from { opacity: 0; transform: scale(.96); } }
+@media (orientation: landscape) and (max-height: 500px) { .sheet.popup .sheet-in { max-height: 86vh; } }
+@media (prefers-reduced-motion: reduce) { .sheet.popup .sheet-in { animation: none; } }
 </style>
 </head>
 <body>
@@ -551,7 +559,7 @@ body { min-height: calc(100vh + env(safe-area-inset-top, 0px) + 1px); min-height
     <button type="submit" class="sheet-btn" id="w-btn" disabled>등록</button>
   </form>
 </div></div>
-<div class="sheet" id="profile-sheet" hidden><div class="sheet-in" role="dialog" aria-modal="true" aria-labelledby="pf-name">
+<div class="sheet popup" id="profile-sheet" hidden><div class="sheet-in" role="dialog" aria-modal="true" aria-labelledby="pf-name">
   <div class="sheet-head"><h2 id="pf-name"></h2><button type="button" class="sheet-x" data-close aria-label="닫기">✕</button></div>
   <div id="pf-body"></div>
 </div></div>
