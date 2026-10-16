@@ -924,7 +924,8 @@ function renderH2H() {
   const M = MS, el = $('#sub-h2h');
   if (!M.N) { el.innerHTML = '<p class="empty">이 시즌에는 아직 경기가 없습니다</p>'; return; }
   const names = M.ranked.map(t => t.name);
-  if (!h2hA || !names.includes(h2hA)) h2hA = names.includes(ME.name) ? ME.name : names[0];
+  const mine = ME.player || ME.name;
+  if (!h2hA || !names.includes(h2hA)) h2hA = names.includes(mine) ? mine : names[0];
   const A = h2hA;
   const rows = names.filter(B => B !== A).map(B => {
     const g = M.sessions.filter(x => A in x.res && B in x.res);
@@ -1141,7 +1142,7 @@ function renderBoard() {
   $('#board-list').innerHTML = list.length ? list.map(p => `<button type="button" class="post ${p.type}" data-id="${p.id}">
       <div class="post-top"><span class="ptype ${p.type}">${p.type === 'notice' ? '📌 ' : ''}${TYPE_KO[p.type]}</span><span class="post-title">${esc(p.title)}</span>${(p.comments || []).length ? `<span class="post-cnt">💬 ${p.comments.length}</span>` : ''}</div>
       <div class="post-pre">${esc(p.body)}</div>
-      <div class="post-info">${esc(p.byName)}${crowns(p.byName)} · ${when(p.at)}${p.updatedAt ? ' (수정됨)' : ''}</div>
+      <div class="post-info">${esc(p.byName)}${crowns(p.byPlayer || p.byName)} · ${when(p.at)}${p.updatedAt ? ' (수정됨)' : ''}</div>
     </button>`).join('') : `<p class="empty">아직 글이 없습니다. 첫 글을 남겨 보세요.</p>`;
   $('#board-list').onclick = e => { const b = e.target.closest('.post'); if (b) openPost(b.dataset.id); };
 }
@@ -1149,7 +1150,7 @@ function openPost(id) {
   const p = POSTS.find(x => x.id === id); if (!p) return;
   $('#post-type').className = 'ptype ' + p.type; $('#post-type').textContent = (p.type === 'notice' ? '📌 ' : '') + TYPE_KO[p.type];
   $('#post-title').textContent = p.title;
-  $('#post-meta').innerHTML = `${esc(p.byName)}${crowns(p.byName)} · ${when(p.at)}${p.updatedAt ? ` · 수정 ${when(p.updatedAt)}` : ''}`;
+  $('#post-meta').innerHTML = `${esc(p.byName)}${crowns(p.byPlayer || p.byName)} · ${when(p.at)}${p.updatedAt ? ` · 수정 ${when(p.updatedAt)}` : ''}`;
   $('#post-body').textContent = p.body;
   const can = p.by === ME.id || ME.role === 'admin';
   $('#post-acts').innerHTML = can ? `<button type="button" data-a="edit">수정</button><button type="button" class="del" data-a="del">삭제</button>` : '';
@@ -1170,7 +1171,7 @@ function renderComments(id) {
   const list = p.comments || [];
   $('#cmt-head').textContent = `댓글 ${list.length}`;
   $('#cmt-list').innerHTML = list.length ? list.map(c => `<div class="cmt" data-cid="${c.id}">
-      <div class="cmt-top"><b>${esc(c.byName)}</b>${crowns(c.byName)}${c.by === p.by ? '<span class="mine">작성자</span>' : ''}<span class="t">${when(c.at)}</span>
+      <div class="cmt-top"><b>${esc(c.byName)}</b>${crowns(c.byPlayer || c.byName)}${c.by === p.by ? '<span class="mine">작성자</span>' : ''}<span class="t">${when(c.at)}</span>
         ${c.by === ME.id || ME.role === 'admin' ? '<button type="button" data-del>삭제</button>' : ''}</div>
       <div class="cmt-body">${esc(c.body)}</div></div>`).join('') : '<p class="cmt-empty">첫 댓글을 남겨 보세요.</p>';
 }
@@ -1261,7 +1262,8 @@ function show(doc, note) {
 async function load() {
   const btn = $('#reload'); btn.classList.add('spin');
   try {
-    const doc = await api('GET', '/api/data');
+    const [doc, me] = await Promise.all([api('GET', '/api/data'), api('GET', '/api/me').catch(() => null)]);
+    if (me) { Object.assign(ME, me); try { sessionStorage.setItem('holdem_user', JSON.stringify(me)); } catch (e) {} }
     try { sessionStorage.setItem(CACHE_KEY, JSON.stringify(doc)); } catch (e) {}
     const t = new Date(doc.updatedAt);
     show(doc, `마지막 기록 ${t.getMonth() + 1}월 ${t.getDate()}일 ${t.getHours()}:${String(t.getMinutes()).padStart(2, '0')}`);
