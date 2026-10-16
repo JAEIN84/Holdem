@@ -95,6 +95,7 @@ body { padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px)); }
 .pill-s.off { background: color-mix(in srgb, var(--warn) 15%, transparent); color: var(--warn); }
 .u-meta { font-size: 13px; color: var(--sub); margin-top: 4px; display: flex; gap: 12px; flex-wrap: wrap; }
 .u-meta a { color: inherit; }
+.link-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 13px; color: var(--sub); font-weight: 600; flex-wrap: wrap; }
 .acts { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
 .b { border: 0; border-radius: 10px; height: 38px; padding: 0 14px; font-weight: 700; font-size: 14px; background: var(--surface-2); color: var(--ink); }
 .b.main { background: var(--brand); color: #fff; }
@@ -140,7 +141,7 @@ body { min-height: calc(100vh + env(safe-area-inset-top, 0px) + 1px); min-height
     <div id="resets" class="two"></div>
     <div class="sec"><span>회원 목록</span><span id="mem-count"></span></div>
     <div id="members" class="two"></div>
-    <p class="note">조회: 대시보드만 볼 수 있음 · 기록: 경기 등록·수정·삭제 가능 · 관리자: 이 화면까지 사용 가능</p>
+    <p class="note">조회: 대시보드만 볼 수 있음 · 기록: 경기 등록·수정·삭제 가능 · 관리자: 이 화면까지 사용 가능<br>플레이어 연결: 회원이 경기 기록의 어느 플레이어인지 지정합니다. 승인할 때 이름이 같은 플레이어가 있으면 자동으로 연결됩니다.</p>
   </section>
 
   <section id="t-players" hidden>
@@ -183,8 +184,9 @@ document.querySelector('.seg').onclick = e => {
 };
 
 /* 회원 */
+let PLAYERS = [];
 async function loadUsers() {
-  try { users = await api('GET', '/api/users'); } catch (e) { toast(e.message); return; }
+  try { [users, doc] = await Promise.all([api('GET', '/api/users'), api('GET', '/api/data')]); PLAYERS = doc.players; } catch (e) { toast(e.message); return; }
   const pend = users.filter(u => u.status === 'pending'), rest = users.filter(u => u.status !== 'pending');
   const resets = users.filter(u => u.resetRequestedAt);
   const todo = pend.length + resets.length;
@@ -208,6 +210,9 @@ async function loadUsers() {
       <div class="u-head"><span class="u-name">${esc(u.name)}</span><span class="u-id">${esc(u.id)}</span>
         <span class="pill-s ${u.role === 'admin' ? 'admin' : ''}">${ROLE[u.role]}</span>${u.status !== 'active' ? `<span class="pill-s off">${STATUS[u.status]}</span>` : ''}${self ? '<span class="pill-s">나</span>' : ''}</div>
       <div class="u-meta"><a href="tel:${esc(u.phone)}">${esc(u.phone)}</a><span>최근 로그인 ${when(u.lastLogin)}</span></div>
+      <div class="link-row"><span>플레이어 연결</span><select class="sel" data-a="player" aria-label="${esc(u.name)} 플레이어 연결">
+        <option value="">연결 안 함</option>${PLAYERS.map(p => `<option value="${esc(p)}" ${u.player === p ? 'selected' : ''}>${esc(p)}</option>`).join('')}</select>
+        ${u.player ? '' : '<span class="pill-s off">연결 안 됨</span>'}</div>
       ${self ? '' : `<div class="acts"><select class="sel" data-a="role" aria-label="${esc(u.name)} 권한">${Object.entries(ROLE).map(([k, v]) => `<option value="${k}" ${k === u.role ? 'selected' : ''}>${v}</option>`).join('')}</select>
         ${u.status === 'active' ? '<button class="b bad" data-a="disable">사용 중지</button>' : '<button class="b" data-a="enable">다시 사용</button>'}
         <button class="b bad" data-a="delete">삭제</button></div>`}
@@ -231,6 +236,14 @@ document.addEventListener('click', e => {
   }
 });
 document.addEventListener('change', e => {
+  const ps = e.target.closest('#members select[data-a="player"]');
+  if (ps) {
+    const id = ps.closest('.card').dataset.id, u = users.find(x => x.id === id);
+    const taken = users.find(x => x.player === ps.value && x.id !== id);
+    if (taken && !confirm(`'${ps.value}'은(는) 지금 ${taken.name}님에게 연결되어 있습니다. ${u.name}님으로 옮길까요?`)) { ps.value = u.player || ''; return; }
+    setUser(id, { player: ps.value || null }, ps.value ? `${u.name}님을 '${ps.value}' 플레이어와 연결했습니다` : `${u.name}님의 플레이어 연결을 해제했습니다`);
+    return;
+  }
   const s = e.target.closest('#members select[data-a="role"]'); if (!s) return;
   const id = s.closest('.card').dataset.id, u = users.find(x => x.id === id);
   if (s.value === 'admin' && !confirm(`${u.name}님에게 관리자 권한을 줄까요?`)) { s.value = u.role; return; }
