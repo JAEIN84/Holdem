@@ -37,11 +37,12 @@ const Auth = {
 };
 
 async function api(method, path, body) {
-  const r = await fetch(HOLDEM.API_BASE + path, {
+  let r;
+  try { r = await fetch(HOLDEM.API_BASE + path, {
     method, cache: 'no-store',
     headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + Auth.token() },
     body: body ? JSON.stringify(body) : undefined
-  });
+  }); } catch (e) { throw new Error('인터넷 연결을 확인해 주세요.'); }
   const j = await r.json().catch(() => ({}));
   if (r.status === 401 && !path.startsWith('/api/login')) { Auth.clear(); Auth.toLogin(); throw new Error(j.error || '다시 로그인하세요.'); }
   if (!r.ok) throw new Error(j.error || `요청 실패 (${r.status})`);
