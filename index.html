@@ -377,15 +377,18 @@ body { min-height: calc(100vh + env(safe-area-inset-top, 0px) + 1px); min-height
 
 /* ===== 왕관 배지: 지난 시즌 우승 + 현재 시즌 선두, 가운데에 시즌 번호 ===== */
 .crowns { display: inline-flex; gap: 2px; vertical-align: middle; flex: none; }
-.crown-b { position: relative; display: inline-block; width: 28px; height: 20px; filter: drop-shadow(0 1px 1.5px rgba(80, 50, 0, .35)); }
+.crown-b { position: relative; display: inline-block; width: 22px; height: 16px; filter: drop-shadow(0 1px 1px rgba(80, 50, 0, .3)); }
 .crown-b::before { content: ""; position: absolute; inset: 0;
-  background: linear-gradient(180deg, #FBE7A1 0%, #E8BE4F 45%, #B9871F 100%);
-  clip-path: polygon(0 22%, 24% 52%, 50% 0, 76% 52%, 100% 22%, 91% 100%, 9% 100%); }
-.crown-b b { position: absolute; left: 0; right: 0; bottom: 1px; text-align: center; font-size: 8.5px; font-weight: 900; line-height: 1; color: #5B3B00; letter-spacing: -.02em; }
-.crown-b.live::before { background: linear-gradient(180deg, #FFF1C2 0%, #F2CF6A 50%, #CC9A2C 100%); }
-.leader-name .crown-b { width: 34px; height: 24px; } .leader-name .crown-b b { font-size: 10px; }
+  background: linear-gradient(180deg, #F9DE85 0%, #E2B23E 50%, #B07D18 100%);
+  clip-path: polygon(0 24%, 24% 52%, 50% 0, 76% 52%, 100% 24%, 91% 100%, 9% 100%); }
+.crown-b b { position: absolute; left: 0; right: 0; bottom: 0; text-align: center;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  font-size: 8px; font-weight: 900; line-height: 9px; color: #2E1C00; letter-spacing: 0;
+  text-shadow: 0 .5px 0 rgba(255, 240, 200, .55); -webkit-font-smoothing: antialiased; }
+.crown-b.live::before { background: linear-gradient(180deg, #FCEAA8 0%, #EBC255 50%, #BE8A22 100%); }
+.leader-name .crown-b { width: 26px; height: 19px; } .leader-name .crown-b b { font-size: 9px; line-height: 10px; }
 .cmt-top .crowns, .post-info .crowns { margin-left: 2px; }
-.cmt-top .crown-b, .post-info .crown-b, .pill .crown-b { width: 24px; height: 17px; } .cmt-top .crown-b b, .post-info .crown-b b, .pill .crown-b b { font-size: 7.5px; }
+.cmt-top .crown-b, .post-info .crown-b, .pill .crown-b { width: 19px; height: 14px; } .cmt-top .crown-b b, .post-info .crown-b b, .pill .crown-b b { font-size: 7px; line-height: 8px; }
 </style>
 </head>
 <body>
