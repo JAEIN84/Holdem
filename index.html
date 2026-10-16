@@ -46,7 +46,7 @@ body { padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
   position: sticky; top: -18px; z-index: 3; background: var(--surface); margin: -18px -20px 0; padding: 18px 20px 10px; }
 .sheet-in { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
 .sheet { overscroll-behavior: contain; }
-body.sheet-lock { position: fixed; left: 0; right: 0; overflow: hidden; }
+
 .sheet-head h2 { margin: 0; font-size: 20px; font-weight: 800; }
 .sheet-x { border: 0; background: var(--surface-2); width: 34px; height: 34px; border-radius: 50%; font-size: 15px; color: var(--sub); }
 .sheet-sub { color: var(--sub); font-size: 13.5px; margin: 4px 0 14px; }
@@ -459,6 +459,12 @@ body { min-height: calc(100vh + env(safe-area-inset-top, 0px) + 1px); min-height
 @media (prefers-reduced-motion: reduce) { .sheet.popup, .sheet.popup .sheet-in { animation: none !important; } }
 .sheet.popup .cmt-form { margin-bottom: -20px; padding-bottom: 14px; }
 @supports (height: 100dvh) { .sheet.popup .sheet-in { max-height: min(64dvh, 560px); } }
+
+/* 날짜·시간 칸: 아이폰 기본 모양 대신 다른 입력칸과 같은 높이·너비·왼쪽 정렬 */
+.sf input[type="date"], .sf input[type="time"] { -webkit-appearance: none; appearance: none; display: block; box-sizing: border-box;
+  width: 100%; min-width: 0; max-width: 100%; height: 46px; line-height: 46px; padding: 0 12px; text-align: left; color: var(--ink); }
+.sf input[type="date"]::-webkit-date-and-time-value, .sf input[type="time"]::-webkit-date-and-time-value { text-align: left; margin: 0; }
+.sf input[type="time"]:invalid, .sf input[type="time"]:placeholder-shown { color: var(--faint); }
 </style>
 </head>
 <body>
@@ -1474,20 +1480,21 @@ function closeSheet(el) {
   setTimeout(() => { el.hidden = true; el.classList.remove('closing'); }, 190);
 }
 
-/* ===== 창(시트)이 열린 동안 뒤쪽 화면이 같이 스크롤되지 않게 고정 ===== */
-(function () {
-  let lockedY = 0;
-  const sync = () => {
-    const open = [...document.querySelectorAll('.sheet')].some(el => !el.hidden);
-    const locked = document.body.classList.contains('sheet-lock');
-    if (open && !locked) { lockedY = window.scrollY; document.body.style.top = `-${lockedY}px`; document.body.classList.add('sheet-lock'); }
-    else if (!open && locked) { document.body.classList.remove('sheet-lock'); document.body.style.top = ''; window.scrollTo(0, lockedY); }
-  };
-  const mo = new MutationObserver(sync);
-  document.querySelectorAll('.sheet').forEach(el => mo.observe(el, { attributes: true, attributeFilter: ['hidden'] }));
-  // 창이 열리면 항상 맨 위부터 보이게
-  document.querySelectorAll('.sheet').forEach(el => new MutationObserver(() => { if (!el.hidden) { const i = el.querySelector('.sheet-in'); if (i) i.scrollTop = 0; } }).observe(el, { attributes: true, attributeFilter: ['hidden'] }));
-})();
+/* ===== 팝업이 열린 동안 뒤쪽 화면이 스크롤되지 않게 (뒤쪽 화면의 크기·위치는 건드리지 않음) =====
+ * 팝업 안쪽이 스크롤될 수 있을 때만 손가락 이동을 허용하고, 그 밖(어두운 배경, 짧은 팝업)에서는 막음 */
+const openSheet = () => [...document.querySelectorAll('.sheet')].find(el => !el.hidden);
+document.addEventListener('touchmove', e => {
+  if (!openSheet()) return;
+  const box = e.target.closest('.sheet-in');
+  if (!box || box.scrollHeight <= box.clientHeight + 1) e.preventDefault();
+}, { passive: false });
+document.addEventListener('wheel', e => {
+  if (!openSheet()) return;
+  const box = e.target.closest('.sheet-in');
+  if (!box || box.scrollHeight <= box.clientHeight + 1) e.preventDefault();
+}, { passive: false });
+// 팝업이 열리면 항상 맨 위부터 보이게
+document.querySelectorAll('.sheet').forEach(el => new MutationObserver(() => { if (!el.hidden) { const i = el.querySelector('.sheet-in'); if (i) i.scrollTop = 0; } }).observe(el, { attributes: true, attributeFilter: ['hidden'] }));
 
 /* ===== 화면 전환 ===== */
 let view = 'rank';
