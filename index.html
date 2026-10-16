@@ -124,7 +124,7 @@ body { padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
 .rank-list li + li .rank-row { border-top: 1px solid var(--line); }
 .rank-no { font-size: 15px; font-weight: 800; color: var(--faint); }
 li:first-child .rank-no { color: var(--gold); }
-.rank-name { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 16px; min-width: 0; }
+.rank-name { display: flex; align-items: center; gap: 6px 8px; flex-wrap: wrap; font-weight: 700; font-size: 16px; min-width: 0; }
 .rank-meta { grid-column: 2; font-size: 12.5px; color: var(--sub); }
 .rank-meta b { font-weight: 700; }
 .rank-val { grid-row: 1 / span 2; grid-column: 3; text-align: right; font-size: 20px; font-weight: 800; letter-spacing: -.02em; }
@@ -374,6 +374,18 @@ body { min-height: calc(100vh + env(safe-area-inset-top, 0px) + 1px); min-height
 .cmt-form button { flex: none; height: 42px; padding: 0 16px; border: 0; border-radius: 12px; background: var(--brand); color: #fff; font-weight: 800; font-size: 14.5px; }
 .cmt-form button:disabled { background: var(--line); color: var(--faint); }
 .post-cnt { margin-left: auto; flex: none; font-size: 12px; font-weight: 700; color: var(--sub); }
+
+/* ===== 왕관 배지: 지난 시즌 우승 + 현재 시즌 선두, 가운데에 시즌 번호 ===== */
+.crowns { display: inline-flex; gap: 2px; vertical-align: middle; flex: none; }
+.crown-b { position: relative; display: inline-block; width: 28px; height: 20px; filter: drop-shadow(0 1px 1.5px rgba(80, 50, 0, .35)); }
+.crown-b::before { content: ""; position: absolute; inset: 0;
+  background: linear-gradient(180deg, #FBE7A1 0%, #E8BE4F 45%, #B9871F 100%);
+  clip-path: polygon(0 22%, 24% 52%, 50% 0, 76% 52%, 100% 22%, 91% 100%, 9% 100%); }
+.crown-b b { position: absolute; left: 0; right: 0; bottom: 1px; text-align: center; font-size: 8.5px; font-weight: 900; line-height: 1; color: #5B3B00; letter-spacing: -.02em; }
+.crown-b.live::before { background: linear-gradient(180deg, #FFF1C2 0%, #F2CF6A 50%, #CC9A2C 100%); }
+.leader-name .crown-b { width: 34px; height: 24px; } .leader-name .crown-b b { font-size: 10px; }
+.cmt-top .crowns, .post-info .crowns { margin-left: 2px; }
+.cmt-top .crown-b, .post-info .crown-b, .pill .crown-b { width: 24px; height: 17px; } .cmt-top .crown-b b, .post-info .crown-b b, .pill .crown-b b { font-size: 7.5px; }
 </style>
 </head>
 <body>
@@ -591,6 +603,19 @@ function buildModels() {
   if (season === null || (!isAll() && !SEASONS.includes(season))) season = cur;   // 기본값: 진행 중인 최신 시즌
   MA = analyze(DOC);
   MS = isAll() ? MA : analyze(subsetDoc(season));
+  // 끝난 시즌 우승자 + 진행 중 시즌 선두 → 이름별 왕관 목록
+  CROWNS = {};
+  SEASONS.slice().sort((a, b) => a - b).forEach(n => {
+    const Mx = analyze(subsetDoc(n)), w = Mx.ranked[0]; if (!w) return;
+    const live = seasonInfo(n).live;
+    (CROWNS[w.name] = CROWNS[w.name] || []).push({ n, live });
+  });
+}
+let CROWNS = {};
+// 우승 횟수만큼 왕관을 이어 붙임 (예: S1, S3 우승이면 왕관 2개). 진행 중 시즌은 '현재 선두'
+function crowns(name) {
+  const list = CROWNS[name]; if (!list || !list.length) return '';
+  return `<span class="crowns">${list.map(c => `<span class="crown-b${c.live ? ' live' : ''}" title="S${c.n} ${c.live ? '현재 선두' : '우승'}" aria-label="S${c.n} ${c.live ? '현재 선두' : '우승'}"><b>S${c.n}</b></span>`).join('')}</span>`;
 }
 function renderSeasonSelects() {
   const opts = SEASONS.map(n => { const i = seasonInfo(n); return `<option value="${n}">${i.label} · ${i.live ? '진행 중' : i.range}</option>`; }).join('') + `<option value="all">전체 기록</option>`;
@@ -626,7 +651,7 @@ function renderRank() {
     const head = isAll() ? '전체 선두' : info.live ? `${info.label} 현재 선두` : `${info.label} 우승`;
     $('#leader').innerHTML = `
       <div class="leader-label"><span class="crown" aria-hidden="true">♛</span>${head}</div>
-      <div class="leader-name">${chip(L.color)}${esc(L.name)}</div>
+      <div class="leader-name">${chip(L.color)}${esc(L.name)}${crowns(L.name)}</div>
       <div class="leader-value">${signed(L.total)}</div>
       <div class="leader-sub">${S2 ? `2위 ${esc(S2.name)}와 ${(L.total - S2.total).toLocaleString('ko-KR')} 차이` : ''}${days !== null ? `${S2 ? ', ' : ''}시즌 종료까지 ${days}일` : ''}</div>`;
     const maxAbs = Math.max(1, ...M.ranked.map(t => Math.abs(t.total)));
@@ -634,7 +659,7 @@ function renderRank() {
       const all = statOf(MA, t.name);
       return `<li><button type="button" class="rank-row" data-p="${esc(t.name)}">
         <span class="rank-no">${k + 1}</span>
-        <span class="rank-name">${chip(t.color)}${esc(t.name)}</span>
+        <span class="rank-name">${chip(t.color)}${esc(t.name)}${crowns(t.name)}</span>
         <span class="rank-val ${tone(t.total)}">${signed(t.total)}</span>
         <span class="rank-meta">${t.n}경기, 승률 ${pct(t.win)}, 경기당 <b class="${tone(t.per)}">${per1(t.per)}</b></span>
         ${isAll() ? '' : `<span class="rank-meta2">전체 누적 <b class="${tone(all.total)}">${signed(all.total)}</b>, 전체 경기당 <b class="${tone(all.per)}">${per1(all.per)}</b></span>`}
@@ -643,7 +668,7 @@ function renderRank() {
     });
     // 이번 시즌에 참가하지 않은 멤버는 아래에 흐리게
     MA.ranked.filter(t => !M.names.includes(t.name)).forEach(t => rows.push(`<li><button type="button" class="rank-row absent" data-p="${esc(t.name)}" data-all="1">
-        <span class="rank-no">–</span><span class="rank-name">${chip(t.color)}${esc(t.name)}</span><span class="rank-val">참가 없음</span>
+        <span class="rank-no">–</span><span class="rank-name">${chip(t.color)}${esc(t.name)}${crowns(t.name)}</span><span class="rank-val">참가 없음</span>
         <span class="rank-meta2">전체 누적 <b class="${tone(t.total)}">${signed(t.total)}</b>, 전체 경기당 <b class="${tone(t.per)}">${per1(t.per)}</b></span></button></li>`));
     $('#rank-list').innerHTML = rows.join('');
     const pl = Object.entries(M.places).sort((a, b) => b[1] - a[1]);
@@ -662,7 +687,7 @@ function renderRank() {
   // 전체 순위 (시즌을 볼 때만)
   $('#all-block').innerHTML = isAll() ? '' : `<div class="group-title">전체 순위 (${MA.N}경기)</div>
     <div class="group"><table class="all-table"><thead><tr><th>순위</th><th>누적</th><th>경기당</th><th>참가</th></tr></thead><tbody>
-    ${MA.ranked.map((t, k) => `<tr><td class="nm"><span class="r">${k + 1}</span>${chip(t.color)}${esc(t.name)}</td>
+    ${MA.ranked.map((t, k) => `<tr><td class="nm"><span class="r">${k + 1}</span>${chip(t.color)}${esc(t.name)}${crowns(t.name)}</td>
       <td class="${tone(t.total)}">${signed(t.total)}</td><td class="${tone(t.per)}">${per1(t.per)}</td><td class="sub">${t.n}경기</td></tr>`).join('')}
     </tbody></table></div>`;
   // 시즌 챔피언
@@ -680,7 +705,7 @@ const trendModel = () => (isAll() || trendScope === 'all') ? MA : MS;
 function renderTrendPlayers(M) {
   const opts = [['', '전체'], ...M.ranked.map(t => [t.name, t.name])];
   $('#trend-players').innerHTML = opts.map(([v, t]) =>
-    `<button type="button" class="pill" data-p="${esc(v)}" aria-pressed="${(focus || '') === v}">${v ? chip(M.color[v]) : ''}${esc(t)}</button>`).join('');
+    `<button type="button" class="pill" data-p="${esc(v)}" aria-pressed="${(focus || '') === v}">${v ? chip(M.color[v]) : ''}${esc(t)}${v ? crowns(v) : ''}</button>`).join('');
   $('#trend-players').onclick = e => { const b = e.target.closest('.pill'); if (!b) return; focus = b.dataset.p || null; scrub = null; renderTrend(); };
 }
 $('#trend-scope').addEventListener('click', e => {
@@ -946,7 +971,7 @@ function renderBoard() {
   $('#board-list').innerHTML = list.length ? list.map(p => `<button type="button" class="post ${p.type}" data-id="${p.id}">
       <div class="post-top"><span class="ptype ${p.type}">${p.type === 'notice' ? '📌 ' : ''}${TYPE_KO[p.type]}</span><span class="post-title">${esc(p.title)}</span>${(p.comments || []).length ? `<span class="post-cnt">💬 ${p.comments.length}</span>` : ''}</div>
       <div class="post-pre">${esc(p.body)}</div>
-      <div class="post-info">${esc(p.byName)} · ${when(p.at)}${p.updatedAt ? ' (수정됨)' : ''}</div>
+      <div class="post-info">${esc(p.byName)}${crowns(p.byName)} · ${when(p.at)}${p.updatedAt ? ' (수정됨)' : ''}</div>
     </button>`).join('') : `<p class="empty">아직 글이 없습니다. 첫 글을 남겨 보세요.</p>`;
   $('#board-list').onclick = e => { const b = e.target.closest('.post'); if (b) openPost(b.dataset.id); };
 }
@@ -954,7 +979,7 @@ function openPost(id) {
   const p = POSTS.find(x => x.id === id); if (!p) return;
   $('#post-type').className = 'ptype ' + p.type; $('#post-type').textContent = (p.type === 'notice' ? '📌 ' : '') + TYPE_KO[p.type];
   $('#post-title').textContent = p.title;
-  $('#post-meta').textContent = `${p.byName} · ${when(p.at)}${p.updatedAt ? ` · 수정 ${when(p.updatedAt)}` : ''}`;
+  $('#post-meta').innerHTML = `${esc(p.byName)}${crowns(p.byName)} · ${when(p.at)}${p.updatedAt ? ` · 수정 ${when(p.updatedAt)}` : ''}`;
   $('#post-body').textContent = p.body;
   const can = p.by === ME.id || ME.role === 'admin';
   $('#post-acts').innerHTML = can ? `<button type="button" data-a="edit">수정</button><button type="button" class="del" data-a="del">삭제</button>` : '';
@@ -975,7 +1000,7 @@ function renderComments(id) {
   const list = p.comments || [];
   $('#cmt-head').textContent = `댓글 ${list.length}`;
   $('#cmt-list').innerHTML = list.length ? list.map(c => `<div class="cmt" data-cid="${c.id}">
-      <div class="cmt-top"><b>${esc(c.byName)}</b>${c.by === p.by ? '<span class="mine">작성자</span>' : ''}<span class="t">${when(c.at)}</span>
+      <div class="cmt-top"><b>${esc(c.byName)}</b>${crowns(c.byName)}${c.by === p.by ? '<span class="mine">작성자</span>' : ''}<span class="t">${when(c.at)}</span>
         ${c.by === ME.id || ME.role === 'admin' ? '<button type="button" data-del>삭제</button>' : ''}</div>
       <div class="cmt-body">${esc(c.body)}</div></div>`).join('') : '<p class="cmt-empty">첫 댓글을 남겨 보세요.</p>';
 }
