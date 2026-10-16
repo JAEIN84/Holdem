@@ -81,7 +81,7 @@ body { padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px)); }
 .topline a { color: var(--brand); text-decoration: none; font-weight: 700; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .topline a { color: var(--gold); } }
 :root[data-theme="dark"] .topline a { color: var(--gold); }
-.seg { display: grid; grid-template-columns: repeat(4, 1fr); background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px; padding: 4px; margin: 4px 0 16px; }
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px; padding: 4px; margin: 4px 0 16px; }
 .seg button { border: 0; background: none; height: 38px; border-radius: 9px; font-weight: 700; font-size: 14px; color: var(--sub); position: relative; }
 .seg button[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
 .badge { display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: var(--warn); color: #fff; font-size: 11px; margin-left: 4px; vertical-align: 1px; }
@@ -126,10 +126,9 @@ body { min-height: calc(100vh + env(safe-area-inset-top, 0px) + 1px); min-height
 <div class="app">
   <div class="topline"><span id="me-line">관리자</span><a href="index.html">Dashboard ›</a></div>
   <h1 class="large-title">Admin</h1>
-  <p class="caption">회원 승인, 변경 이력, 복원을 관리합니다</p>
+  <p class="caption">회원 승인, 플레이어, 복원을 관리합니다</p>
   <div class="seg" role="tablist">
     <button type="button" role="tab" data-t="users" aria-selected="true">회원<span class="badge" id="pend-badge" hidden></span></button>
-    <button type="button" role="tab" data-t="log" aria-selected="false">이력</button>
     <button type="button" role="tab" data-t="players" aria-selected="false">플레이어</button>
     <button type="button" role="tab" data-t="restore" aria-selected="false">복원</button>
   </div>
@@ -142,11 +141,6 @@ body { min-height: calc(100vh + env(safe-area-inset-top, 0px) + 1px); min-height
     <div class="sec"><span>회원 목록</span><span id="mem-count"></span></div>
     <div id="members" class="two"></div>
     <p class="note">조회: 대시보드만 볼 수 있음 · 기록: 경기 등록·수정·삭제 가능 · 관리자: 이 화면까지 사용 가능</p>
-  </section>
-
-  <section id="t-log" hidden>
-    <div class="sec"><span>최근 변경 이력</span><span id="log-count"></span></div>
-    <div class="grp" id="log"></div>
   </section>
 
   <section id="t-players" hidden>
@@ -184,8 +178,8 @@ let users = [], doc = null;
 document.querySelector('.seg').onclick = e => {
   const b = e.target.closest('button'); if (!b) return;
   document.querySelectorAll('.seg button').forEach(x => x.setAttribute('aria-selected', x === b));
-  ['users', 'log', 'players', 'restore'].forEach(t => { $('#t-' + t).hidden = t !== b.dataset.t; });
-  ({ users: loadUsers, log: loadLog, players: loadPlayers, restore: loadRestore })[b.dataset.t]();
+  ['users', 'players', 'restore'].forEach(t => { $('#t-' + t).hidden = t !== b.dataset.t; });
+  ({ users: loadUsers, players: loadPlayers, restore: loadRestore })[b.dataset.t]();
 };
 
 /* 회원 */
